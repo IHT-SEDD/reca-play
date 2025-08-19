@@ -24,7 +24,6 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![project_license][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
 
 <!-- PROJECT LOGO -->
 <br />
@@ -111,6 +110,14 @@ This is an example of how to list things you need to use the software and how to
 -   NPM
     ```sh
     npm install npm@latest -g
+    ```
+-   PHP 8.4 +
+    ```sh
+    https://windows.php.net/downloads/releases/php-8.4.11-nts-Win32-vs17-x64.zip
+    ```
+-   MySQL 5.7 +
+    ```sh
+    https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.39-winx64.zip
     ```
 -   Laravel
     ```sh
@@ -242,7 +249,7 @@ Project Link: [https://github.com/IHT-SEDD/reca-play](https://github.com/IHT-SED
 [Laravel-url]: https://laravel.com
 [Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
 [Bootstrap-url]: https://getbootstrap.com
-[TailwindCSS]: https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white
+[Tailwind CSS.com]: https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white
 [TailwindCSS-url]: https://tailwindcss.com/
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
 [JQuery-url]: https://jquery.com
