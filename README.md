@@ -93,7 +93,7 @@ It helps users stay engaged, track progress, and explore activities that match t
 ### Built With
 
 -   [![Laravel][Laravel.com]][Laravel-url]
--   [![Tailwind CSS][TailwindCSS.com]][TailwindCSS-url]
+-   [![tailwindcss][TailwindCSS.com]][TailwindCSS-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
