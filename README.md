@@ -212,7 +212,7 @@ Distributed under the RECA PLAY. See `LICENSE.txt` for more information.
 
 ## Contact
 
-@reca.play - [@instagram_handle](https://instagram.com/instagram_handle)
+@reca.play - [@reca.play](https://instagram.com/reca.play)
 email - [@email_handle](mail_to:email_handle)
 
 Project Link: [https://github.com/IHT-SEDD/reca-play](https://github.com/IHT-SEDD/reca-play)
@@ -253,4 +253,5 @@ Project Link: [https://github.com/IHT-SEDD/reca-play](https://github.com/IHT-SED
 [TailwindCSS-url]: https://tailwindcss.com/
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
 [JQuery-url]: https://jquery.com
+[@instagram_handle]: reca.play
 [instagram_handle]: reca.play
