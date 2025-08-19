@@ -253,3 +253,4 @@ Project Link: [https://github.com/IHT-SEDD/reca-play](https://github.com/IHT-SED
 [TailwindCSS-url]: https://tailwindcss.com/
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
 [JQuery-url]: https://jquery.com
+[instagram_handle]: reca.play
