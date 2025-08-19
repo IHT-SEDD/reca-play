@@ -4,8 +4,8 @@
    <!-- Section 1 :begin -->
    <div class="flex justify-center md:justify-start items-center">
     <!-- Logo -->
-    <a href="/" class="flex items-end gap-3 justify-center text-md font-bold hover:text-hot-shot">
-     <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA" class="w-8 h-8"> RECA PLAY
+    <a href="/" class="flex items-end gap-3 justify-center text-sm font-bold hover:text-hot-shot">
+     <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA" class="w-6 h-6"> RECA PLAY
     </a>
    </div>
    <!-- Section 1 :end -->
