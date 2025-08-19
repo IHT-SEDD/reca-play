@@ -55,6 +55,7 @@
         </footer>
     </div>
 
+    <script src="{{ asset('vendors/jquery/jquery-3.7.1.min.js') }}"></script>
     {{ $scripts ?? '' }}
 </body>
 
