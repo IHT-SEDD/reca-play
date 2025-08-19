@@ -37,7 +37,7 @@
 </head>
 
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-white-chalk">
+    <div class="min-h-screen flex flex-col bg-white-chalk">
         @include('layouts.navigation')
 
         <!-- Super admin menu -->
@@ -46,11 +46,11 @@
         @endif
 
         <!-- Page Content -->
-        <main>
+        <main class="flex-grow">
             {{ $slot }}
         </main>
 
-        <footer>
+        <footer class="mt-auto">
             @include('layouts.footer')
         </footer>
     </div>

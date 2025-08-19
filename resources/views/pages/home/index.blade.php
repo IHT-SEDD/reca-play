@@ -1,5 +1,4 @@
 <x-app-layout :pageTitle="'Home'">
-
  <div class="py-8">
   <div class="w-full mx-auto md:px-8 px-5">
    <!-- Text Header :begin -->

@@ -1,8 +1,13 @@
 <?php
 
-use App\Http\Controllers\LiveController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TestingController;
+use App\Http\Controllers\{
+    LiveController,
+    ProfileController,
+    Recording\RecordingController,
+    TestingController,
+    Event\EventController,
+    Field\FieldController,
+};
 use Illuminate\Support\Facades\Route;
 
 #region Home
@@ -20,13 +25,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/camera/stop-recording', [TestingController::class, 'stop']);
 
     #region Fields
-    Route::prefix('field')->group(function () {});
+    Route::prefix('field')->group(function () {
+        Route::get('/', [FieldController::class, 'index'])->name('field.index');
+    });
 
     #region Events
-    Route::prefix('event')->group(function () {});
+    Route::prefix('event')->group(function () {
+        Route::get('/', [EventController::class, 'index'])->name('event.index');
+    });
 
     #region Recordings
-    Route::prefix('recording')->group(function () {});
+    Route::prefix('recording')->group(function () {
+        Route::get('/', [RecordingController::class, 'index'])->name('recording.index');
+    });
 
     #region Masters
     Route::prefix('master')->middleware('role:super admin')->group(function () {});
