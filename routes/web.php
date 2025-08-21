@@ -3,6 +3,7 @@
 use App\Http\Controllers\{
     LiveController,
     ProfileController,
+    Auth\GoogleController,
     Recording\RecordingController,
     TestingController,
     Event\EventController,
@@ -16,7 +17,10 @@ Route::get('/', function () {
 })->name('home.index');
 
 #region Guest
-Route::middleware('guest')->group(function () {});
+Route::middleware('guest')->group(function () {
+Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+});
 
 #region Authenticated
 Route::middleware(['auth', 'verified'])->group(function () {
