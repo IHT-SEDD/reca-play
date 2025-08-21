@@ -52,6 +52,7 @@
             {{ $slot }}
         </div>
     </div>
+      <script src="{{ asset('vendors/zxcvbn/zxcvbn.js') }}"></script>
+      <script src="{{ asset('assets/register/index.js') }}"></script>
 </body>
-
 </html>

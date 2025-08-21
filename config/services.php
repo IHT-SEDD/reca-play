@@ -42,4 +42,11 @@ return [
         'manual_channel' => 1,
         'search_track'   => 101,
     ],
+
+    'google' => [
+    'client_id'     => env('GOOGLE_CLIENT_ID'),
+    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    'redirect'      => env('GOOGLE_REDIRECT_URI'),
+],
+
 ];

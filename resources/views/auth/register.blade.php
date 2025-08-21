@@ -33,6 +33,7 @@
             <x-text-input id="password" class="block mt-2 w-full" type="password" name="password" required
                 autocomplete="new-password" placeholder="xxxxxxxx" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-indicator-password id="strengthMeter"></x-indicator-password>
         </div>
 
         <!-- Confirm Password -->
@@ -56,10 +57,10 @@
             <p class="md:text-md text-xs font-medium text-center my-2 text-after-midnight">or sign in with</p>
 
             <!-- Login via google btn -->
-            <x-secondary-button class="w-full">
+             <x-google-button class="w-full">
                 <img src="{{ asset('assets/icons/google.svg') }}" alt="Google Icon" class="inline-block me-2 w-5 h-5">
                 {{ __('Google') }}
-            </x-secondary-button>
+            </x-google-button>
 
             <!-- Login -->
             <a class="text-xs md:text-sm text-after-midnight/90 hover:text-miami tracking-wide"
