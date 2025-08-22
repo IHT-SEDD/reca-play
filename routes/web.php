@@ -9,6 +9,7 @@ use App\Http\Controllers\{
     Event\EventController,
     Field\FieldController,
 };
+use App\Http\Controllers\UserManagement\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 #region Home
@@ -18,8 +19,8 @@ Route::get('/', function () {
 
 #region Guest
 Route::middleware('guest')->group(function () {
-Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
-Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+    Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
+    Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 });
 
 #region Authenticated
@@ -43,8 +44,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [RecordingController::class, 'index'])->name('recording.index');
     });
 
-    #region Masters
-    Route::prefix('master')->middleware('role:super admin')->group(function () {});
+    Route::middleware(['auth', 'verified'])->group(function () {
+        #region Masters
+        Route::prefix('master')->group(function () {});
+
+        #region User Management
+        Route::prefix('user-management')->group(function () {
+            Route::get('/', [UserManagementController::class, 'index'])->name('user-management.index');
+            Route::get('/users-data', [UserManagementController::class, 'usersData'])->name('user-management.data');
+        });
+    });
+
 
     #region Profile
     Route::prefix('profile')->group(function () {

@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "recaplay/reca-play",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Platform to capture your moments on and off the field",
     "keywords": [
         "laravel",
         "framework"
@@ -13,7 +13,8 @@
         "laravel/framework": "^12.0",
         "laravel/socialite": "^5.23",
         "laravel/tinker": "^2.10.1",
-        "spatie/laravel-permission": "^6.21"
+        "spatie/laravel-permission": "^6.21",
+        "yajra/laravel-datatables-oracle": "^12.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

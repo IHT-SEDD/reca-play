@@ -16,15 +16,20 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
 
+    public const Searchable = ['name', 'username', 'email'];
+    public const Unsearchable = ['id', 'role_id', 'email_verified_at', 'password', 'remember_token', 'google_id', 'created_at', 'updated_at'];
+
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
+        'role_id',
         'name',
         'username',
         'email',
+        'email_verified_at',
         'password',
         'google_id'
     ];
