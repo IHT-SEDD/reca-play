@@ -57,7 +57,7 @@
             <p class="md:text-md text-xs font-medium text-center my-2 text-after-midnight">or sign in with</p>
 
             <!-- Login via google btn -->
-             <x-google-button class="w-full">
+            <x-google-button class="w-full">
                 <img src="{{ asset('assets/icons/google.svg') }}" alt="Google Icon" class="inline-block me-2 w-5 h-5">
                 {{ __('Google') }}
             </x-google-button>

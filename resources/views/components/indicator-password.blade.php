@@ -1,14 +1,5 @@
+<p class="text-xs font-medium text-after-midnight mt-2">Password indicator</p>
+<meter id="{{ $meterId ?? 'strengthMeter' }}" min="0" max="4" low="1" high="3" optimum="4" value="0" class="w-full"></meter>
+<div id="strengthLabel" class="mt-2 text-xs font-medium text-after-midnight"></div>
 
-    <meter
-        id="{{ $meterId ?? 'strengthMeter' }}"
-        min="0"
-        max="4"
-        low="1"
-        high="3"
-        optimum="4"
-        value="0"
-        style="width:100%; height:18px; margin-top:6px;"
-    ></meter>
-
-
-    <div id="strengthLabel" style="margin-top:6px;font-size:14px;color:#555"></div>
+{{-- style="width:100%; height:18px; margin-top:6px;" --}}

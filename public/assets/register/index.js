@@ -1,14 +1,12 @@
-
-
 document.addEventListener("DOMContentLoaded", () => {
-    const input  = document.querySelector('#password');
-    const meter  = document.querySelector('#strengthMeter');
-    const label  = document.querySelector('#strengthLabel');
+    const input = document.querySelector("#password");
+    const meter = document.querySelector("#strengthMeter");
+    const label = document.querySelector("#strengthLabel");
 
-    const labels = ['Very Weak', 'Weak', 'Enough', 'Strong', 'Very Strong'];
+    const labels = ["Very Weak", "Weak", "Enough", "Strong", "Very Strong"];
 
     if (input && meter && label) {
-        input.addEventListener('input', () => {
+        input.addEventListener("input", () => {
             const val = input.value;
 
             if (/\s/.test(val)) {
@@ -22,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!val) {
                 meter.value = 0;
-                label.textContent = 'There is no password yet';
+                label.textContent = "There is no password yet";
                 return;
             }
 
@@ -34,7 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 label.textContent += ` — ${result.feedback.warning}`;
             }
             if (result.feedback.suggestions.length > 0) {
-                label.textContent += ` (${result.feedback.suggestions.join(', ')})`;
+                label.textContent += ` (${result.feedback.suggestions.join(
+                    ", "
+                )})`;
             }
         });
     }

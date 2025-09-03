@@ -32,8 +32,10 @@
     <!-- Meta SEO -->
     @include('layouts.meta-seo')
 
-    <!-- Scripts -->
+    <!-- Scripts CSS :begin -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
+    <!-- Scripts CSS :end -->
 </head>
 
 <body class="font-sans antialiased">
@@ -55,8 +57,11 @@
         </footer>
     </div>
 
+    <!-- Scripts JS :begin -->
     <script src="{{ asset('vendors/jquery/jquery-3.7.1.min.js') }}"></script>
-    {{ $scripts ?? '' }}
+    <script src="{{ asset('vendors/dayjs/dayjs.min.js') }}"></script>
+    @stack('scripts')
+    <!-- Scripts JS :end -->
 </body>
 
 </html>
