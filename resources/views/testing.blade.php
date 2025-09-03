@@ -48,7 +48,8 @@
         </div>
     </div>
 
-    <x-slot name="scripts">
+    {{-- <x-slot name="scripts"> --}}
+    @push('scripts')
         <script src="{{ asset('assets/js/camera.js') }}"></script>
         <script>
             const video = document.getElementById('cameraVideo');
@@ -63,5 +64,5 @@
                 }
             });
         </script>
-    </x-slot>
+    @endpush
 </x-app-layout>
