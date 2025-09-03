@@ -16,7 +16,7 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         $role = Role::firstOrCreate(
-            ['name' => 'super admin', 'guard_name' => 'web']
+            ['name' => 'superadmin', 'guard_name' => 'web']
         );
 
         $user = User::firstOrCreate(
@@ -38,7 +38,7 @@ class SuperAdminSeeder extends Seeder
     {
         $user = User::where('email', 'superadmin@reca.play.com')->first();
         if ($user) {
-            $user->removeRole('super admin');
+            $user->removeRole('superadmin');
             $user->delete();
         }
     }

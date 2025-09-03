@@ -9,7 +9,7 @@ Props for parsing value from page blade
 'tableClass' => '',
 ])
 
-<div class="bg-white py-4 mx-auto rounded-xl shadow-sm" id="datatable-custom-wrapper">
+<div class="bg-white py-4 rounded-xl shadow-sm w-full" id="datatable-custom-wrapper">
     <!-- Toolbar first wrapper -->
     <div class="w-full flex justify-between px-4 mb-8" id="toolbar-first-wrapper">
         <!-- Search box -->

@@ -59,6 +59,7 @@
 
     <!-- Scripts JS :begin -->
     <script src="{{ asset('vendors/jquery/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ asset('vendors/dayjs/dayjs.min.js') }}"></script>
     @stack('scripts')
     <!-- Scripts JS :end -->
 </body>

@@ -1,9 +1,9 @@
-let userTable;
+let fieldTable;
 
-userTable = () => {
+fieldTable = () => {
     initCustomDatatable({
-        tableId: "users-table",
-        tableDataUrl: "/user-management/users-data",
+        tableId: "fields-table",
+        tableDataUrl: "/master/field/data",
         tableColumns: [
             { data: "DT_RowIndex", name: "DT_RowIndex" },
             { data: "name", name: "name" },
@@ -19,5 +19,5 @@ userTable = () => {
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-    userTable();
+    fieldTable();
 });

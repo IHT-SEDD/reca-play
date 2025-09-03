@@ -2,21 +2,21 @@
  <div class="py-8">
   <div class="w-full mx-auto md:px-8 px-5">
    <!-- Header -->
-   <div class="mb-6 w-full flex justify-between items-center">
+   <div class="mb-6 w-full flex flex-col md:flex-row justify-between items-center">
     <!-- Title -->
-    <h1 class=" md:text-4xl text-2xl font-bold text-after-midnight">
+    <h1 class=" md:text-4xl text-2xl md:mb-0 mb-4 font-bold text-after-midnight">
      MY RECORDINGS
     </h1>
     <!-- Search Bar -->
     <div class="w-full max-w-xs">
-     <x-text-input id="search" class="block mt-2 w-full" type="text" autofocus placeholder="search recordings..." />
+     <x-text-input id="search" class="block w-full" type="text" autofocus placeholder="search recordings..." />
     </div>
    </div>
 
    <!-- Toolbar -->
-   <div class="mb-8 w-full flex justify-between items-center">
+   <div class="mb-8 w-full flex flex-col md:flex-row justify-between items-center">
     <!-- Showing Data -->
-    <h1 class=" md:text-lg text-sm font-medium text-after-midnight">
+    <h1 class=" md:text-lg text-sm md:mb-0 mb-4 font-medium text-after-midnight">
      Showing 10 to 10 of 10 videos
     </h1>
     <!-- Pagination -->
