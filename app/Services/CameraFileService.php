@@ -15,10 +15,10 @@ class CameraFileService
 
   public function __construct()
   {
-    $this->host = rtrim("https://192.168.1.6:443", '/');
+    $this->host = rtrim("https://192.168.1.5:443", '/');
     $this->user = "admin";
     $this->pass = "IsolaNo1";
-    $this->searchTrack = 101;
+    $this->searchTrack = 301;
 
     if (empty($this->host)) {
       throw new \RuntimeException('HIKVISION_HOST not configured');
