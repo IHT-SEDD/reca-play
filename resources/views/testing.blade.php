@@ -48,10 +48,11 @@
         </div>
     </div>
 
+    {{-- <x-slot name="scripts"> --}}
     @push('scripts')
-    <script src="{{ asset('assets/js/camera.js') }}"></script>
-    <script>
-        const video = document.getElementById('cameraVideo');
+        <script src="{{ asset('assets/js/camera.js') }}"></script>
+        <script>
+            const video = document.getElementById('cameraVideo');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             fullscreenBtn.addEventListener('click', () => {
                 if (video.requestFullscreen) {
@@ -62,6 +63,6 @@
                     video.msRequestFullscreen();
                 }
             });
-    </script>
+        </script>
     @endpush
 </x-app-layout>

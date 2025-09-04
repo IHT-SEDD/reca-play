@@ -35,17 +35,29 @@ class TestingController extends Controller
 
     public function start(CameraControlService $control): JsonResponse
     {
-        if ($control->startRecording()) {
-            // Simpan waktu mulai di session
-            session(['camera_start_time' => now()]);
+        try {
+            if ($control->startRecording()) {
+                // Simpan waktu mulai di session
+                session(['camera_start_time' => now()]);
 
+                return response()->json([
+                    'status' => 'success',
+                    'start_time' => now()->toDateTimeString()
+                ]);
+            }
+            Log::error("Failed to start recording: CameraControlService returned false.");
             return response()->json([
-                'status' => 'success',
-                'start_time' => now()->toDateTimeString()
-            ]);
+                'status' => 'error',
+                'message' => 'Failed to start recording: CameraControlService returned false.'
+            ], 400);
+        } catch (\Throwable $e) {
+            Log::error("Exception when trying to start recording: " . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to start recording due to an exception.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        return response()->json(['status' => 'error']);
     }
 
     public function stop(
@@ -62,6 +74,7 @@ class TestingController extends Controller
 
         // Ambil playbackURI rekaman terbaru
         $playbackUri = $files->getLatestPlaybackUri();
+        // dd($playbackUri);
         if (!$playbackUri) {
             Log::warning("No recording found after stopping camera.");
             return response()->json([
@@ -73,6 +86,7 @@ class TestingController extends Controller
 
         // Download file menggunakan ISAPI download
         $relativePath = $files->downloadByPlaybackUri($playbackUri);
+        // dd($relativePath);
         if (!$relativePath) {
             Log::error("Failed to download recording from playback URI.");
             return response()->json([

@@ -26,12 +26,23 @@ class CameraControlService
     public function startRecording(): bool
     {
         $url = "{$this->host}/ISAPI/ContentMgmt/record/control/manual/start/tracks/{$this->manualChannel}";
+        
+        // For debugging: uncomment the following line to see the URL being hit
         // dd($url);
-        $res = Http::withDigestAuth($this->user, $this->pass)
-            ->withoutVerifying()
-            ->put($url);
 
-        return $res->successful();
+        try {
+            $res = Http::withDigestAuth($this->user, $this->pass)
+                ->withoutVerifying()
+                ->put($url);
+            
+            // For debugging: uncomment the following line to see the full response from the camera
+            // dd($res);
+
+            return $res->successful();
+        } catch (\Throwable $e) {
+            Log::error("Failed to start recording: " . $e->getMessage(), ['exception' => $e]);
+            return false;
+        }
     }
 
     public function stopRecording(): bool
