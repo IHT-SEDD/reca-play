@@ -4,14 +4,18 @@ namespace App\Services\Master;
 
 class MasterDatatableService
 {
- // Available master data is accessible
+ /**
+  * Mapping type to model class
+  */
  protected array $availableData = [
   'field' => 'App\Models\Master\Field',
   'role' => 'Spatie\Permission\Models\Role',
   'category' => 'App\Models\Master\Category',
  ];
 
- // Get data based on $type
+ /**
+  * Get model class by type
+  */
  public function getData(string $type): ?string
  {
   return $this->availableData[$type] ?? null;

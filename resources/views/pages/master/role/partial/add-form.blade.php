@@ -5,14 +5,15 @@
 @endsection
 
 @section('content')
-<form method="POST" action="{{ url('/master/role/add-data') }}">
+<form method="POST" action="{{ url('/master/role/add-data') }}" class="ajax-form" data-datatable="#role-table"
+ novalidate>
  @csrf
  <!-- Name -->
  <div>
   <x-input-label for="name" :value="__('Name')" />
-  <x-text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required autofocus
-   placeholder="New role name" />
-  <x-input-error :messages="$errors->get('name')" class="mt-2" />
+  <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
+   placeholder="New role name" autocomplete="off" />
+  <x-input-error id="input-name-error"></x-input-error>
  </div>
 
  <!-- Submit btn -->

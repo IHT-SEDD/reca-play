@@ -19,7 +19,7 @@
    <!-- Search bar -->
    <div class="mb-6 w-full flex justify-end items-center">
     <div class="w-full max-w-xs">
-     <x-text-input id="search" class="block mt-2 w-full" type="text" autofocus placeholder="search events..." />
+     <x-inputs.text-input id="search" class="block mt-2 w-full" type="text" autofocus placeholder="search events..." />
     </div>
    </div>
 

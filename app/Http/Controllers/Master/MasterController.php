@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Services\CustomDatatable\CustomDatatableService;
 use App\Services\Master\MasterDatatableService;
+use App\Services\Master\MasterFormRequestService;
 use App\Services\Master\MasterViewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,13 +14,16 @@ class MasterController extends Controller
 {
     protected MasterViewService $masterViewService;
     protected MasterDatatableService $masterDatatableService;
+    protected MasterFormRequestService $masterFormRequestService;
 
     public function __construct(
         MasterViewService $masterViewService,
-        MasterDatatableService $masterDatatableService
+        MasterDatatableService $masterDatatableService,
+        MasterFormRequestService $masterFormRequestService
     ) {
         $this->masterViewService = $masterViewService;
         $this->masterDatatableService = $masterDatatableService;
+        $this->masterFormRequestService = $masterFormRequestService;
     }
 
     // View of master
@@ -73,20 +77,22 @@ class MasterController extends Controller
     // Insert new data to database
     public function newData(Request $request, $type)
     {
+        $validated = $this->masterFormRequestService->getValidatedData($type, $request);
+
         try {
             DB::beginTransaction();
 
             $modelClass = $this->masterDatatableService->getData($type);
             if (!$modelClass || !class_exists($modelClass)) {
-                throw new \Exception("Model untuk type {$type} tidak ditemukan");
+                throw new \Exception("Model for {$type} not found");
             }
 
-            $modelClass::create($request);
+            $modelClass::create($validated);
 
             DB::commit();
             return response()->json([
                 'status'  => 'success',
-                'message' => "Data {$type} berhasil disimpan"
+                'message' => "Data {$type} saved successfully"
             ]);
         } catch (\Exception $e) {
             DB::rollback();

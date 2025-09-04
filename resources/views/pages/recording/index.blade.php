@@ -9,7 +9,7 @@
     </h1>
     <!-- Search Bar -->
     <div class="w-full max-w-xs">
-     <x-text-input id="search" class="block w-full" type="text" autofocus placeholder="search recordings..." />
+     <x-inputs.text-input id="search" class="block w-full" type="text" autofocus placeholder="search recordings..." />
     </div>
    </div>
 

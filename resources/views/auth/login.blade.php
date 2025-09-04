@@ -8,15 +8,15 @@
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-2 w-full" type="email" name="email" :value="old('email')" required
-                autofocus placeholder="your.email@example.com" />
+            <x-inputs.text-input id="email" class="block mt-2 w-full" type="email" name="email" :value="old('email')"
+                required autofocus placeholder="your.email@example.com" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-2 w-full" type="password" name="password" required
+            <x-inputs.text-input id="password" class="block mt-2 w-full" type="password" name="password" required
                 autocomplete="current-password" placeholder="xxxxxxxx" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
@@ -39,7 +39,7 @@
             </x-primary-button>
 
             <!-- Divider -->
-            <p class="md:text-md text-xs font-medium text-center my-2 text-after-midnight">or sign in with</p>
+            <p class="md:text-md text-sm font-medium text-center my-2 text-after-midnight">or sign in with</p>
 
             <!-- Login via google btn -->
             <x-google-button class="w-full">

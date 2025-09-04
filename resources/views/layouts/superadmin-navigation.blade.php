@@ -29,6 +29,9 @@
             <x-dropdown-link :href="url('/master/role')" :active="request()->routeIs('master.role.*')">
               {{ __('Roles') }}
             </x-dropdown-link>
+            <x-dropdown-link :href="url('/master/category')" :active="request()->routeIs('master.category.*')">
+              {{ __('Categories') }}
+            </x-dropdown-link>
           </x-slot>
         </x-dropdown>
         <!-- User Management -->

@@ -69,8 +69,10 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
         $nextBtn.prop("disabled", info.page === info.pages - 1);
 
         // Tambahkan padding hanya sekali
-        $table.find("tbody").addClass("py-6");
-        $table.find("tbody td").addClass("py-6");
+        $table.find("tbody").addClass("py-4");
+        $table.find("tbody td").addClass("py-4");
+
+        window.lucide.createIcons({ icons: window.lucide.icons });
     });
 
     // ==== Custom Search ==== //

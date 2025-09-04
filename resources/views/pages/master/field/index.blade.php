@@ -7,7 +7,10 @@
    </div>
    <!-- Text Header :end -->
 
-   @include('pages.master.field.partial.field-list')
+   <div class="flex justify-between items-start gap-3">
+    @include('pages.master.field.partial.field-list')
+    @include('pages.master.field.partial.add-form')
+   </div>
   </div>
  </div>
 

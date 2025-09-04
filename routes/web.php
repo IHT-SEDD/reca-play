@@ -50,7 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('master')->group(function () {
             Route::get('/{type}', [MasterController::class, 'index'])->name('master.index');
             Route::get('/{type}/data', [MasterController::class, 'datatable'])->name('master.data');
-            Route::get('/{type}/add-data', [MasterController::class, 'newData'])->name('master.add-data');
+            Route::post('/{type}/add-data', [MasterController::class, 'newData'])->name('master.add-data');
         });
 
         #region User Management
