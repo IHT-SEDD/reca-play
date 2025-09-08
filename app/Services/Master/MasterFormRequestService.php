@@ -15,6 +15,8 @@ class MasterFormRequestService
   'category' => \App\Http\Requests\Master\Category\StoreCategoryRequest::class,
   'venue' => \App\Http\Requests\Master\Venue\StoreVenueRequest::class,
   'venue-type' => \App\Http\Requests\Master\Venue\StoreVenueTypeRequest::class,
+  'camera' => \App\Http\Requests\Master\Camera\StoreCameraRequest::class,
+  'nvr' => \App\Http\Requests\Master\NVR\StoreNvrRequest::class,
  ];
 
  /**

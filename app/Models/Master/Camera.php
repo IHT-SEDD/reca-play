@@ -4,7 +4,7 @@ namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class Camera extends Model
 {
     protected $guarded = ['id'];
 
@@ -12,6 +12,13 @@ class Category extends Model
         'is_active' => 'boolean',
     ];
 
-    public const Searchable = ['name', 'is_active'];
+    protected $with = ['field'];
+
+    public const Searchable = ['code', 'brand', 'type', 'name', 'initial', 'ip_address', 'field_id', 'is_active'];
     public const Unsearchable = ['id', 'description', 'created_at', 'updated_at'];
+
+    public function field()
+    {
+        return $this->belongsTo(Field::class);
+    }
 }

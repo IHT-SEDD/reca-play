@@ -13,6 +13,8 @@ class MasterDatatableService
   'category' => 'App\Models\Master\Category',
   'venue' => 'App\Models\Master\Venue',
   'venue-type' => 'App\Models\Master\VenueType',
+  'camera' => 'App\Models\Master\Camera',
+  'nvr' => 'App\Models\Master\Nvr',
  ];
 
  /**

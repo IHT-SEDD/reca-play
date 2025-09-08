@@ -1,7 +1,6 @@
 @props([
 'trigger' => 'Dropdown',
 'iconTrigger' => 'hard-drive',
-'cols' => 2,
 ])
 
 <div x-data="{ open: false }" class="relative inline-block text-left">
@@ -19,10 +18,9 @@
 
     <!-- Dropdown menu -->
     <div id="dropdownDivider" x-show="open" @click.outside="open = false" x-transition
-        class="absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-auto min-w-44 bg-white shadow-sm divide-y divide-black border border-white-edgar">
+        class="absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-full min-w-fit bg-white shadow-sm divide-y divide-black border border-white-edgar">
         <!-- Slot menu -->
-        <ul
-            class="grid gap-3 text-[13px] text-carbon font-medium p-2 [grid-template-columns:repeat({{ $cols }},minmax(150px,1fr))]">
+        <ul class="flex flex-col justify-center items-start text-[13px] text-carbon font-medium p-2">
             {{ $slot }}
         </ul>
     </div>

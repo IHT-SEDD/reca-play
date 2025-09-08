@@ -5,8 +5,8 @@
       <!-- Navigation Links -->
       <div class="hidden space-x-2 sm:-my-px sm:ms-10 sm:flex">
         <!-- Masters -->
-        <x-dropdown.dropdown-flowbite trigger="Masters" :cols="1">
-          <li class="w-full py-2 border-b border-white-edgar">
+        <x-dropdown.dropdown-flowbite trigger="Masters">
+          <li class="w-full">
             <a href="{{ url('master/venue') }}"
               class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
@@ -17,8 +17,6 @@
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Venue Types
             </a>
-          </li>
-          <li class="w-full">
             <a href="{{ url('master/field') }}"
               class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
@@ -33,6 +31,21 @@
               class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Categories
+            </a>
+            <a href="{{ url('master/camera') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              Camera
+            </a>
+            <a href="{{ url('master/nvr') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              NVR
+            </a>
+            <a href="{{ url('master/barcode') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              Barcode
             </a>
           </li>
         </x-dropdown.dropdown-flowbite>
