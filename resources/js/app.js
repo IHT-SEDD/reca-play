@@ -3,6 +3,7 @@ import Alpine from "alpinejs";
 import { createIcons, icons } from "lucide";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
+import "flowbite";
 
 window.Alpine = Alpine;
 Alpine.start();

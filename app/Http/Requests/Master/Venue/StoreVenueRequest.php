@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Master\Field;
+namespace App\Http\Requests\Master\Venue;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 
-class StoreFieldRequest extends FormRequest
+class StoreVenueRequest extends FormRequest
 {
     protected function prepareForValidation()
     {
@@ -14,20 +14,20 @@ class StoreFieldRequest extends FormRequest
             $year = $today->year;
 
             DB::transaction(function () use ($today, &$code) {
-                $lastField = \App\Models\Master\Field::whereYear('created_at', $today->year)
+                $lastVenue = \App\Models\Master\Venue::whereYear('created_at', $today->year)
                     ->lockForUpdate()
                     ->latest('id')
                     ->first();
 
                 $lastNumber = 0;
-                if ($lastField && preg_match('/FIELD(\d+)-\d{6}/', $lastField->code, $matches)) {
+                if ($lastVenue && preg_match('/VENUE(\d+)-\d{6}/', $lastVenue->code, $matches)) {
                     $lastNumber = (int) $matches[1];
                 }
 
                 $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
 
                 $this->merge([
-                    'code' => 'FIELD' . $newNumber . '-' . $today->format('dmy')
+                    'code' => 'VENUE' . $newNumber . '-' . $today->format('dmy')
                 ]);
             });
         }
@@ -49,12 +49,11 @@ class StoreFieldRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['nullable', 'string', 'unique:fields,code', 'min:2'],
-            'name' => ['required', 'string', 'max:255'],
-            'initial' => ['nullable', 'string', 'max:255'],
+            'code' => ['nullable', 'string', 'unique:venues,code', 'min:2'],
+            'name' => ['required', 'string', 'max:255', 'min:3'],
             'description' => ['nullable', 'string'],
-            'category_id' => ['required', 'string'],
-            'venue_id' => ['required', 'string'],
+            'address' => ['required', 'string'],
+            'venue_type_id' => ['required', 'string'],
         ];
     }
 
@@ -68,8 +67,9 @@ class StoreFieldRequest extends FormRequest
             'name.max' => 'Name maximum is 255 characters.',
             'name.min' => 'Name minimum is 3 characters.',
 
-            'category_id.required' => 'Category cannot be empty.',
-            'venue_id.required' => 'Venue cannot be empty.',
+            'address.required' => 'Address cannot be empty.',
+
+            'venue_type_id.required' => 'Venue Type cannot be empty.',
         ];
     }
 }

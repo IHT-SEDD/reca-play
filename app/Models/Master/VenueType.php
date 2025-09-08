@@ -4,7 +4,7 @@ namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class VenueType extends Model
 {
     protected $guarded = ['id'];
 

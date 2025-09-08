@@ -3,37 +3,40 @@
   <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-end h-fit items-center">
       <!-- Navigation Links -->
-      <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+      <div class="hidden space-x-2 sm:-my-px sm:ms-10 sm:flex">
         <!-- Masters -->
-        <x-dropdown align="right" width="48">
-          <!-- Button trigger -->
-          <x-slot name="trigger">
-            <button
-              class="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md text-after-midnight hover:text-hot-shot transition ease-in-out duration-150">
-              <div class="inline-flex items-center">
-                <i data-lucide="hard-drive" class="w-4 h-4 me-2"></i>
-                Masters
-              </div>
+        <x-dropdown.dropdown-flowbite trigger="Masters" :cols="1">
+          <li class="w-full py-2 border-b border-white-edgar">
+            <a href="{{ url('master/venue') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              Venues
+            </a>
+            <a href="{{ url('master/venue-type') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              Venue Types
+            </a>
+          </li>
+          <li class="w-full">
+            <a href="{{ url('master/field') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              Fields
+            </a>
+            <a href="{{ url('master/role') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              Roles
+            </a>
+            <a href="{{ url('master/category') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              Categories
+            </a>
+          </li>
+        </x-dropdown.dropdown-flowbite>
 
-              <div class="ms-1">
-                <i data-lucide="chevron-down" :class="{ 'rotate-180': open }"
-                  class="w-[15px] h-[15px] transition-transform duration-300"></i>
-              </div>
-            </button>
-          </x-slot>
-
-          <x-slot name="content">
-            <x-dropdown-link :href="url('/master/field')" :active="request()->routeIs('master.field.*')">
-              {{ __('Fields') }}
-            </x-dropdown-link>
-            <x-dropdown-link :href="url('/master/role')" :active="request()->routeIs('master.role.*')">
-              {{ __('Roles') }}
-            </x-dropdown-link>
-            <x-dropdown-link :href="url('/master/category')" :active="request()->routeIs('master.category.*')">
-              {{ __('Categories') }}
-            </x-dropdown-link>
-          </x-slot>
-        </x-dropdown>
         <!-- User Management -->
         <x-nav-link class="text-sm" :href="url('/user-management')" :active="request()->routeIs('user-management.*')">
           {{ __('User Management') }}

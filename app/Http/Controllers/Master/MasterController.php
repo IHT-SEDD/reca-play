@@ -52,22 +52,14 @@ class MasterController extends Controller
 
         $query = $modelClass::query();
 
-        $searchable = match ($type) {
-            'field' => ['name', 'description'],
-            'role' => ['name', 'guard_name'],
-            'category' => ['name'],
-            default => ['id'],
-        };
-
         return CustomDatatableService::make(
             $query,
             $request,
-            $searchable,
+            null,
             function ($datatable) use ($type) {
                 return match ($type) {
                     'field' => $datatable->editColumn('status', fn($item) => $item->status ? 'Active' : 'Inactive'),
                     'role' => $datatable->addColumn('permissions', fn($role) => $role->permissions->pluck('name')->join(', ')),
-                    'category' => $datatable->editColumn('created_at', fn($item) => $item->created_at->format('Y-m-d')),
                     default => $datatable,
                 };
             }
@@ -77,6 +69,7 @@ class MasterController extends Controller
     // Insert new data to database
     public function newData(Request $request, $type)
     {
+        // dd($request->all());
         $validated = $this->masterFormRequestService->getValidatedData($type, $request);
 
         try {

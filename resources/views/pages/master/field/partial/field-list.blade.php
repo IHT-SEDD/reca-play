@@ -1,11 +1,11 @@
-<x-datatable-layout idTable="fields-table" placeholderSearch="Search user...">
+<x-datatable-layout idTable="field-table" placeholderSearch="Search field...">
  <th>No</th>
+ <th>Code</th>
  <th>Name</th>
- <th>Username</th>
- <th>Email</th>
- <th>Google Account</th>
- <th>Password</th>
- <th>Status</th>
+ <th>Initial</th>
+ <th>Category</th>
+ <th>Venue</th>
+ <th>Description</th>
  <th>Created At</th>
  <th>Updated At</th>
 </x-datatable-layout>

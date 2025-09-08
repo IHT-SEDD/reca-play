@@ -1,6 +1,7 @@
 import defaultTheme from "tailwindcss/defaultTheme";
 import forms from "@tailwindcss/forms";
 import daisyui from "daisyui";
+import flowbiteplugin from "flowbite/plugin";
 
 // ========== IMPORT FILES FROM TAILWIND FOLDER ==========
 import safelist from "./tailwind/safelist.js";
@@ -14,6 +15,7 @@ export default {
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./storage/framework/views/*.php",
         "./resources/views/**/*.blade.php",
+        "./node_modules/flowbite/**/*.js",
     ],
 
     theme: {
@@ -28,7 +30,7 @@ export default {
             maxWidth: customSizes,
         },
     },
-    plugins: [forms, daisyui],
+    plugins: [forms, daisyui, flowbiteplugin],
     // ========== DAISY UI CONFIG ==========
     daisyui: daisyuiConfig,
     // ========== SAFELIST FOR CLASSES ==========

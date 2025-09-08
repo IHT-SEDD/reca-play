@@ -11,6 +11,8 @@ class MasterDatatableService
   'field' => 'App\Models\Master\Field',
   'role' => 'Spatie\Permission\Models\Role',
   'category' => 'App\Models\Master\Category',
+  'venue' => 'App\Models\Master\Venue',
+  'venue-type' => 'App\Models\Master\VenueType',
  ];
 
  /**

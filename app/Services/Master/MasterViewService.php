@@ -9,6 +9,8 @@ class MasterViewService
   'field' => 'pages.master.field.index',
   'role' => 'pages.master.role.index',
   'category' => 'pages.master.category.index',
+  'venue' => 'pages.master.venue.index',
+  'venue-type' => 'pages.master.venue-type.index',
  ];
 
  // Get view based on $type

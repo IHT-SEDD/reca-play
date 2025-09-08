@@ -1,19 +1,23 @@
-let fieldTable, selectVenue, selectCategory;
+let venueTable, selectVenueType;
 
-fieldTable = () => {
+venueTable = () => {
     initCustomDatatable({
-        tableId: "field-table",
-        tableDataUrl: "/master/field/data",
+        tableId: "venue-table",
+        tableDataUrl: "/master/venue/data",
         tableColumns: [
             { data: "DT_RowIndex", name: "DT_RowIndex" },
             { data: "code", name: "code", orderable: false },
+            { data: "venue_type.name", name: "venue_type.name", orderable: false },
             { data: "name", name: "name", orderable: false },
-            { data: "initial", name: "initial", orderable: false },
-            { data: "category.name", name: "category.name", orderable: false },
-            { data: "venue.name", name: "venue.name", orderable: false },
             {
                 data: "description",
                 name: "description",
+                searchable: false,
+                orderable: false,
+            },
+            {
+                data: "address",
+                name: "address",
                 searchable: false,
                 orderable: false,
             },
@@ -39,8 +43,8 @@ fieldTable = () => {
     });
 };
 
-selectCategory = () => {
-    new TomSelect("#select-category", {
+selectVenueType = () => {
+    new TomSelect("#select-venue-type", {
         valueField: "id",
         labelField: "text",
         searchField: "text",
@@ -52,34 +56,7 @@ selectCategory = () => {
         },
         load: function (query, callback) {
             $.ajax({
-                url: "/select/category",
-                data: { q: query },
-                dataType: "json",
-                success: function (res) {
-                    callback(res);
-                },
-                error: function () {
-                    callback();
-                },
-            });
-        },
-    });
-};
-
-selectVenue = () => {
-    new TomSelect("#select-venue", {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        create: false,
-        sortField: {
-            field: "text",
-            direction: "asc",
-        },
-        load: function (query, callback) {
-            $.ajax({
-                url: "/select/venue",
+                url: "/select/venue-type",
                 data: { q: query },
                 dataType: "json",
                 success: function (res) {
@@ -94,7 +71,6 @@ selectVenue = () => {
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-    fieldTable();
-    selectCategory();
-    selectVenue();
+    venueTable();
+    selectVenueType();
 });

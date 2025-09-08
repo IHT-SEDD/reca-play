@@ -7,6 +7,9 @@ export default {
     magnesium: "#C2C2C2",
 
     // Shades of black
+    "adhesion": "#9e9ea9",
+    "evening-inparis": "#93939f",
+    "carbon": "#7d7d8c",
     "after-midnight": "#38383F",
     "eerie-black": "#1C1C1C",
     "chaos-black": "#0F0F0F",

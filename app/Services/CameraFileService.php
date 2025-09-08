@@ -49,13 +49,13 @@ class CameraFileService
   {
     $startSession = session('camera_start_time');
     $start        = $startSession
-      ? gmdate('Y-m-d\TH:i:s\Z', strtotime($startSession.' -1 minute +7 hours'))
+      ? gmdate('Y-m-d\TH:i:s\Z', strtotime($startSession . ' -1 minute +7 hours'))
       : gmdate('Y-m-d\T00:00:00\Z', strtotime('now +7 hours'));
     $end          = gmdate('Y-m-d\TH:i:s\Z', strtotime('now +7 hours'));
 
     $searchUrl = "{$this->host}/ISAPI/ContentMgmt/search";
-    Log::info("Hikvision start time: ".$start);
-    Log::info("Hikvision end time: ".$end);
+    Log::info("Hikvision start time: " . $start);
+    Log::info("Hikvision end time: " . $end);
     $xmlBody = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <CMSearchDescription>
@@ -77,8 +77,8 @@ class CameraFileService
 </CMSearchDescription>
 XML;
 
-    Log::info("Hikvision search URL: ".$searchUrl);
-    Log::info("Hikvision search request XML: ".$xmlBody);
+    Log::info("Hikvision search URL: " . $searchUrl);
+    Log::info("Hikvision search request XML: " . $xmlBody);
 
     $response = Http::withOptions([
       'verify' => false, // bypass self-signed SSL
@@ -90,8 +90,8 @@ XML;
       ])
       ->post($searchUrl, $xmlBody);
 
-    Log::info("Hikvision search response status: ".$response->status());
-    Log::info("Hikvision search response body: ".$response->body());
+    Log::info("Hikvision search response status: " . $response->status());
+    Log::info("Hikvision search response body: " . $response->body());
 
     if ($response->failed()) {
       Log::error("Hikvision search failed", ['status' => $response->status(), 'response' => $response->body()]);
@@ -107,13 +107,13 @@ XML;
     $xml->registerXPathNamespace('ns', 'http://www.hikvision.com/ver20/XMLSchema');
 
     $numMatches = (int) ($xml->xpath('//ns:numOfMatches')[0] ?? 0);
-    Log::info("Hikvision search numMatches: ".$numMatches);
+    Log::info("Hikvision search numMatches: " . $numMatches);
 
     if ($numMatches < 1)
       return null;
 
     $playbackUri = $xml->xpath('//ns:playbackURI')[0] ?? null;
-    Log::info("Hikvision search playbackUri: ".($playbackUri ? html_entity_decode((string) $playbackUri) : 'null'));
+    Log::info("Hikvision search playbackUri: " . ($playbackUri ? html_entity_decode((string) $playbackUri) : 'null'));
 
     return $playbackUri ? html_entity_decode((string) $playbackUri) : null;
   }
@@ -122,13 +122,13 @@ XML;
   {
     $startSession = session('camera_start_time');
     $start        = $startSession
-      ? gmdate('Y-m-d\TH:i:s\Z', strtotime($startSession.' -1 minute +7 hours'))
+      ? gmdate('Y-m-d\TH:i:s\Z', strtotime($startSession . ' -1 minute +7 hours'))
       : gmdate('Y-m-d\T00:00:00\Z', strtotime('now +7 hours'));
     $end          = gmdate('Y-m-d\TH:i:s\Z', strtotime('now +7 hours'));
 
     $searchUrl = "{$this->host}/ISAPI/ContentMgmt/search";
-    Log::info("Hikvision start time: ".$start);
-    Log::info("Hikvision end time: ".$end);
+    Log::info("Hikvision start time: " . $start);
+    Log::info("Hikvision end time: " . $end);
     $xmlPayload = '<?xml version="1.0" encoding="utf-8"?>
 <CMSearchDescription>
     <searchID>12345678-ABCD-1234-ABCD-1234567890AB</searchID>
@@ -137,8 +137,8 @@ XML;
     </trackIDList>
     <timeSpanList>
         <timeSpan>
-            <startTime>'.$start.'</startTime>
-            <endTime>'.$end.'</endTime>
+            <startTime>' . $start . '</startTime>
+            <endTime>' . $end . '</endTime>
         </timeSpan>
     </timeSpanList>
     <maxResults>40</maxResults>
@@ -169,7 +169,7 @@ XML;
           })
           ->first();
         // dd($playbackUris[0]);
-        Log::info("PLAYBACK".$playbackUri);
+        Log::info("PLAYBACK" . $playbackUri);
         // dd($xml->xpath('//ns:playbackURI')[0]);
         // $playbackUri = $xml->xpath('//ns:playbackURI')[0] ?? null;
         // $playbackUri = $playbackUris;
@@ -209,7 +209,7 @@ XML;
 
     $xmlBody = '<?xml version="1.0" encoding="utf-8"?>
     <downloadRequest version="1.0" xmlns="http://www.isapi.org/ver20/XMLSchema">
-          <playbackURI>'.$playbackUri.'</playbackURI>
+          <playbackURI>' . $playbackUri . '</playbackURI>
       </downloadRequest>';
 
     for ($attempt = 1; $attempt <= 3; $attempt++) {
@@ -217,17 +217,17 @@ XML;
         'Content-Type' => 'application/xml',
         'Accept' => '*/*'
       ])->withOptions([
-            'verify' => false, // Only if using self-signed certificates
-            'timeout' => 30,
-            'auth' => ['admin', 'IsolaNo1', 'digest']
-          ])
+        'verify' => false, // Only if using self-signed certificates
+        'timeout' => 30,
+        'auth' => ['admin', 'IsolaNo1', 'digest']
+      ])
         ->withBody($xmlBody, 'application/xml')
         ->post($downloadUrl);
 
       if (! $response->failed() && $response->body()) {
-        $filename = 'recording_'.now()->format('Ymd_His').'.mp4';
-        Storage::disk('public')->put('recordings/'.$filename, $response->body());
-        return 'recordings/'.$filename;
+        $filename = 'recording_' . now()->format('Ymd_His') . '.mp4';
+        Storage::disk('public')->put('recordings/' . $filename, $response->body());
+        return 'recordings/' . $filename;
       }
 
       Log::warning("Download attempt #$attempt failed, retrying...");
@@ -243,8 +243,8 @@ XML;
    */
   public function downloadByRtsp(string $rtspUrl): ?string
   {
-    $filename   = 'recording_'.now()->format('Ymd_His').'.mp4';
-    $outputPath = storage_path('app/public/recordings/'.$filename);
+    $filename   = 'recording_' . now()->format('Ymd_His') . '.mp4';
+    $outputPath = storage_path('app/public/recordings/' . $filename);
 
     $cmd = sprintf(
       'ffmpeg -i "%s" -c copy "%s" -y',
@@ -254,6 +254,6 @@ XML;
 
     exec($cmd, $output, $returnVar);
 
-    return $returnVar === 0 ? 'recordings/'.$filename : null;
+    return $returnVar === 0 ? 'recordings/' . $filename : null;
   }
 }

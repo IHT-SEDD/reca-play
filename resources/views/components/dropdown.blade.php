@@ -1,4 +1,4 @@
-@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-white flex flex-col gap-1'])
+@props(['align' => 'right', 'columns' => 1])
 
 @php
 $alignmentClasses = match ($align) {
@@ -6,12 +6,15 @@ $alignmentClasses = match ($align) {
 'top' => 'origin-top',
 default => 'ltr:origin-top-right rtl:origin-top-left end-0',
 };
+@endphp
 
-$width = match ($width) {
-'48' => 'w-48',
-'fit' => 'w-fit',
-'auto' => 'w-auto',
-default => $width,
+@php
+$columnsClass = match ($columns) {
+1 => 'grid-cols-1',
+2 => 'grid-cols-2',
+3 => 'grid-cols-3',
+4 => 'grid-cols-4',
+default => 'grid-cols-1',
 };
 @endphp
 
@@ -24,10 +27,11 @@ default => $width,
         x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
         x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute z-50 mt-2 {{ $width }} rounded-md shadow-lg {{ $alignmentClasses }}" style="display: none;"
-        @click="open = false">
-        <div class="rounded-md ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
-            {{ $content }}
+        class="absolute z-50 mt-2 w-48 min-w-max rounded-md shadow-lg {{ $alignmentClasses }}" style="display: none;">
+        <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white">
+            <div class="grid {{ $columnsClass }} gap-1 p-1">
+                {{ $content }}
+            </div>
         </div>
     </div>
 </div>

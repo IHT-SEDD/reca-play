@@ -13,6 +13,8 @@ class MasterFormRequestService
   'role' => \App\Http\Requests\Master\Role\StoreRoleRequest::class,
   'field' => \App\Http\Requests\Master\Field\StoreFieldRequest::class,
   'category' => \App\Http\Requests\Master\Category\StoreCategoryRequest::class,
+  'venue' => \App\Http\Requests\Master\Venue\StoreVenueRequest::class,
+  'venue-type' => \App\Http\Requests\Master\Venue\StoreVenueTypeRequest::class,
  ];
 
  /**

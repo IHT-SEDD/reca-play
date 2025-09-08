@@ -68,15 +68,15 @@
                     <x-slot name="content">
                         <!-- Options in auth mode only :begin -->
                         @auth
-                        <x-dropdown-link :href="url('/profile/edit')" :active="request()->routeIs('profile.*')">
+                        <x-dropdown-link :href="url('/profile/edit')" :active="request()->routeIs('profile.*')" class="text-start">
                             {{ __('Profile') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
-                        <form method="POST" action="{{ url('/logout') }}">
+                        <form method="POST" action="{{ url('/logout') }}" class="w-full">
                             @csrf
                             <x-dropdown-link :href="url('/logout')" onclick="event.preventDefault();
-                                                this.closest('form').submit();">
+                                                this.closest('form').submit();" class="text-start">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
                         </form>
@@ -85,10 +85,10 @@
 
                         <!-- Options in guest mode only :begin -->
                         @guest
-                        <x-dropdown-link :href="url('/login')">
+                        <x-dropdown-link :href="url('/login')" class="text-start">
                             {{ __('Login') }}
                         </x-dropdown-link>
-                        <x-dropdown-link :href="url('/register')">
+                        <x-dropdown-link :href="url('/register')" class="text-start">
                             {{ __('Register') }}
                         </x-dropdown-link>
                         @endguest

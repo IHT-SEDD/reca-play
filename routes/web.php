@@ -8,6 +8,7 @@ use App\Http\Controllers\{
     TestingController,
     Event\EventController,
     Field\FieldController,
+    SupportingController,
 };
 use App\Http\Controllers\Master\MasterController;
 use App\Http\Controllers\UserManagement\UserManagementController;
@@ -57,6 +58,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('user-management')->group(function () {
             Route::get('/', [UserManagementController::class, 'index'])->name('user-management.index');
             Route::get('/users-data', [UserManagementController::class, 'usersData'])->name('user-management.data');
+        });
+
+        #region Select Options
+        Route::prefix('select')->group(function () {
+            Route::get('/{option}', [SupportingController::class, 'selectOptions'])->name('select.options');
         });
     });
 
