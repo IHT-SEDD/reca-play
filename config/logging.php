@@ -89,7 +89,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
@@ -127,6 +127,23 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'qr_code_generator' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/qr_code/qr_code_generator.log'),
+            'level' => 'debug',
+        ],
+
+        'qr_code_download' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/qr_code/qr_code_download.log'),
+            'level' => 'debug',
+        ],
+
+        'master_add_data' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/add-data.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

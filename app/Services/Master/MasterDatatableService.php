@@ -15,6 +15,7 @@ class MasterDatatableService
   'venue-type' => 'App\Models\Master\VenueType',
   'camera' => 'App\Models\Master\Camera',
   'nvr' => 'App\Models\Master\Nvr',
+  'qr_code' => 'App\Models\Master\QrCode',
  ];
 
  /**

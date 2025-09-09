@@ -1,6 +1,66 @@
 let formRequestInit;
 
 formRequestInit = () => {
+    // ============================
+    // Reset helpers
+    // ============================
+    function resetStandardInputs($form) {
+        $form[0].reset();
+    }
+
+    function clearFormValidation($form) {
+        $form.find("[id^='input-'][id$='-error']").each(function () {
+            $(this).addClass("hidden");
+            $(this).find("p").text("");
+        });
+    }
+
+    function showValidationErrors($form, errors) {
+        clearFormValidation($form);
+        for (let field in errors) {
+            let $errorContainer = $form.find(`#input-${field}-error`);
+            if ($errorContainer.length) {
+                $errorContainer.removeClass("hidden");
+                $errorContainer.find("p").text(errors[field][0]);
+            }
+        }
+    }
+
+    function resetTomSelect($form) {
+        $form.find("select").each(function () {
+            if (this.tomselect) {
+                this.tomselect.clear();
+            }
+        });
+    }
+
+    function resetCheckboxesAndRadios($form) {
+        $form
+            .find('input[type="checkbox"], input[type="radio"]')
+            .each(function () {
+                const defaultChecked = $(this).prop("defaultChecked");
+                $(this).prop("checked", defaultChecked);
+            });
+    }
+
+    function resetToggles($form) {
+        $form.find(".toggle").each(function () {
+            const defaultChecked = $(this).data("default") || false;
+            $(this).prop("checked", defaultChecked);
+        });
+    }
+
+    function resetForm($form) {
+        resetStandardInputs($form);
+        clearFormValidation($form);
+        resetTomSelect($form);
+        resetCheckboxesAndRadios($form);
+        resetToggles($form);
+    }
+
+    // ============================
+    // Form submit handler
+    // ============================
     function formAdd() {
         $("form.ajax-form").each(function () {
             $(this).on("submit", function (e) {
@@ -25,8 +85,8 @@ formRequestInit = () => {
                     success: function (result) {
                         if (result.status === "success") {
                             notyf.success(result.message);
-                            $form[0].reset();
-                            clearValidationErrors($form);
+
+                            resetForm($form);
 
                             if (
                                 targetTable &&
@@ -58,28 +118,7 @@ formRequestInit = () => {
         });
     }
 
-    function showValidationErrors($form, errors) {
-        clearValidationErrors($form);
-
-        for (let field in errors) {
-            let $errorContainer = $form.find(`#input-${field}-error`);
-            if ($errorContainer.length) {
-                $errorContainer.removeClass("hidden");
-                $errorContainer.find("p").text(errors[field][0]);
-            }
-        }
-    }
-
-    function clearValidationErrors($form) {
-        $form.find("[id^='input-'][id$='-error']").each(function () {
-            $(this).addClass("hidden");
-            $(this).find("p").text("");
-        });
-    }
-
-    return {
-        formAdd,
-    };
+    return { formAdd };
 };
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -8,7 +8,9 @@ use App\Services\Master\MasterDatatableService;
 use App\Services\Master\MasterFormRequestService;
 use App\Services\Master\MasterViewService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MasterController extends Controller
 {
@@ -69,8 +71,8 @@ class MasterController extends Controller
     // Insert new data to database
     public function newData(Request $request, $type)
     {
-        // dd($request->all());
         $validated = $this->masterFormRequestService->getValidatedData($type, $request);
+        $userId = Auth::id();
 
         try {
             DB::beginTransaction();
@@ -83,12 +85,29 @@ class MasterController extends Controller
             $modelClass::create($validated);
 
             DB::commit();
+
+            Log::channel('master_add_data')->info("Data {$type} saved successfully", [
+                'type' => $type,
+                'data' => $validated,
+                'user_id' => $userId,
+                'ip' => $request->ip(),
+            ]);
+
             return response()->json([
                 'status'  => 'success',
                 'message' => "Data {$type} saved successfully"
             ]);
         } catch (\Exception $e) {
             DB::rollback();
+
+            Log::channel('master_add_data')->error("Failed to save data {$type}", [
+                'type' => $type,
+                'data' => $validated,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $userId,
+                'ip' => $request->ip(),
+            ]);
 
             return response()->json([
                 'status'  => 'error',

@@ -1,23 +1,39 @@
 <?php
 
 use App\Http\Controllers\{
-    LiveController,
     ProfileController,
-    Auth\GoogleController,
-    Recording\RecordingController,
     TestingController,
-    Event\EventController,
-    Field\FieldController,
     SupportingController,
 };
-use App\Http\Controllers\Master\MasterController;
-use App\Http\Controllers\UserManagement\UserManagementController;
+use App\Http\Controllers\Auth\{
+    GoogleController,
+};
+use App\Http\Controllers\Recording\{
+    RecordingController,
+};
+use App\Http\Controllers\Event\{
+    EventController,
+};
+use App\Http\Controllers\Field\{
+    FieldController,
+};
+use App\Http\Controllers\Master\{
+    MasterController,
+    QrCode\QrCodeController
+};
+use App\Http\Controllers\UserManagement\{
+    UserManagementController,
+};
 use Illuminate\Support\Facades\Route;
 
 #region Home
 Route::get('/', function () {
     return view('pages.home.index');
 })->name('home.index');
+
+Route::get('/404', function () {
+    return view('errors.404');
+});
 
 #region Guest
 Route::middleware('guest')->group(function () {
@@ -52,6 +68,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{type}', [MasterController::class, 'index'])->name('master.index');
             Route::get('/{type}/data', [MasterController::class, 'datatable'])->name('master.data');
             Route::post('/{type}/add-data', [MasterController::class, 'newData'])->name('master.add-data');
+
+            #region QR Download
+            Route::prefix('qr_code')->group(function () {
+                Route::get('/download/{filename}', [QrCodeController::class, 'download'])->name('qr_code.download');
+            });
         });
 
         #region User Management

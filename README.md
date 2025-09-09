@@ -251,7 +251,7 @@ Project Link: [https://github.com/IHT-SEDD/reca-play](https://github.com/IHT-SED
 [issues-shield]: https://img.shields.io/github/issues/IHT-SEDD/reca-play.svg?style=for-the-badge
 [issues-url]: https://github.com/IHT-SEDD/reca-play/issues
 [license-shield]: https://img.shields.io/github/license/IHT-SEDD/reca-play.svg?style=for-the-badge
-[license-url]: https://github.com/IHT-SEDD/reca-play/blob/master/LICENSE.txt
+[license-url]: https://github.com/IHT-SEDD/reca-play/blob/production/LICENSE.md
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: public/assets/img/others/home.png

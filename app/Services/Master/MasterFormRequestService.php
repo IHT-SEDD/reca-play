@@ -17,6 +17,7 @@ class MasterFormRequestService
   'venue-type' => \App\Http\Requests\Master\Venue\StoreVenueTypeRequest::class,
   'camera' => \App\Http\Requests\Master\Camera\StoreCameraRequest::class,
   'nvr' => \App\Http\Requests\Master\NVR\StoreNvrRequest::class,
+  'qr_code' => \App\Http\Requests\Master\QrCode\StoreQrCodeRequest::class,
  ];
 
  /**

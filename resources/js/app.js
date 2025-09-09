@@ -4,6 +4,7 @@ import { createIcons, icons } from "lucide";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 import "flowbite";
+import '@lottiefiles/dotlottie-wc';
 
 window.Alpine = Alpine;
 Alpine.start();

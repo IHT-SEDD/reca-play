@@ -13,6 +13,7 @@ class MasterViewService
   'venue-type' => 'pages.master.venue-type.index',
   'camera' => 'pages.master.camera.index',
   'nvr' => 'pages.master.nvr.index',
+  'qr_code' => 'pages.master.qr_code.index',
  ];
 
  // Get view based on $type

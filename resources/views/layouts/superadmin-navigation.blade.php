@@ -35,17 +35,17 @@
             <a href="{{ url('master/camera') }}"
               class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
-              Camera
+              Cameras
             </a>
             <a href="{{ url('master/nvr') }}"
               class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
-              NVR
+              NVR's
             </a>
-            <a href="{{ url('master/barcode') }}"
+            <a href="{{ url('master/qr_code') }}"
               class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
-              Barcode
+              QR Codes
             </a>
           </li>
         </x-dropdown.dropdown-flowbite>
