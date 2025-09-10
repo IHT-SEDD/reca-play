@@ -89,7 +89,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
@@ -127,6 +127,41 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'qr_code_generator' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/qr_code/qr_code_generator.log'),
+            'level' => 'debug',
+        ],
+
+        'qr_code_download' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/qr_code/qr_code_download.log'),
+            'level' => 'debug',
+        ],
+
+        'master_add_data' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/add-data.log'),
+            'level' => 'debug',
+        ],
+
+        'creator' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/creator/creator.log'),
+            'level' => 'debug',
+        ],
+
+        'camera-record' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/camera/record.log'),
+            'level' => 'debug',
+        ],
+
+        'camera-control' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/camera/control.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

@@ -5,21 +5,27 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Services\CustomDatatable\CustomDatatableService;
 use App\Services\Master\MasterDatatableService;
+use App\Services\Master\MasterFormRequestService;
 use App\Services\Master\MasterViewService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MasterController extends Controller
 {
     protected MasterViewService $masterViewService;
     protected MasterDatatableService $masterDatatableService;
+    protected MasterFormRequestService $masterFormRequestService;
 
     public function __construct(
         MasterViewService $masterViewService,
-        MasterDatatableService $masterDatatableService
+        MasterDatatableService $masterDatatableService,
+        MasterFormRequestService $masterFormRequestService
     ) {
         $this->masterViewService = $masterViewService;
         $this->masterDatatableService = $masterDatatableService;
+        $this->masterFormRequestService = $masterFormRequestService;
     }
 
     // View of master
@@ -48,22 +54,14 @@ class MasterController extends Controller
 
         $query = $modelClass::query();
 
-        $searchable = match ($type) {
-            'field' => ['name', 'description'],
-            'role' => ['name', 'guard_name'],
-            'category' => ['name'],
-            default => ['id'],
-        };
-
         return CustomDatatableService::make(
             $query,
             $request,
-            $searchable,
+            null,
             function ($datatable) use ($type) {
                 return match ($type) {
                     'field' => $datatable->editColumn('status', fn($item) => $item->status ? 'Active' : 'Inactive'),
                     'role' => $datatable->addColumn('permissions', fn($role) => $role->permissions->pluck('name')->join(', ')),
-                    'category' => $datatable->editColumn('created_at', fn($item) => $item->created_at->format('Y-m-d')),
                     default => $datatable,
                 };
             }
@@ -73,23 +71,43 @@ class MasterController extends Controller
     // Insert new data to database
     public function newData(Request $request, $type)
     {
+        $validated = $this->masterFormRequestService->getValidatedData($type, $request);
+        $userId = Auth::id();
+
         try {
             DB::beginTransaction();
 
             $modelClass = $this->masterDatatableService->getData($type);
             if (!$modelClass || !class_exists($modelClass)) {
-                throw new \Exception("Model untuk type {$type} tidak ditemukan");
+                throw new \Exception("Model for {$type} not found");
             }
 
-            $modelClass::create($request);
+            $modelClass::create($validated);
 
             DB::commit();
+
+            Log::channel('master_add_data')->info("Data {$type} saved successfully", [
+                'type' => $type,
+                'data' => $validated,
+                'user_id' => $userId,
+                'ip' => $request->ip(),
+            ]);
+
             return response()->json([
                 'status'  => 'success',
-                'message' => "Data {$type} berhasil disimpan"
+                'message' => "Data {$type} saved successfully"
             ]);
         } catch (\Exception $e) {
             DB::rollback();
+
+            Log::channel('master_add_data')->error("Failed to save data {$type}", [
+                'type' => $type,
+                'data' => $validated,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $userId,
+                'ip' => $request->ip(),
+            ]);
 
             return response()->json([
                 'status'  => 'error',

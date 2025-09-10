@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tableBody = document.getElementById("recordingsTable");
     let startTime = null;
 
+    console.log(videoEl);
     const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
         .getAttribute("content");

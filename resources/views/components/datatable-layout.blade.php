@@ -13,7 +13,7 @@ Props for parsing value from page blade
     <!-- Toolbar first wrapper -->
     <div class="w-full flex justify-between px-4 mb-8" id="toolbar-first-wrapper">
         <!-- Search box -->
-        <x-text-input id="search-data-{{ $idTable }}" type="text" class="block w-full max-w-xs text-sm"
+        <x-inputs.text-input id="search-data-{{ $idTable }}" type="text" class="block w-full max-w-xs text-sm"
             placeholder="{{ $placeholderSearch }}" />
     </div>
 
