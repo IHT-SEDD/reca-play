@@ -5,8 +5,7 @@
 @endsection
 
 @section('content')
-<form method="POST" action="{{ url('/master/nvr/add-data') }}" class="ajax-form" data-datatable="#nvr-table"
- novalidate>
+<form method="POST" action="{{ url('/master/nvr/add-data') }}" class="ajax-form" data-datatable="#nvr-table" novalidate>
  @csrf
  <div>
   <x-input-label for="name" :value="__('Name')" />
@@ -41,6 +40,26 @@
   <x-inputs.text-input id="ip_address" class="block mt-2 w-full" type="text" name="ip_address"
    :value="old('ip_address')" required placeholder="New nvr ip address" autocomplete="off" />
   <x-input-error id="input-ip_address-error"></x-input-error>
+ </div>
+
+ <div class="mt-2">
+  <x-input-label for="port_id" :value="__('Port')" />
+  <select id="select-port" placeholder="Select port..." autocomplete="off" name="port_id" class="my-2">
+  </select>
+ </div>
+
+ <div class="mt-2">
+  <x-input-label for="username" :value="__('Username')" />
+  <x-inputs.text-input id="username" class="block mt-2 w-full" type="text" name="username" :value="old('username')"
+   required placeholder="New nvr username" autocomplete="off" />
+  <x-input-error id="input-username-error"></x-input-error>
+ </div>
+
+ <div class="mt-2">
+  <x-input-label for="password" :value="__('password')" />
+  <x-inputs.text-input id="password" class="block mt-2 w-full" type="text" name="password" :value="old('password')"
+   required placeholder="New nvr password" autocomplete="off" />
+  <x-input-error id="input-password-error"></x-input-error>
  </div>
 
  <div class="mt-2">

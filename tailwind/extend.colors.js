@@ -15,12 +15,21 @@ export default {
     "chaos-black": "#0F0F0F",
 
     // Shades of red
-    "chandy-heart": "#f5a3a3",
+    "sunday-best": "#f9c8c8",
+    "candy-heart": "#f5a3a3",
     "vivaldi-red": "#EA3A3A",
+
+    // Shades of orange
     "hot-shot": "#EC5228",
     miami: "#f6921e",
+    "kin-gold": "#f59300",
+
+    // Shades of yellow
+    "creamy-korn": "#fff3c2",
 
     // Shades of green
     "lilliputian-lime": "#7ed957",
+    "exit-light": "#5cc62f",
     "toxic-essence": "#ccf0bc",
+    "winter-oasis": "#f2fbee",
 };

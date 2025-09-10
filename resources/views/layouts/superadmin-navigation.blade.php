@@ -47,6 +47,16 @@
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               QR Codes
             </a>
+            <a href="{{ url('master/port') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              Port
+            </a>
+            <a href="{{ url('master/api') }}"
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              <i data-lucide="dot" class="w-4 h-auto me-2"></i>
+              API
+            </a>
           </li>
         </x-dropdown.dropdown-flowbite>
 

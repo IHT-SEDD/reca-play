@@ -5,7 +5,7 @@
             <!-- Logo -->
             <div class="shrink-0 flex items-center">
                 <a href="/">
-                    <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA" class="w-11 h-11">
+                    <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA" class="w-8 h-8 md:w-11 md:h-11">
                 </a>
             </div>
 
@@ -22,7 +22,7 @@
                 </x-nav-link>
                 <!-- Menu in auth mode only :begin -->
                 @auth
-                <x-nav-link :href="url('/recording')" :active="request()->routeIs('recording.*')">
+                <x-nav-link :href="url('/my-recording')" :active="request()->routeIs('recording.*')">
                     {{ __('Recordings') }}
                 </x-nav-link>
                 @endauth
@@ -128,7 +128,7 @@
             </x-responsive-nav-link>
             <!-- Menu in auth mode only :begin -->
             @auth
-            <x-responsive-nav-link :href="url('/recording')" :active="request()->routeIs('recording.*')">
+            <x-responsive-nav-link :href="url('/my-recording')" :active="request()->routeIs('recording.*')">
                 {{ __('Recordings') }}
             </x-responsive-nav-link>
             @endauth

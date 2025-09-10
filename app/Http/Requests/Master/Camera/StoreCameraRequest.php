@@ -56,6 +56,7 @@ class StoreCameraRequest extends FormRequest
             'initial' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
             'ip_address' => ['nullable', 'string', 'min:4'],
+            'channel' => ['nullable', 'integer'],
             'field_id' => ['required', 'string'],
             'is_active' => ['required', 'boolean'],
         ];
@@ -76,6 +77,8 @@ class StoreCameraRequest extends FormRequest
             'name.min' => 'Name minimum is 3 characters.',
 
             'ip_address.min' => 'IP Address minimum is 4 characters.',
+
+            'channel.integer' => 'Channel must be a number',
 
             'field_id.required' => 'Field cannot be empty.',
             'is_active.required' => 'Is Active cannot be empty.',

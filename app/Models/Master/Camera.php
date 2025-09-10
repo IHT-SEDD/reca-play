@@ -15,7 +15,7 @@ class Camera extends Model
     protected $with = ['field'];
 
     public const Searchable = ['code', 'brand', 'type', 'name', 'initial', 'ip_address', 'field_id', 'is_active'];
-    public const Unsearchable = ['id', 'description', 'created_at', 'updated_at'];
+    public const Unsearchable = ['id', 'description', 'channel', 'created_at', 'updated_at'];
 
     public function field()
     {

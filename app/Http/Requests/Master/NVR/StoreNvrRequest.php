@@ -49,6 +49,7 @@ class StoreNvrRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'camera_id' => ['required', 'string', 'exists:cameras,id'],
             'code' => ['nullable', 'string', 'unique:nvrs,code', 'min:2'],
             'brand' => ['nullable', 'string', 'min:5'],
             'type' => ['nullable', 'string', 'min:5'],
@@ -56,7 +57,10 @@ class StoreNvrRequest extends FormRequest
             'initial' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
             'ip_address' => ['nullable', 'string', 'min:4'],
-            'camera_id' => ['required', 'string'],
+            'port_id' => ['nullable', 'integer', 'exists:ports,id'],
+            'auth_type' => ['nullable', 'string'],
+            'username' => ['nullable', 'string'],
+            'password' => ['nullable', 'string'],
             'is_active' => ['required', 'boolean'],
         ];
     }
@@ -64,6 +68,9 @@ class StoreNvrRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'camera_id.required' => 'Camera cannot be empty.',
+            'camera_id.exists' => 'Camera not found.',
+
             'code.min' => 'Code minimum is 2 characters.',
             'code.unique' => 'Code already exists.',
 
@@ -77,7 +84,9 @@ class StoreNvrRequest extends FormRequest
 
             'ip_address.min' => 'IP Address minimum is 4 characters.',
 
-            'camera_id.required' => 'Camera cannot be empty.',
+            'port_id.integer' => 'Port must be a number',
+            'port_id.exists' => 'Port not found.',
+
             'is_active.required' => 'Is Active cannot be empty.',
         ];
     }

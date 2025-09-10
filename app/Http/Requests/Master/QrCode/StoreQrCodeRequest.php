@@ -46,8 +46,8 @@ class StoreQrCodeRequest extends FormRequest
         $this->merge(['qr_token' => $token]);
 
         // Get field and venue info
-        $fieldData = \App\Models\Master\Field::find($this->field_id);
-        $venueData = \App\Models\Master\Venue::find($this->venue_id);
+        // $fieldData = \App\Models\Master\Field::find($this->field_id);
+        // $venueData = \App\Models\Master\Venue::find($this->venue_id);
 
         // Only encode token in the QR (safe for users)
         $qrData = [

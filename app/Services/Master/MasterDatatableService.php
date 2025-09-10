@@ -16,6 +16,8 @@ class MasterDatatableService
   'camera' => 'App\Models\Master\Camera',
   'nvr' => 'App\Models\Master\Nvr',
   'qr_code' => 'App\Models\Master\QrCode',
+  'port' => 'App\Models\Master\Port',
+  'api' => 'App\Models\Master\Api',
  ];
 
  /**

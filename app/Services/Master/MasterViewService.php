@@ -14,6 +14,8 @@ class MasterViewService
   'camera' => 'pages.master.camera.index',
   'nvr' => 'pages.master.nvr.index',
   'qr_code' => 'pages.master.qr_code.index',
+  'port' => 'pages.master.port.index',
+  'api' => 'pages.master.api.index',
  ];
 
  // Get view based on $type

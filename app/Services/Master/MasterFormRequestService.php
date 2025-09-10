@@ -18,6 +18,8 @@ class MasterFormRequestService
   'camera' => \App\Http\Requests\Master\Camera\StoreCameraRequest::class,
   'nvr' => \App\Http\Requests\Master\NVR\StoreNvrRequest::class,
   'qr_code' => \App\Http\Requests\Master\QrCode\StoreQrCodeRequest::class,
+  'port' => \App\Http\Requests\Master\Port\StorePortRequest::class,
+  'api' => \App\Http\Requests\Master\Api\StoreApiRequest::class,
  ];
 
  /**

@@ -1,4 +1,4 @@
-let nvrTable, selectField;
+let nvrTable, selectCamera, selectPort;
 
 nvrTable = () => {
     initCustomDatatable({
@@ -18,6 +18,30 @@ nvrTable = () => {
                 orderable: false,
             },
             { data: "ip_address", name: "ip_address", orderable: false },
+            {
+                data: "port.port_number",
+                name: "port.port_number",
+                searchable: false,
+                orderable: false,
+            },
+            {
+                data: "auth_type",
+                name: "auth_type",
+                searchable: false,
+                orderable: false,
+            },
+            {
+                data: "username",
+                name: "username",
+                searchable: false,
+                orderable: false,
+            },
+            {
+                data: "password",
+                name: "password",
+                searchable: false,
+                orderable: false,
+            },
             { data: "camera.name", name: "camera.name", orderable: false },
             {
                 data: "created_at",
@@ -68,7 +92,35 @@ selectCamera = () => {
     });
 };
 
+selectPort = () => {
+    new TomSelect("#select-port", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc",
+        },
+        load: function (query, callback) {
+            $.ajax({
+                url: "/select/port",
+                data: { q: query },
+                dataType: "json",
+                success: function (res) {
+                    callback(res);
+                },
+                error: function () {
+                    callback();
+                },
+            });
+        },
+    });
+};
+
 document.addEventListener("DOMContentLoaded", function () {
     nvrTable();
     selectCamera();
+    selectPort();
 });

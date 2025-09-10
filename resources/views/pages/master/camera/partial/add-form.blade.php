@@ -44,6 +44,13 @@
  </div>
 
  <div class="mt-2">
+  <x-input-label for="channel" :value="__('Channel')" />
+  <x-inputs.text-input id="channel" class="block mt-2 w-full" type="text" name="channel" :value="old('channel')"
+   required placeholder="New camera channel" autocomplete="off" />
+  <x-input-error id="input-channel-error"></x-input-error>
+ </div>
+
+ <div class="mt-2">
   <x-input-label for="description" :value="__('Description')" />
   <x-inputs.textarea-input id="description" name="description" class="block mt-2 w-full"
    placeholder="New camera description" :value="$camera->description ?? ''">

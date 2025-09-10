@@ -8,9 +8,9 @@ export default [
     "bg-candy-heart",
 
     // ========== Text Colors ==========
-    { pattern: /text-white-(\/[0-9]+)/ },
-    { pattern: /text-lilliputian-lime-(\/[0-9]+)/ },
-    { pattern: /text-vivaldi-red(\/[0-9]+)/ },
+    { pattern: /text-white(\/[0-9]+)?/ },
+    { pattern: /text-lilliputian-lime(\/[0-9]+)?/ },
+    { pattern: /text-vivaldi-red(\/[0-9]+)?/ },
     { pattern: /text-base-(100|200|300)/ },
     { pattern: /text-carbon(\/[0-9]+)?/ },
 
@@ -18,14 +18,14 @@ export default [
     { pattern: /font-(medium|semibold|bold)/ },
 
     // ========== Text Size ==========
-    { pattern: /text-(xs|s|md|lg|xl|2xl|3xl|4xl|5xl)/ },
+    { pattern: /text-(xs|sm|md|lg|xl|2xl|3xl|4xl|5xl)/ },
 
     // ========== Paddings ==========
     { pattern: /px-(2)/ },
     { pattern: /py-(1|2)/ },
 
     // ========== Roundeds ==========
-    { pattern: /rounded-(xs|s|md|lg|xl|2xl|3xl|4xl|5xl)/ },
+    { pattern: /rounded-(sm|md|lg|xl|2xl|3xl|4xl|5xl)/ },
 
     // ========== Flex's ==========
     { pattern: /flex-(col|row)/ },
@@ -34,7 +34,7 @@ export default [
     { pattern: /justify-(center|between)/ },
 
     // ========== Item Placements ==========
-    { pattern: /item-(center)/ },
+    { pattern: /items-(center|start|end)/ },
 
     // ========== Gap's ==========
     { pattern: /gap-(1)/ },

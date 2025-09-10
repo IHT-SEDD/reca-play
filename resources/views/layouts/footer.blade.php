@@ -13,18 +13,18 @@
    <!-- Section 2 :begin -->
    <div class="flex justify-center items-center">
     <!-- Copyright -->
-    <h1 class="text-sm">&copy; 2025 RECA PLAY All rights reserved</h1>
+    <h1 class="text-xs md:text-sm">&copy; 2025 RECA PLAY All rights reserved</h1>
    </div>
    <!-- Section 2 :end -->
 
    <!-- Section 3 :begin -->
    <div class="flex justify-center md:justify-end items-center gap-3">
     <!-- Instagram -->
-    <a href="/" class="flex items-center gap-2 justify-center text-sm hover:text-hot-shot">
+    <a href="/" class="flex items-center gap-2 justify-center text-xs md:text-sm hover:text-hot-shot">
      <i data-lucide="instagram" class="w-4 h-4"></i> @reca.play
     </a>
     <!-- Email -->
-    <a href="/" class="flex items-center gap-2 justify-center text-sm hover:text-hot-shot">
+    <a href="/" class="flex items-center gap-2 justify-center text-xs md:text-sm hover:text-hot-shot">
      <i data-lucide="mail" class="w-4 h-4"></i> reca@gmail.com
     </a>
    </div>

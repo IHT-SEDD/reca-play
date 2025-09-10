@@ -3,10 +3,19 @@
   <div class="w-full mx-auto md:px-8 px-5">
    <!-- Header -->
    <div class="mb-6 w-full flex flex-col md:flex-row justify-between items-center">
-    <!-- Title -->
-    <h1 class=" md:text-4xl text-2xl md:mb-0 mb-4 font-bold text-after-midnight">
-     MY RECORDINGS
-    </h1>
+    <div class="flex justify-between items-center gap-3 md:mb-0 mb-4">
+     <!-- Title -->
+     <h1 class=" md:text-4xl text-2xl font-bold text-after-midnight">
+      MY RECORDINGS
+     </h1>
+
+     <!-- Add new recording -->
+     <a href="{{ url('creator/scan-qr') }}"
+      class="p-2.5 rounded-full bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition flex justify-center items-center gap-1">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      <p class="text-sm font-semibold md:block hidden">Start New Recording</p>
+     </a>
+    </div>
     <!-- Search Bar -->
     <div class="w-full max-w-xs">
      <x-inputs.text-input id="search" class="block w-full" type="text" autofocus placeholder="search recordings..." />

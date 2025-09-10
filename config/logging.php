@@ -144,6 +144,24 @@ return [
             'path' => storage_path('logs/master/add-data.log'),
             'level' => 'debug',
         ],
+
+        'creator' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/creator/creator.log'),
+            'level' => 'debug',
+        ],
+
+        'camera-record' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/camera/record.log'),
+            'level' => 'debug',
+        ],
+
+        'camera-control' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/camera/control.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];
