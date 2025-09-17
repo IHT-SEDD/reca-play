@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class RecordController extends Controller
 {
@@ -116,7 +117,112 @@ class RecordController extends Controller
         }
     }
 
-    // ====== stopRecording function ======
+    // ====== stopRecording function final ======
+    // public function stopRecording(Request $request)
+    // {
+    //     $id = session('record_data_user');
+    //     $scannedQrData = session('scanned_qr');
+    //     $fieldId = $scannedQrData['field_id'] ?? null;
+    //     $userId = Auth::user()->id;
+
+    //     if (!$id) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'No record data found in session'
+    //         ]);
+    //     }
+
+    //     $data = Recording::find($id);
+    //     if (!$data) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Data not found'
+    //         ], 404);
+    //     }
+
+    //     $videoName = strtolower($data->video_name);
+    //     $videoName = str_replace(' ', '_', $videoName);
+    //     $videoName = preg_replace('/[^a-z0-9_\-]/', '', $videoName);
+
+    //     try {
+    //         DB::beginTransaction();
+
+    //         // ========== Stop camera recording ==========
+    //         $cameraService = app(\App\Services\Camera\CameraControlService::class);
+    //         $cameraService->initialize($fieldId);
+    //         $cameraService->stopRecording();
+
+    //         $data->update(['end_time' => now()]);
+
+    //         RecordingLog::where('recording_id', $data->id)
+    //             ->update(['status' => 'stopped', 'updated_at' => now()]);
+
+    //         // ========== Search & Download recorded videos ==========
+    //         $recordedSearch = app(\App\Services\Camera\RecordedSearchService::class);
+    //         $recordedSearch->initialize($fieldId, $data->start_time, $data->end_time);
+
+    //         $playbackUris = $recordedSearch->getAllPlaybackUris();
+    //         $savedFiles = [];
+    //         Log::channel('camera-record')->info('[DEBUG [STOP RECORDING CONTROLLER]] Playback URIs:', $playbackUris);
+
+    //         if (!empty($playbackUris)) {
+    //             $tempFiles = $recordedSearch->downloadByPlaybackUris($playbackUris, $fieldId, $userId, $videoName);
+
+    //             foreach ($tempFiles as $file) {
+    //                 $videoFinalPath = 'recordings/' . $file['filename'];
+    //                 $thumbFinalPath = 'thumbnails/' . $file['thumbnail_filename'];
+
+    //                 // Move data from temp to storage public
+    //                 if (file_exists($file['video'])) {
+    //                     Storage::disk('public')->put($videoFinalPath, file_get_contents($file['video']));
+    //                     @unlink($file['video']);
+    //                 }
+    //                 if (file_exists($file['thumbnail'])) {
+    //                     Storage::disk('public')->put($thumbFinalPath, file_get_contents($file['thumbnail']));
+    //                     @unlink($file['thumbnail']);
+    //                 }
+
+    //                 // Update or insert data to DB
+    //                 RecordedVideo::updateOrInsert(
+    //                     ['recording_id' => $data->id, 'video_filename' => $file['filename']],
+    //                     [
+    //                         'video_path' => $videoFinalPath,
+    //                         'video_size' => $file['size'],
+    //                         'thumbnail_path' => $thumbFinalPath,
+    //                         'thumbnail_filename' => $file['thumbnail_filename'],
+    //                         'created_at' => now(),
+    //                         'updated_at' => now(),
+    //                     ]
+    //                 );
+
+    //                 $savedFiles[] = [
+    //                     'video' => $videoFinalPath,
+    //                     'thumbnail' => $thumbFinalPath,
+    //                     'size' => $file['size']
+    //                 ];
+    //             }
+    //         }
+
+    //         DB::commit();
+    //         session()->forget(['record_data_user', 'scanned_qr']);
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Recording stopped and video(s) downloaded',
+    //             'recordData' => $data->toArray(),
+    //             'downloadedFiles' => $savedFiles
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::channel('camera-record')->error("[STOP RECORDING CONTROLLER] Exception: " . $e->getMessage());
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    // ====== stopRecording function (OPTIONAL) ======
     public function stopRecording(Request $request)
     {
         $id = session('record_data_user');
@@ -139,8 +245,7 @@ class RecordController extends Controller
             ], 404);
         }
 
-        $videoName = $data->video_name;
-        $videoName = strtolower($videoName);
+        $videoName = strtolower($data->video_name);
         $videoName = str_replace(' ', '_', $videoName);
         $videoName = preg_replace('/[^a-z0-9_\-]/', '', $videoName);
 
@@ -177,11 +282,16 @@ class RecordController extends Controller
                 );
 
                 foreach ($savedFiles as $file) {
+                    $thumbnailPath = $file['thumbnail'] ?? null;
+                    $thumbnailFilename = $thumbnailPath ? pathinfo($thumbnailPath, PATHINFO_BASENAME) : null;
+
                     RecordedVideo::updateOrInsert(
                         ['recording_id' => $data->id, 'video_filename' => $file['filename']],
                         [
                             'video_path' => $file['path'],
                             'video_size' => $file['size'],
+                            'thumbnail_path' => $thumbnailPath ? $thumbnailPath : null,
+                            'thumbnail_filename' => $thumbnailFilename,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]

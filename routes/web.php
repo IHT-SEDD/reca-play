@@ -59,6 +59,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     #region My Recording
     Route::prefix('my-recording')->group(function () {
         Route::get('/', [RecordingController::class, 'index'])->name('recording.index');
+        Route::get('/video/{video}', [RecordingController::class, 'show'])->name('recording.show');
     });
 
     #region Creator

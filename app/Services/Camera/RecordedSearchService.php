@@ -4,8 +4,9 @@ namespace App\Services\Camera;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class RecordedSearchService
 {
@@ -17,7 +18,6 @@ class RecordedSearchService
     private $endTime;
     private $cameras = [];
 
-    private int $downloadTimeout = 0;
     private int $downloadRetries = 3;
 
     protected PrepareDataService $prepareData;
@@ -54,7 +54,6 @@ class RecordedSearchService
     {
         $playbackUris = [];
         $tz = new \DateTimeZone(config('app.timezone'));
-
         $start = (new \DateTime($this->startTime, $tz))->format('Y-m-d\TH:i:s\Z');
         $end = (new \DateTime($this->endTime, $tz))->format('Y-m-d\TH:i:s\Z');
 
@@ -66,19 +65,18 @@ class RecordedSearchService
                     'verify' => false,
                     'timeout' => 30,
                     'auth' => [$this->user, $this->pass, 'digest']
-                ])
-                    ->withHeaders([
-                        'Content-Type' => 'application/xml',
-                        'Accept' => '*/*'
-                    ])
-                    ->withBody($xmlPayload, 'application/xml')
+                ])->withHeaders([
+                    'Content-Type' => 'application/xml',
+                    'Accept' => '*/*'
+                ])->withBody($xmlPayload, 'application/xml')
                     ->post("https://{$this->host}/ISAPI/ContentMgmt/search");
 
-                Log::channel('camera-record')->info("[RECORD SEARCH] Response XML for channel {$channel}", [
-                    'payload' => $xmlPayload,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
+                /** Uncomment this log for debugging the response XML ISAPI Search video */
+                // Log::channel('camera-record')->info("[RECORD SEARCH] Response XML for channel {$channel}", [
+                //     'payload' => $xmlPayload,
+                //     'status' => $response->status(),
+                //     'body' => $response->body()
+                // ]);
 
                 if (!$response->successful()) {
                     continue;
@@ -105,21 +103,19 @@ class RecordedSearchService
                     ]);
                 }
             } catch (\Throwable $e) {
-                Log::channel('camera-record')->error("[RECORD SEARCH] Search error for channel {$channel}", [
-                    'exception' => $e->getMessage()
-                ]);
+                Log::channel('camera-record')->error("[RECORD SEARCH] Channel {$channel} search error: " . $e->getMessage());
             }
         }
 
         return $playbackUris;
     }
 
-    // ==================== Download video and save to storage ====================
+    // ==================== Download videos to storage ====================
     public function downloadByPlaybackUris(array $playbackUris, int $fieldId, int $userId, string $videoName): array
     {
         $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
         $savedFiles = [];
-        $date = now()->format('Ymd');
+        $date = now()->format('dmy');
         $sequence = 1;
 
         $client = new \GuzzleHttp\Client([
@@ -135,16 +131,17 @@ class RecordedSearchService
             for ($attempt = 1; $attempt <= $this->downloadRetries; $attempt++) {
                 try {
                     $filename = sprintf(
-                        '%d_%s_%d-%03d_%s_%s.mp4',
-                        $fieldId,
+                        '%s_%s_%d%d%d.mp4',
                         $videoName,
-                        $userId,
-                        $sequence,
                         $date,
-                        uniqid()
+                        $fieldId,
+                        $userId,
+                        $sequence
                     );
 
-                    $fullPath = storage_path("app/public/recordings/" . $filename);
+                    // $fullPath = storage_path("app/public/recordings/" . $filename);
+                    $videoPath = storage_path("app/public/recordings/" . $filename);
+                    @mkdir(dirname($videoPath), 0777, true);
 
                     Log::channel('camera-record')->info("[RECORD DOWNLOAD] Request XML", [
                         'playbackURI' => $playbackURI,
@@ -157,7 +154,7 @@ class RecordedSearchService
                             'Accept' => '*/*'
                         ],
                         'body' => $xmlBody,
-                        'sink' => $fullPath,
+                        'sink' => $videoPath,
                     ]);
 
                     Log::channel('camera-record')->info("[RECORD DOWNLOAD] Download response", [
@@ -165,19 +162,24 @@ class RecordedSearchService
                         'reason' => $response->getReasonPhrase()
                     ]);
 
-                    $size = filesize($fullPath);
+                    $thumbnailDir = storage_path('app/public/thumbnails');
+                    @mkdir($thumbnailDir, 0777, true);
+                    $thumbnailPath = $thumbnailDir . '/' . pathinfo($filename, PATHINFO_FILENAME) . '_thumb.jpg';
+
+                    $this->generateThumbnail($videoPath, $thumbnailPath);
 
                     $savedFiles[] = [
                         'path' => 'recordings/' . $filename,
                         'filename' => $filename,
-                        'size' => $size,
+                        'size' => filesize($videoPath),
+                        'thumbnail' => 'thumbnails/' . pathinfo($filename, PATHINFO_FILENAME) . '_thumb.jpg'
                     ];
 
-                    Log::channel('camera-record')->info("[RECORD DOWNLOAD] File saved", [
-                        'path' => 'recordings/' . $filename,
-                        'file' => $filename,
-                        'size_mb' => $size . ' MB'
+                    Log::channel('camera-record')->info("[RECORD DOWNLOAD] Video & thumbnail saved", [
+                        'video' => $videoPath,
+                        'thumbnail' => $thumbnailPath
                     ]);
+
                     $success = true;
                     break;
                 } catch (\Throwable $e) {
@@ -199,6 +201,30 @@ class RecordedSearchService
         }
 
         return $savedFiles;
+    }
+
+    public function generateThumbnail(string $videoPath, string $thumbnailPath): void
+    {
+        @mkdir(dirname($thumbnailPath), 0777, true);
+
+        $process = new Process([
+            'ffmpeg',
+            '-y',
+            '-i',
+            $videoPath,
+            '-ss',
+            '00:00:10',
+            '-vframes',
+            '1',
+            $thumbnailPath
+        ]);
+
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            Log::channel('camera-record')->error("[THUMBNAIL GENERATE] Failed : ", [$process]);
+            throw new ProcessFailedException($process);
+        }
     }
 
     // ========== Build XML Payload for searching ==========
