@@ -88,8 +88,8 @@ class StoreQrCodeRequest extends FormRequest
             'name' => ['required', 'string', 'max:255', 'min:3'],
             'description' => ['nullable', 'string'],
 
-            'field_id' => ['nullable', 'string'],
-            'venue_id' => ['nullable', 'string'],
+            'field_id' => ['nullable', 'string', 'exists:fields,id'],
+            'venue_id' => ['nullable', 'string', 'exists:venues,id'],
 
             'type' => ['nullable', 'string', 'min:3'],
             'is_active' => ['required', 'boolean'],
@@ -109,6 +109,9 @@ class StoreQrCodeRequest extends FormRequest
             'name.required' => 'Name cannot be empty.',
             'name.max' => 'Name maximum is 255 characters.',
             'name.min' => 'Name minimum is 3 characters.',
+
+            'field_id.exists' => 'Field not found.',
+            'venue_id.exists' => 'Venue not found.',
 
             'type.min' => 'Type minimum is 3 characters.',
 

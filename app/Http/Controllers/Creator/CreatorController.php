@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Record\RecordingLog;
+use App\Services\Camera\LivePreviewService;
 use App\Services\Creator\AddData\NewDataFormRequestService;
 use App\Services\Creator\ScanQr\ScanQrService;
 use App\Services\Support\GetModelService;
@@ -17,16 +18,19 @@ class CreatorController extends Controller
     protected ScanQrService $scanQrService;
     protected NewDataFormRequestService $newDataFormRequestService;
     protected GetModelService $getModelService;
+    protected LivePreviewService $livePreviewService;
 
     // ====== Initialize services ======
     public function __construct(
         ScanQrService $scanQrService,
         NewDataFormRequestService $newDataFormRequestService,
-        GetModelService $getModelService
+        GetModelService $getModelService,
+        LivePreviewService $livePreviewService
     ) {
         $this->scanQrService = $scanQrService;
         $this->newDataFormRequestService = $newDataFormRequestService;
         $this->getModelService = $getModelService;
+        $this->livePreviewService = $livePreviewService;
     }
 
     // ====== Show page of scan QR ======
@@ -39,12 +43,6 @@ class CreatorController extends Controller
     public function scanSuccessPage()
     {
         return view('pages.creator.scan-success');
-    }
-
-    // ====== Show record page ======
-    public function recordPage()
-    {
-        return view('pages.creator.record.index');
     }
 
     // ====== Show live stream page ======
@@ -108,6 +106,7 @@ class CreatorController extends Controller
         try {
             DB::beginTransaction();
 
+            // === Save the main data ===
             $modelClass = $this->getModelService->getData($type);
             if (!$modelClass || !class_exists($modelClass)) {
                 throw new \Exception("Model for {$type} not found");
@@ -119,11 +118,13 @@ class CreatorController extends Controller
                 RecordingLog::create([
                     'recording_id' => $data->id,
                     'qr_code' => $qrCode,
-                    'status' => 'ongoing',
+                    'status' => 'prepare',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+                session(['record_data_user' => $data->id]);
             } else {
+                session(['stream_data_user' => $data->id]);
             };
 
             DB::commit();
@@ -134,14 +135,12 @@ class CreatorController extends Controller
                 'user_id' => $userId,
                 'ip' => $ip,
             ]);
-
             return response()->json([
-                'status'  => 'success',
+                'status' => 'success',
                 'message' => "Data {$type} saved successfully"
             ]);
         } catch (\Exception $e) {
             DB::rollback();
-
             Log::channel('creator')->error("Failed to save data {$type}", [
                 'mode' => $type,
                 'data' => $validated,
@@ -150,7 +149,6 @@ class CreatorController extends Controller
                 'user_id' => $userId,
                 'ip' => $ip,
             ]);
-
             return response()->json([
                 'status'  => 'error',
                 'message' => $e->getMessage()

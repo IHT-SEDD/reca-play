@@ -22,7 +22,7 @@ class StoreCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255', 'min:3'],
+            'name' => ['required', 'string', 'min:3'],
             'description' => ['nullable', 'string'],
             'is_active' => ['required', 'boolean'],
         ];
@@ -32,7 +32,6 @@ class StoreCategoryRequest extends FormRequest
     {
         return [
             'name.required' => 'Name cannot be empty.',
-            'name.max' => 'Name maximum is 255 characters.',
             'name.min' => 'Name minimum is 3 characters.',
 
             'is_active.required' => 'Is Active cannot be empty.',

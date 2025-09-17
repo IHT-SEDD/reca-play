@@ -17,13 +17,11 @@ class StoreRecordRequest extends FormRequest
         if ($fieldId) {
             $cameraId = Camera::where('field_id', $fieldId)->value('id');
         }
-        $startTime = now()->format('Y-m-d H:i:s');
 
         $this->merge([
             'user_id' => $userId,
             'field_id' => $fieldId,
             'camera_id' => $cameraId,
-            'start_time' => $startTime,
         ]);
     }
 

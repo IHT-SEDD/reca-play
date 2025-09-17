@@ -64,7 +64,7 @@
  @endpush
 
  @push('scripts')
-  <script src="{{ asset('vendors/form-request/form.js') }}"></script>
+ <script src="{{ asset('vendors/form-request/form.js') }}"></script>
  <script src="{{ asset('assets/js/creator/scan-success.js') }}"></script>
  @endpush
 </x-app-layout>

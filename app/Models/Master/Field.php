@@ -22,4 +22,16 @@ class Field extends Model
     {
         return $this->belongsTo(Venue::class);
     }
+
+    // 1 field for 1 nvr
+    public function nvr()
+    {
+        return $this->hasOne(Nvr::class);
+    }
+
+    // 1 field has many cameras
+    public function cameras()
+    {
+        return $this->hasMany(Camera::class);
+    }
 }

@@ -9,22 +9,22 @@
  novalidate>
  @csrf
  <div>
-  <x-input-label for="name" :value="__('Name')" />
+  <x-input-label for="name" :value="__('Name')" required />
   <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
    placeholder="New port name" autocomplete="off" />
   <x-input-error id="input-name-error"></x-input-error>
  </div>
 
  <div class="mt-2">
-  <x-input-label for="port_number" :value="__('Port Number')" />
+  <x-input-label for="port_number" :value="__('Port Number')" required />
   <x-inputs.text-input id="port_number" class="block mt-2 w-full" type="text" name="port_number"
    :value="old('port_number')" required placeholder="New port number" autocomplete="off" />
   <x-input-error id="input-port_number-error"></x-input-error>
  </div>
 
  <div class="mt-2">
-  <x-input-label for="is_active" :value="__('Active?')" />
-  <x-inputs.toggle-input id="is_active" name="is_active" />
+  <x-input-label for="is_active" :value="__('Active?')" required />
+  <x-inputs.toggle-input id="is_active" name="is_active" required />
   <x-input-error id="input-is_active-error"></x-input-error>
  </div>
 

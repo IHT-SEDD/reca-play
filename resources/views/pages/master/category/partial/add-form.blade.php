@@ -10,7 +10,7 @@
  @csrf
  <!-- Name -->
  <div>
-  <x-input-label for="name" :value="__('Name')" />
+  <x-input-label for="name" :value="__('Name')" required />
   <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
    placeholder="New category name" autocomplete="off" />
   <x-input-error id="input-name-error"></x-input-error>
@@ -25,7 +25,7 @@
  </div>
 
  <div class="mt-2">
-  <x-input-label for="is_active" :value="__('Active?')" />
+  <x-input-label for="is_active" :value="__('Active?')" required />
   <x-inputs.toggle-input id="is_active" name="is_active" />
   <x-input-error id="input-is_active-error"></x-input-error>
  </div>

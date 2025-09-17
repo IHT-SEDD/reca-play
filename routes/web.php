@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\{
     GoogleController,
 };
 use App\Http\Controllers\Creator\CreatorController;
+use App\Http\Controllers\Creator\RecordController;
 use App\Http\Controllers\Recording\{
     RecordingController,
 };
@@ -67,7 +68,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/', [CreatorController::class, 'scanQrPage'])->name('creator.scan');
             Route::post('/process', [CreatorController::class, 'scanQrProcess'])->name('creator.qr-process');
         });
-        
+
         // Add new data
         Route::prefix('new')->group(function () {
             Route::get('/', [CreatorController::class, 'scanSuccessPage'])->name('creator.qr-success');
@@ -77,7 +78,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Record moment
         Route::prefix('record')->group(function () {
-            Route::get('/', [CreatorController::class, 'recordPage'])->name('creator.record');
+            Route::get('/', [RecordController::class, 'recordPage'])->name('creator.record');
+            Route::get('/check', [RecordController::class, 'checkData'])->name('creator.record-check');
+            Route::post('/stop', [RecordController::class, 'stopRecording'])->name('creator.record-stop');
         });
 
         // Live stream

@@ -2,84 +2,47 @@
 
 namespace App\Services\Support;
 
-use App\Models\Master\Camera;
-use App\Models\Master\Category;
-use App\Models\Master\Field;
-use App\Models\Master\Venue;
-use App\Models\Master\VenueType;
+use Illuminate\Database\Eloquent\Builder;
 
 class SelectOptionService
 {
+  protected int $limit = 100;
+
   public function getOptions(string $option, ?string $search = null)
   {
-    switch ($option) {
-      case 'venue-type':
-        return $this->getVenueTypes($search);
-      case 'venue':
-        return $this->getVenues($search);
-      case 'category':
-        return $this->getCategories($search);
-      case 'field':
-        return $this->getFields($search);
-      case 'camera':
-        return $this->getCameras($search);
-      default:
-        return [];
+    $map = [
+      'api' => [\App\Models\Master\Api::class, true],
+      'camera' => [\App\Models\Master\Camera::class, true],
+      'category' => [\App\Models\Master\Category::class, true],
+      'field' => [\App\Models\Master\Field::class, false],
+      'nvr' => [\App\Models\Master\Nvr::class, true],
+      'port' => [\App\Models\Master\Port::class, true],
+      'qr-code' => [\App\Models\Master\QrCode::class, true],
+      'venue' => [\App\Models\Master\Venue::class, false],
+      'venue-type' => [\App\Models\Master\VenueType::class, true],
+    ];
+
+    if (!isset($map[$option])) {
+      return collect();
     }
+
+    [$model, $filterActive] = $map[$option];
+
+    return $this->buildQuery($model, $filterActive, $search)->get();
   }
 
-  protected function getVenueTypes(?string $search = null)
+  protected function buildQuery(string $model, bool $filterActive, ?string $search = null): Builder
   {
-    $query = VenueType::query()->select('id', 'name as text')->where('is_active', true);
+    $query = $model::query()->select('id', 'name as text');
+
+    if ($filterActive) {
+      $query->where('is_active', true);
+    }
 
     if ($search) {
       $query->where('name', 'like', "%{$search}%");
     }
 
-    return $query->limit(20)->get();
-  }
-
-  protected function getVenues(?string $search = null)
-  {
-    $query = Venue::query()->select('id', 'name as text');
-
-    if ($search) {
-      $query->where('name', 'like', "%{$search}%");
-    }
-
-    return $query->limit(20)->get();
-  }
-
-  protected function getCategories(?string $search = null)
-  {
-    $query = Category::query()->select('id', 'name as text')->where('is_active', true);
-
-    if ($search) {
-      $query->where('name', 'like', "%{$search}%");
-    }
-
-    return $query->limit(20)->get();
-  }
-
-  protected function getFields(?string $search = null)
-  {
-    $query = Field::query()->select('id', 'name as text');
-
-    if ($search) {
-      $query->where('name', 'like', "%{$search}%");
-    }
-
-    return $query->limit(20)->get();
-  }
-
-  protected function getCameras(?string $search = null)
-  {
-    $query = Camera::query()->select('id', 'name as text');
-
-    if ($search) {
-      $query->where('name', 'like', "%{$search}%");
-    }
-
-    return $query->limit(20)->get();
+    return $query->limit($this->limit);
   }
 }

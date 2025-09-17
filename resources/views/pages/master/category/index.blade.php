@@ -19,6 +19,7 @@
  <script src="{{ asset('vendors/jquery/jquery.dataTables.min.js') }}"></script>
  <script src="{{ asset('vendors/custom-datatable/index.js') }}"></script>
  <script src="{{ asset('vendors/form-request/form.js') }}"></script>
+  <script src="{{ asset('vendors/form-request/formValidation.js') }}"></script>
  <script src="{{ asset('assets/js/master/category.js') }}"></script>
  @endpush
 </x-app-layout>

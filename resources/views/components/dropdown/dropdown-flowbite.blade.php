@@ -17,7 +17,7 @@
     </button>
 
     <!-- Dropdown menu -->
-    <div id="dropdownDivider" x-show="open" @click.outside="open = false" x-transition
+    <div id="dropdownDivider" x-show="open" x-cloak @click.outside="open = false" x-transition
         class="absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-full min-w-fit bg-white shadow-sm divide-y divide-black border border-white-edgar">
         <!-- Slot menu -->
         <ul class="flex flex-col justify-center items-start text-[13px] text-carbon font-medium p-2">

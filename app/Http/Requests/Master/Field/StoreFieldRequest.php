@@ -54,7 +54,7 @@ class StoreFieldRequest extends FormRequest
             'initial' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'category_id' => ['required', 'string'],
-            'venue_id' => ['required', 'string'],
+            'venue_id' => ['required', 'string', 'exists:venues,id'],
         ];
     }
 

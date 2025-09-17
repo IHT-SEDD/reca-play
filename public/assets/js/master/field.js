@@ -97,4 +97,19 @@ document.addEventListener("DOMContentLoaded", function () {
     fieldTable();
     selectCategory();
     selectVenue();
+    FormValidation.init({
+        rules: {
+            name: { required: true, min: 3 },
+            category_id: { required: true },
+            venue_id: { required: true },
+        },
+        messages: {
+            name: {
+                required: "Name cannot be empty.",
+                min: "Name minimum is a 3 characters",
+            },
+            category_id: { required: "Category cannot be empty." },
+            venue_id: { required: "Venue cannot be empty." },
+        },
+    });
 });

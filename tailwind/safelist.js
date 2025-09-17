@@ -10,7 +10,9 @@ export default [
     // ========== Text Colors ==========
     { pattern: /text-white(\/[0-9]+)?/ },
     { pattern: /text-lilliputian-lime(\/[0-9]+)?/ },
+    { pattern: /text-exit-light(\/[0-9]+)?/ },
     { pattern: /text-vivaldi-red(\/[0-9]+)?/ },
+    { pattern: /text-kin-gold(\/[0-9]+)?/ },
     { pattern: /text-base-(100|200|300)/ },
     { pattern: /text-carbon(\/[0-9]+)?/ },
 
@@ -19,6 +21,9 @@ export default [
 
     // ========== Text Size ==========
     { pattern: /text-(xs|sm|md|lg|xl|2xl|3xl|4xl|5xl)/ },
+
+    // ========== Tracking ==========
+    { pattern: /tracking-(wide)/ },
 
     // ========== Paddings ==========
     { pattern: /px-(2)/ },
