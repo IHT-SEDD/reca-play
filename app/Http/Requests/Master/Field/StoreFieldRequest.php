@@ -33,6 +33,22 @@ class StoreFieldRequest extends FormRequest
         }
     }
 
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated($key, $default);
+
+        if ($this->hasFile('pict')) {
+            $file = $this->file('pict');
+            $path = $file->store('field_pictures', 'public');
+
+            $data['pict_path'] = 'storage/' . $path;
+            $data['pict_filename'] = $file->getClientOriginalName();
+        }
+
+        return $data;
+    }
+
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -53,6 +69,9 @@ class StoreFieldRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'initial' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'pict' => ['nullable', 'image', 'mimes:jpg,jpeg,png'],
+            'pict_path' => ['nullable', 'string'],
+            'pict_filename' => ['nullable', 'string'],
             'category_id' => ['required', 'string'],
             'venue_id' => ['required', 'string', 'exists:venues,id'],
         ];
@@ -67,6 +86,9 @@ class StoreFieldRequest extends FormRequest
             'name.required' => 'Name cannot be empty.',
             'name.max' => 'Name maximum is 255 characters.',
             'name.min' => 'Name minimum is 3 characters.',
+
+            'pict.image' => 'The pict must be an image file.',
+            'pict.mimes' => 'The pict must be a file of type: :values.',
 
             'category_id.required' => 'Category cannot be empty.',
             'venue_id.required' => 'Venue cannot be empty.',

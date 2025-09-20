@@ -15,8 +15,8 @@
                 <x-nav-link :href="url('/')" :active="request()->routeIs('home.*')">
                     {{ __('Home') }}
                 </x-nav-link>
-                <x-nav-link :href="url('/field')" :active="request()->routeIs('field.*')">
-                    {{ __('Fields') }}
+                <x-nav-link :href="url('/venue')" :active="request()->routeIs('venue.*')">
+                    {{ __('Venues') }}
                 </x-nav-link>
                 <x-nav-link :href="url('/event')" :active="request()->routeIs('event.*')">
                     {{ __('Events') }}
@@ -90,8 +90,8 @@
             <x-responsive-nav-link :href="url('/')" :active="request()->routeIs('home.*')">
                 {{ __('Home') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="url('/field')" :active="request()->routeIs('field.*')">
-                {{ __('Fields') }}
+            <x-responsive-nav-link :href="url('/venue')" :active="request()->routeIs('venue.*')">
+                {{ __('Venues') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="url('/event')" :active="request()->routeIs('event.*')">
                 {{ __('Events') }}

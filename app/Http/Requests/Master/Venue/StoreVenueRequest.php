@@ -33,6 +33,21 @@ class StoreVenueRequest extends FormRequest
         }
     }
 
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated($key, $default);
+
+        if ($this->hasFile('logo')) {
+            $file = $this->file('logo');
+            $path = $file->store('venue_logos', 'public');
+
+            $data['logo_path'] = 'storage/' . $path;
+            $data['logo_filename'] = $file->getClientOriginalName();
+        }
+
+        return $data;
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -53,6 +68,9 @@ class StoreVenueRequest extends FormRequest
             'name' => ['required', 'string', 'max:255', 'min:3'],
             'description' => ['nullable', 'string'],
             'address' => ['required', 'string'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png'],
+            'logo_path' => ['nullable', 'string'],
+            'logo_pict' => ['nullable', 'string'],
             'venue_type_id' => ['required', 'string'],
         ];
     }
@@ -68,6 +86,9 @@ class StoreVenueRequest extends FormRequest
             'name.min' => 'Name minimum is 3 characters.',
 
             'address.required' => 'Address cannot be empty.',
+
+            'logo.image' => 'The logo must be an image file.',
+            'logo.mimes' => 'The logo must be a file of type: :values.',
 
             'venue_type_id.required' => 'Venue Type cannot be empty.',
         ];

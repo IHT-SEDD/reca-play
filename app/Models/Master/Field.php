@@ -8,10 +8,10 @@ class Field extends Model
 {
     protected $guarded = ['id'];
 
-    protected $with = ['category', 'venue'];
+    // protected $with = ['category', 'venue'];
 
     public const Searchable = ['name', 'initial', 'code', 'category_id', 'venue_id'];
-    public const Unsearchable = ['id', 'description', 'created_at', 'updated_at'];
+    public const Unsearchable = ['id', 'description', 'pict_path', 'pict_filename', 'created_at', 'updated_at'];
 
     public function category()
     {

@@ -33,8 +33,16 @@
  </div>
 
  <div class="mt-2">
+  <x-input-label for="logo" :value="__('Logo')" />
+  <x-inputs.file-input id="logo" name="logo">
+   PNG, JPG, or JPEG
+  </x-inputs.file-input>
+ </div>
+
+ <div class="mt-2">
   <x-input-label for="venue_type_id" :value="__('Venue Type')" />
-  <select id="select-venue-type" placeholder="Select venue type..." autocomplete="off" name="venue_type_id" class="my-2">
+  <select id="select-venue-type" placeholder="Select venue type..." autocomplete="off" name="venue_type_id"
+   class="my-2">
   </select>
  </div>
 

@@ -74,6 +74,7 @@ class MasterController extends Controller
         $validated = $this->masterFormRequestService->getValidatedData($type, $request);
         $userId = Auth::id();
 
+        // dd($request->all(), $validated);
         try {
             DB::beginTransaction();
 

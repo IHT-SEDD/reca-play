@@ -5,8 +5,8 @@
 @endsection
 
 @section('content')
-<form method="POST" action="{{ url('/master/field/add-data') }}" class="ajax-form" data-datatable="#field-table"
- novalidate>
+<form method="POST" action="{{ url('/master/field/add-data') }}" enctype="multipart/form-data" class="ajax-form"
+ data-datatable="#field-table" novalidate>
  @csrf
  <div>
   <x-input-label for="name" :value="__('Name')" required />
@@ -28,6 +28,13 @@
    placeholder="New field description" :value="$field->description ?? ''">
   </x-inputs.textarea-input>
   <x-input-error id="input-description-error"></x-input-error>
+ </div>
+
+ <div class="mt-2">
+  <x-input-label for="pict" :value="__('Picture')" />
+  <x-inputs.file-input id="pict" name="pict">
+   PNG, JPG, or JPEG
+  </x-inputs.file-input>
  </div>
 
  <div class="mt-2">
