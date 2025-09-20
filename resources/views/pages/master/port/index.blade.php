@@ -20,6 +20,7 @@
  <script src="{{ asset('vendors/jquery/jquery.dataTables.min.js') }}"></script>
  <script src="{{ asset('vendors/custom-datatable/index.js') }}"></script>
  <script src="{{ asset('vendors/form-request/form.js') }}"></script>
+  <script src="{{ asset('vendors/form-request/formValidation.js') }}"></script>
  <script src="{{ asset('vendors/tom-select/tom-select.complete.min.js') }}"></script>
  <script src="{{ asset('assets/js/master/port.js') }}"></script>
  @endpush

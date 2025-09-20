@@ -19,7 +19,7 @@
  </div>
 
  <!-- Submit btn -->
- <x-primary-button class="w-full mt-6">
+ <x-primary-button class="w-full mt-6" id="start_recording">
   {{ __('Start Recording') }}
  </x-primary-button>
 </form>

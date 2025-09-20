@@ -1,4 +1,4 @@
-let nvrTable, selectCamera, selectPort;
+let nvrTable, selectField, selectPort;
 
 nvrTable = () => {
     initCustomDatatable({
@@ -18,6 +18,7 @@ nvrTable = () => {
                 orderable: false,
             },
             { data: "ip_address", name: "ip_address", orderable: false },
+            { data: "field.name", name: "field.name", orderable: false },
             {
                 data: "port.port_number",
                 name: "port.port_number",
@@ -42,7 +43,6 @@ nvrTable = () => {
                 searchable: false,
                 orderable: false,
             },
-            { data: "camera.name", name: "camera.name", orderable: false },
             {
                 data: "created_at",
                 name: "created_at",
@@ -65,8 +65,8 @@ nvrTable = () => {
     });
 };
 
-selectCamera = () => {
-    new TomSelect("#select-camera", {
+selectField = () => {
+    new TomSelect("#select-field", {
         valueField: "id",
         labelField: "text",
         searchField: "text",
@@ -78,7 +78,7 @@ selectCamera = () => {
         },
         load: function (query, callback) {
             $.ajax({
-                url: "/select/camera",
+                url: "/select/field",
                 data: { q: query },
                 dataType: "json",
                 success: function (res) {
@@ -121,6 +121,30 @@ selectPort = () => {
 
 document.addEventListener("DOMContentLoaded", function () {
     nvrTable();
-    selectCamera();
+    selectField();
     selectPort();
+    FormValidation.init({
+        rules: {
+            name: { required: true, min: 3 },
+            ip_address: { required: true, min: 4 },
+            auth_type: { required: true },
+            username: { required: true },
+            password: { required: true },
+            is_active: { required: true },
+        },
+        messages: {
+            name: {
+                required: "Name cannot be empty.",
+                min: "Name minimum is a 3 characters",
+            },
+            ip_address: {
+                required: "IP Address cannot be empty.",
+                min: "IP Address minimum is a 4 characters",
+            },
+            auth_type: { required: "Auth Type cannot be empty." },
+            username: { required: "Username cannot be empty." },
+            password: { required: "Password cannot be empty." },
+            is_active: { required: "Is Active cannot be empty." },
+        },
+    });
 });

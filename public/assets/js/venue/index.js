@@ -1,0 +1,90 @@
+let populateData, searchTimeout;
+
+let page = 1;
+let perPage = 20;
+
+populateData = (search = "", reset = true) => {
+    if (reset) {
+        page = 1;
+        $("#container_venue_list").empty();
+    }
+
+    $("#venue_loader").removeClass("hidden").addClass("flex");
+
+    $.ajax({
+        url: "/venue/data",
+        method: "GET",
+        data: { search: search, page: page, per_page: perPage },
+        dataType: "json",
+        success: function (res) {
+            let venues = res.data ?? res;
+            let container = $("#container_venue_list");
+
+            if (venues.length === 0 && page === 1) {
+                container.html(
+                    `<p class="text-carbon w-full md:col-span-6 col-span-1 text-center text-lg font-semibold">No venues found.</p>`
+                );
+                $("#seemore_btn").addClass("hidden");
+                return;
+            }
+
+            venues.forEach((venue) => {
+                let card = `
+                <a href="/venue/detail/${venue.code}">
+                    <div class="bg-white border border-base-200 shadow-sm rounded-xl py-3 px-4 h-fit w-full">
+                        <div class="flex justify-start gap-4 items-center w-fit">
+                            <!-- Venue Logo -->
+                            <div class="flex items-center justify-center rounded-full p-2">
+                                ${
+                                    venue.logo_filename
+                                        ? `<img src="/storage/venue_logos/${venue.logo_filename}" alt="${venue.name}" class="w-10 h-10 rounded-full object-cover">`
+                                        : `<i data-lucide="images" class="w-6 h-6 text-hot-shot"></i>`
+                                }
+                            </div>
+                            <!-- Venue Desc -->
+                            <div class="flex flex-col justify-center items-start">
+                                <p class="text-sm font-medium">${venue.name}</p>
+                                <p class="text-sm text-magnesium">${
+                                    venue.address
+                                }</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>`;
+                container.prepend(card);
+            });
+
+            window.lucide.createIcons({ icons: window.lucide.icons });
+
+            if (venues.length >= perPage) {
+                $("#seemore_btn").removeClass("hidden");
+            } else {
+                $("#seemore_btn").addClass("hidden");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("Gagal load data venues:", error);
+        },
+        complete: function () {
+            $("#venue_loader").addClass("hidden").removeClass("flex");
+        },
+    });
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+    populateData();
+
+    $("#search_venue").on("input", function () {
+        clearTimeout(searchTimeout);
+        let keyword = $(this).val();
+        searchTimeout = setTimeout(() => {
+            populateData(keyword, true);
+        }, 500);
+    });
+
+    $("#seemore_btn").on("click", function () {
+        page++;
+        let keyword = $("#search_venue").val();
+        populateData(keyword, false);
+    });
+});

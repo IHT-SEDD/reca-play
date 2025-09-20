@@ -5,7 +5,8 @@
             <!-- Logo -->
             <div class="shrink-0 flex items-center">
                 <a href="/">
-                    <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA" class="w-8 h-8 md:w-11 md:h-11">
+                    <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA"
+                        class="w-8 h-8 md:w-11 md:h-11">
                 </a>
             </div>
 
@@ -14,8 +15,8 @@
                 <x-nav-link :href="url('/')" :active="request()->routeIs('home.*')">
                     {{ __('Home') }}
                 </x-nav-link>
-                <x-nav-link :href="url('/field')" :active="request()->routeIs('field.*')">
-                    {{ __('Fields') }}
+                <x-nav-link :href="url('/venue')" :active="request()->routeIs('venue.*')">
+                    {{ __('Venues') }}
                 </x-nav-link>
                 <x-nav-link :href="url('/event')" :active="request()->routeIs('event.*')">
                     {{ __('Events') }}
@@ -31,70 +32,39 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <!-- Button trigger -->
-                    <x-slot name="trigger">
-                        <button
-                            class="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md text-after-midnight hover:text-hot-shot transition ease-in-out duration-150">
-                            <!-- Button in auth mode only :begin -->
-                            @auth
-                            <div class="inline-flex items-center">
-                                <i data-lucide="user" class="w-4 h-4 me-2"></i>
-                                {{ Auth::user()->name }}
-                            </div>
-                            @endauth
-                            <!-- Button in auth mode only :end -->
-
-                            <!-- Button in guest mode only :begin -->
-                            @guest
-                            <div class="inline-flex items-center">
-                                <i data-lucide="user" class="w-4 h-4 me-2"></i>
-                                Welcome, Guest!
-                            </div>
-                            @endguest
-                            <!-- Button in guest mode only :end -->
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-                        <!-- Options in auth mode only :begin -->
+                <x-dropdown.dropdown-flowbite :trigger="Auth::user()->name ?? 'Welcome, Guest'" iconTrigger="user">
+                    <li class="w-full">
                         @auth
-                        <x-dropdown-link :href="url('/profile/edit')" :active="request()->routeIs('profile.*')" class="text-start">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
-
-                        <!-- Authentication -->
+                        <a href="{{ url('/profile/edit') }}"
+                            class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+                            <i data-lucide="user-round-pen" class="w-4 h-auto me-2"></i>
+                            Profile
+                        </a>
                         <form method="POST" action="{{ url('/logout') }}" class="w-full">
                             @csrf
-                            <x-dropdown-link :href="url('/logout')" onclick="event.preventDefault();
-                                                this.closest('form').submit();" class="text-start">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
+                            <a href="{{ url('/logout') }}"
+                                onclick="event.preventDefault(); this.closest('form').submit();"
+                                class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+                                <i data-lucide="log-out" class="w-4 h-auto me-2"></i>
+                                Logout
+                            </a>
                         </form>
                         @endauth
-                        <!-- Options in auth mode only :end -->
 
-                        <!-- Options in guest mode only :begin -->
                         @guest
-                        <x-dropdown-link :href="url('/login')" class="text-start">
-                            {{ __('Login') }}
-                        </x-dropdown-link>
-                        <x-dropdown-link :href="url('/register')" class="text-start">
-                            {{ __('Register') }}
-                        </x-dropdown-link>
+                        <a href="{{ url('/register') }}"
+                            class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+                            <i data-lucide="user-round-plus" class="w-4 h-auto me-2"></i>
+                            Register
+                        </a>
+                        <a href="{{ url('/login') }}"
+                            class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+                            <i data-lucide="log-in" class="w-4 h-auto me-2"></i>
+                            Login
+                        </a>
                         @endguest
-                        <!-- Options in guest mode only :end -->
-                    </x-slot>
-                </x-dropdown>
+                    </li>
+                </x-dropdown.dropdown-flowbite>
             </div>
 
             <!-- Hamburger -->
@@ -120,8 +90,8 @@
             <x-responsive-nav-link :href="url('/')" :active="request()->routeIs('home.*')">
                 {{ __('Home') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="url('/field')" :active="request()->routeIs('field.*')">
-                {{ __('Fields') }}
+            <x-responsive-nav-link :href="url('/venue')" :active="request()->routeIs('venue.*')">
+                {{ __('Venues') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="url('/event')" :active="request()->routeIs('event.*')">
                 {{ __('Events') }}

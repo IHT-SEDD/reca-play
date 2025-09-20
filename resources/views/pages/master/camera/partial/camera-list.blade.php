@@ -8,6 +8,7 @@
  <th>Description</th>
  <th>IP Address</th>
  <th>Field</th>
+ <th>NVR</th>
  <th>Created At</th>
  <th>Updated At</th>
 </x-datatable-layout>

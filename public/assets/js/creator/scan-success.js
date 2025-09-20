@@ -1,4 +1,4 @@
-let modeBtnHandler, checkScannedQr;
+let modeBtnHandler, checkScannedQr, responseFormAndButton;
 
 // ======== Initialize component ========
 const recordingBtn = $("#recordBtn");
@@ -15,6 +15,9 @@ const formStreaming = $("#formStreaming");
 
 formRecord.addClass("hidden");
 formStreaming.addClass("hidden");
+
+const submitBtnRecord = $("#start_recording");
+const submitBtnStream = $("#start_streaming");
 
 // ======== Record or streaming btn handling ========
 modeBtnHandler = () => {
@@ -35,8 +38,8 @@ modeBtnHandler = () => {
         descriptionText.text(
             "Capture the moment, tell your story, and make it unforgettable!"
         );
-        formRecord.removeClass("hidden")
-        formStreaming.addClass("hidden")
+        formRecord.removeClass("hidden");
+        formStreaming.addClass("hidden");
     });
 
     // If streaming btn clicked
@@ -56,8 +59,8 @@ modeBtnHandler = () => {
         descriptionText.text(
             "Go live, share the vibe, and let the world join the fun!"
         );
-        formRecord.addClass("hidden")
-        formStreaming.removeClass("hidden")
+        formRecord.addClass("hidden");
+        formStreaming.removeClass("hidden");
     });
 };
 
@@ -73,7 +76,7 @@ checkScannedQr = () => {
             if (data?.status === "error") {
                 notyf.error(data.message);
             } else {
-                console.log(data.message)
+                console.log(data.message);
             }
         },
         error: function (xhr, status, error) {
@@ -82,7 +85,29 @@ checkScannedQr = () => {
     });
 };
 
+// ======== Get response submit and check status button ========
+responseFormAndButton = () => {
+    if (submitBtnRecord.length) {
+        submitBtnRecord.on("click", function (e) {
+            console.log("Start Recording button clicked");
+            setTimeout(() => {
+                window.location.href = "/creator/record";
+            }, 2500);
+        });
+    }
+
+    if (submitBtnStream.length) {
+        submitBtnStream.on("click", function (e) {
+            console.log("Start Streaming button clicked");
+            setTimeout(() => {
+                window.location.href = "/creator/record";
+            }, 2500);
+        });
+    }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     modeBtnHandler();
     checkScannedQr();
+    responseFormAndButton();
 });

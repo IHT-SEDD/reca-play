@@ -7,11 +7,11 @@
  <th>Initial</th>
  <th>Description</th>
  <th>IP Address</th>
+ <th>Field</th>
  <th>Port</th>
  <th>Auth Type</th>
  <th>Username</th>
  <th>Password</th>
- <th>Camera</th>
  <th>Created At</th>
  <th>Updated At</th>
 </x-datatable-layout>

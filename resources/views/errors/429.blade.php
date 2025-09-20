@@ -38,7 +38,8 @@
  <!-- Background Overlay Lottie -->
  <div class="hidden md:block absolute bottom-0 left-0 z-0 pointer-events-none w-full h-auto">
   <dotlottie-wc src="{{ asset('assets/animations/pattern-animate.lottie') }}"
-   style="width: 100%; height: auto; transform: translateX(-108px) translateY(9px); opacity: 0.5;" speed="1" autoplay loop>
+   style="width: 100%; height: auto; transform: translateX(-108px) translateY(9px); opacity: 0.5;" speed="1" autoplay
+   loop>
   </dotlottie-wc>
  </div>
 
@@ -60,7 +61,7 @@
      <h1 class="font-bold text-7xl md:text-9xl">429</h1>
      <h2 class="font-semibold text-xl md:text-3xl">Oops!</h2>
      <p class="font-medium text-md md:text-xl max-w-md text-center md:text-left">
-      Too many requests!
+      {{ $message ?? 'You have made too many requests. Please try again later.' }}
      </p>
      <a href="{{ url('/') }}" class="font-medium text-lg flex justify-center items-center hover:text-hot-shot">
       <i data-lucide="arrow-left" class="w-4 h-4 me-2"></i>

@@ -64,4 +64,19 @@ apiTable = () => {
 
 document.addEventListener("DOMContentLoaded", function () {
     apiTable();
+    FormValidation.init({
+        rules: {
+            name: { required: true, min: 3 },
+            url: { required: true },
+            is_active: { required: true },
+        },
+        messages: {
+            name: {
+                required: "Name cannot be empty.",
+                min: "Name minimum is a 3 characters",
+            },
+            url: { required: "URL cannot be empty." },
+            is_active: { required: "Is Active cannot be empty." },
+        },
+    });
 });

@@ -4,27 +4,15 @@ use App\Http\Controllers\{
     ProfileController,
     TestingController,
     SupportingController,
-};
-use App\Http\Controllers\Auth\{
-    GoogleController,
-};
-use App\Http\Controllers\Creator\CreatorController;
-use App\Http\Controllers\Recording\{
-    RecordingController,
-};
-use App\Http\Controllers\Event\{
-    EventController,
-};
-use App\Http\Controllers\Field\{
-    FieldController,
-};
-use App\Http\Controllers\Master\{
-    MasterController,
-    QrCode\QrCodeController
-};
-use App\Http\Controllers\Recording\QR\ScanQrController;
-use App\Http\Controllers\UserManagement\{
-    UserManagementController,
+    Auth\GoogleController,
+    Creator\CreatorController,
+    Creator\RecordController,
+    Recording\RecordingController,
+    Event\EventController,
+    Master\MasterController,
+    Master\QrCode\QrCodeController,
+    UserManagement\UserManagementController,
+    Venue\VenueController,
 };
 use Illuminate\Support\Facades\Route;
 
@@ -45,9 +33,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/camera/start-recording', [TestingController::class, 'start']);
     Route::post('/api/camera/stop-recording', [TestingController::class, 'stop']);
 
-    #region Fields
-    Route::prefix('field')->group(function () {
-        Route::get('/', [FieldController::class, 'index'])->name('field.index');
+    #region Venues
+    Route::prefix('venue')->group(function () {
+        Route::get('/', [VenueController::class, 'index'])->name('venue.index');
+        Route::get('/data', [VenueController::class, 'data'])->name('venue.data');
+        Route::get('/detail/{code}', [VenueController::class, 'detail'])->name('venue.detail');
+        Route::get('/detail/{code}/data', [VenueController::class, 'dataDetailPage'])->name('venue.detail-data');
     });
 
     #region Events
@@ -58,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     #region My Recording
     Route::prefix('my-recording')->group(function () {
         Route::get('/', [RecordingController::class, 'index'])->name('recording.index');
+        Route::get('/video/{video}', [RecordingController::class, 'show'])->name('recording.show');
     });
 
     #region Creator
@@ -65,19 +57,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Scan QR
         Route::prefix('scan-qr')->group(function () {
             Route::get('/', [CreatorController::class, 'scanQrPage'])->name('creator.scan');
-            Route::post('/process', [CreatorController::class, 'scanQrProcess'])->name('creator.qr-process');
+
+            // Rate limiting for process scanning-qr
+            Route::middleware('throttle:scan-qr')->group(function () {
+                Route::post('/process', [CreatorController::class, 'scanQrProcess'])->name('creator.qr-process');
+            });
         });
-        
+
         // Add new data
         Route::prefix('new')->group(function () {
             Route::get('/', [CreatorController::class, 'scanSuccessPage'])->name('creator.qr-success');
             Route::get('/check', [CreatorController::class, 'checkScannedQr'])->name('creator.qr-check');
-            Route::post('/add/{mode}', [CreatorController::class, 'addNewData'])->name('creator.add-new');
+
+            // Rate limiting for process add data creator
+            Route::middleware('throttle:add-data-creator')->group(function () {
+                Route::post('/add/{mode}', [CreatorController::class, 'addNewData'])->name('creator.add-new');
+            });
         });
 
         // Record moment
         Route::prefix('record')->group(function () {
-            Route::get('/', [CreatorController::class, 'recordPage'])->name('creator.record');
+            Route::get('/', [RecordController::class, 'recordPage'])->name('creator.record');
+            Route::get('/check', [RecordController::class, 'checkData'])->name('creator.record-check');
+
+            // Rate limiting for process stop recording
+            Route::middleware('throttle:stop-record')->group(function () {
+                Route::post('/stop', [RecordController::class, 'stopRecording'])->name('creator.record-stop');
+            });
         });
 
         // Live stream

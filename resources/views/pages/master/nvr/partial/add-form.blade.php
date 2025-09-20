@@ -8,7 +8,7 @@
 <form method="POST" action="{{ url('/master/nvr/add-data') }}" class="ajax-form" data-datatable="#nvr-table" novalidate>
  @csrf
  <div>
-  <x-input-label for="name" :value="__('Name')" />
+  <x-input-label for="name" :value="__('Name')" required />
   <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
    placeholder="New nvr name" autocomplete="off" />
   <x-input-error id="input-name-error"></x-input-error>
@@ -17,49 +17,62 @@
  <div class="mt-2">
   <x-input-label for="initial" :value="__('Initial')" />
   <x-inputs.text-input id="initial" class="block mt-2 w-full" type="text" name="initial" :value="old('initial')"
-   required placeholder="New nvr initial" autocomplete="off" />
+   placeholder="New nvr initial" autocomplete="off" />
   <x-input-error id="input-initial-error"></x-input-error>
  </div>
 
- <div class="mt-2">
-  <x-input-label for="brand" :value="__('Brand')" />
-  <x-inputs.text-input id="brand" class="block mt-2 w-full" type="text" name="brand" :value="old('brand')" required
-   placeholder="New nvr brand" autocomplete="off" />
-  <x-input-error id="input-brand-error"></x-input-error>
+ <div class="flex justify-between items-center gap-2 mt-2">
+  <div class="w-full">
+   <x-input-label for="brand" :value="__('Brand')" />
+   <x-inputs.text-input id="brand" class="block mt-2 w-full" type="text" name="brand" :value="old('brand')"
+    placeholder="New nvr brand" autocomplete="off" />
+   <x-input-error id="input-brand-error"></x-input-error>
+  </div>
+
+  <div class="w-full">
+   <x-input-label for="type" :value="__('Type')" />
+   <x-inputs.text-input id="type" class="block mt-2 w-full" type="text" name="type" :value="old('type')"
+    placeholder="New nvr type" autocomplete="off" />
+   <x-input-error id="input-type-error"></x-input-error>
+  </div>
+ </div>
+
+ <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mt-2">
+  <div class="w-full">
+   <x-input-label for="ip_address" :value="__('IP Address')" required />
+   <x-inputs.text-input id="ip_address" class="block mt-2 w-full" type="text" name="ip_address"
+    :value="old('ip_address')" placeholder="New nvr ip address" autocomplete="off" required />
+   <x-input-error id="input-ip_address-error"></x-input-error>
+  </div>
+
+  <div class="md:w-1/2 w-full">
+   <x-input-label for="port_id" :value="__('Port')" />
+   <select id="select-port" placeholder="Select port..." autocomplete="off" name="port_id" class="my-1.5">
+   </select>
+  </div>
+ </div>
+
+ <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mt-2">
+  <div class="w-full">
+   <x-input-label for="username" :value="__('Username')" required />
+   <x-inputs.text-input id="username" class="block mt-2 w-full" type="text" name="username" :value="old('username')"
+    required placeholder="New nvr username" autocomplete="off" required />
+   <x-input-error id="input-username-error"></x-input-error>
+  </div>
+
+  <div class="w-full">
+   <x-input-label for="password" :value="__('Password')" required />
+   <x-inputs.text-input id="password" class="block mt-2 w-full" type="text" name="password" :value="old('password')"
+    required placeholder="New nvr password" autocomplete="off" required />
+   <x-input-error id="input-password-error"></x-input-error>
+  </div>
  </div>
 
  <div class="mt-2">
-  <x-input-label for="type" :value="__('Type')" />
-  <x-inputs.text-input id="type" class="block mt-2 w-full" type="text" name="type" :value="old('type')" required
-   placeholder="New nvr type" autocomplete="off" />
-  <x-input-error id="input-type-error"></x-input-error>
- </div>
-
- <div class="mt-2">
-  <x-input-label for="ip_address" :value="__('IP Address')" />
-  <x-inputs.text-input id="ip_address" class="block mt-2 w-full" type="text" name="ip_address"
-   :value="old('ip_address')" required placeholder="New nvr ip address" autocomplete="off" />
-  <x-input-error id="input-ip_address-error"></x-input-error>
- </div>
-
- <div class="mt-2">
-  <x-input-label for="port_id" :value="__('Port')" />
-  <select id="select-port" placeholder="Select port..." autocomplete="off" name="port_id" class="my-2">
-  </select>
- </div>
-
- <div class="mt-2">
-  <x-input-label for="username" :value="__('Username')" />
-  <x-inputs.text-input id="username" class="block mt-2 w-full" type="text" name="username" :value="old('username')"
-   required placeholder="New nvr username" autocomplete="off" />
-  <x-input-error id="input-username-error"></x-input-error>
- </div>
-
- <div class="mt-2">
-  <x-input-label for="password" :value="__('password')" />
-  <x-inputs.text-input id="password" class="block mt-2 w-full" type="text" name="password" :value="old('password')"
-   required placeholder="New nvr password" autocomplete="off" />
-  <x-input-error id="input-password-error"></x-input-error>
+  <x-input-label for="auth_type" :value="__('Auth Type')" required />
+  <x-inputs.text-input id="auth_type" class="block mt-2 w-full" type="text" name="auth_type" :value="old('auth_type')"
+   required placeholder="New nvr auth type" autocomplete="off" required />
+  <x-input-error id="input-auth_type-error"></x-input-error>
  </div>
 
  <div class="mt-2">
@@ -71,14 +84,14 @@
  </div>
 
  <div class="mt-2">
-  <x-input-label for="camera_id" :value="__('Camera')" />
-  <select id="select-camera" placeholder="Select camera..." autocomplete="off" name="camera_id" class="my-2">
+  <x-input-label for="field_id" :value="__('Field')" required />
+  <select id="select-field" placeholder="Select field..." autocomplete="off" name="field_id" class="my-1.5" required>
   </select>
  </div>
 
  <div class="mt-2">
-  <x-input-label for="is_active" :value="__('Active?')" />
-  <x-inputs.toggle-input id="is_active" name="is_active" />
+  <x-input-label for="is_active" :value="__('Active?')" required />
+  <x-inputs.toggle-input id="is_active" name="is_active" required />
   <x-input-error id="input-is_active-error"></x-input-error>
  </div>
 
