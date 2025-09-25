@@ -8,7 +8,7 @@
     <button @click="open = !open" id="dropdownDividerButton" :class="open 
             ? 'bg-white-owl text-hot-shot' 
             : 'text-after-midnight hover:bg-white-owl hover:text-hot-shot'"
-        class="focus:ring-0 focus:outline-none font-medium rounded-xl text-sm px-5 py-2.5 text-center inline-flex items-center transition-colors"
+        class="focus:ring-0 focus:outline-none font-medium rounded-xl text-xs md:text-sm px-5 py-2.5 text-center inline-flex items-center transition-colors"
         type="button">
         <i data-lucide="{{ $iconTrigger }}" class="w-4 h-4 me-2"></i>
         {{ $trigger }}

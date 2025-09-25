@@ -1,0 +1,3 @@
+#recordingList {
+    transition: grid-template-columns 0.5s ease-in-out;
+}

@@ -168,6 +168,15 @@ class RecordedSearchService
 
                     $this->generateThumbnail($videoPath, $thumbnailPath);
 
+                    // Convert video format to web browser friendly
+                    $convertedPath = storage_path("app/public/recordings/converted_" . $filename);
+                    $this->convertToWebFormat($videoPath, $convertedPath);
+
+                    if (file_exists($convertedPath)) {
+                        unlink($videoPath);
+                        rename($convertedPath, $videoPath);
+                    }
+
                     $savedFiles[] = [
                         'path' => 'recordings/' . $filename,
                         'filename' => $filename,
@@ -203,6 +212,7 @@ class RecordedSearchService
         return $savedFiles;
     }
 
+    // ========== Generate thumbnail ==========
     public function generateThumbnail(string $videoPath, string $thumbnailPath): void
     {
         @mkdir(dirname($thumbnailPath), 0777, true);
@@ -223,6 +233,31 @@ class RecordedSearchService
 
         if (!$process->isSuccessful()) {
             Log::channel('camera-record')->error("[THUMBNAIL GENERATE] Failed : ", [$process]);
+            throw new ProcessFailedException($process);
+        }
+    }
+
+    // ========== Convert video format to web friendly ==========
+    protected function convertToWebFormat(string $inputPath, string $outputPath): void
+    {
+        $process = new Process([
+            'ffmpeg',
+            '-y',
+            '-i',
+            $inputPath,
+            '-c:v',
+            'copy',
+            '-c:a',
+            'aac',
+            '-b:a',
+            '128k',
+            $outputPath
+        ]);
+
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            Log::channel('camera-record')->error("[VIDEO CONVERT] Failed : ", [$process->getErrorOutput()]);
             throw new ProcessFailedException($process);
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Models\Record;
 
 use App\Models\Master\Field;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -10,10 +11,15 @@ class Recording extends Model
 {
     protected $guarded = ['id'];
 
-    protected $with = ['field', 'recordingLog', 'recordedVideo'];
+    protected $with = ['user', 'field', 'recordingLog', 'recordedVideo'];
 
     public const Searchable = ['user_id', 'field_id', 'camera_id', 'video_name', 'start_time', 'end_time'];
     public const Unsearchable = ['id', 'duration', 'video_path', 'video_filename', 'video_size', 'created_at', 'updated_at'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function field()
     {

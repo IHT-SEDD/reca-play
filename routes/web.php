@@ -14,12 +14,12 @@ use App\Http\Controllers\{
     UserManagement\UserManagementController,
     Venue\VenueController,
 };
+use App\Http\Controllers\Home\HomeController;
 use Illuminate\Support\Facades\Route;
 
 #region Home
-Route::get('/', function () {
-    return view('pages.home.index');
-})->name('home.index');
+Route::get('/', [HomeController::class, 'index'])->name('home.index');
+Route::get('/video-list', [HomeController::class, 'getVideos'])->name('home.data');
 
 // Guest Users
 Route::middleware('guest')->group(function () {
@@ -29,6 +29,12 @@ Route::middleware('guest')->group(function () {
 
 // Authenticated & Verified Users
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Share video & watch
+    Route::middleware('throttle:share-video')->group(function () {
+        Route::post('/share/{videoId}', [HomeController::class, 'shareVideo'])->name('home.share');
+        Route::get('/video/watch/{videoEncrypt}', [HomeController::class, 'watchVideo'])->name('home.watch');
+    });
+
     Route::get('/camera/live', [TestingController::class, 'livePreview'])->name('camera.live');
     Route::post('/api/camera/start-recording', [TestingController::class, 'start']);
     Route::post('/api/camera/stop-recording', [TestingController::class, 'stop']);
@@ -49,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     #region My Recording
     Route::prefix('my-recording')->group(function () {
         Route::get('/', [RecordingController::class, 'index'])->name('recording.index');
-        Route::get('/video/{video}', [RecordingController::class, 'show'])->name('recording.show');
+        Route::get('/recording-data', [RecordingController::class, 'getRecordings'])->name('recording.data');
     });
 
     #region Creator

@@ -22,22 +22,20 @@
     </div>
    </div>
 
-   <!-- Toolbar -->
+   <!-- Toolbar Pagination -->
    <div class="mb-8 w-full flex flex-col md:flex-row justify-between items-center">
     <!-- Showing Data -->
-    <h1 class=" md:text-lg text-sm md:mb-0 mb-4 font-medium text-after-midnight">
-     Showing 10 to 10 of 10 videos
+    <h1 id="showing-info" class="md:text-lg text-sm md:mb-0 mb-4 font-medium text-after-midnight">
+     Showing 0 to 0 of 0 videos
     </h1>
+
     <!-- Pagination -->
-    <div class="flex items-center justify-end">
-     <button>
+    <div class="flex items-center justify-end gap-2" id="pagination">
+     <button id="prevPage" class="disabled:opacity-50">
       <i data-lucide="circle-chevron-left" class="w-5 h-5"></i>
      </button>
-     <p class="text-sm mx-4 font-medium text-hot-shot">1</p>
-     <p class="text-sm mx-4 font-medium text-magnesium">2</p>
-     <p class="text-sm mx-4 font-medium text-magnesium">3</p>
-     <p class="text-sm mx-4 font-medium text-magnesium">4</p>
-     <button>
+     <span id="pageNumbers" class="flex gap-2 text-sm font-medium"></span>
+     <button id="nextPage" class="disabled:opacity-50">
       <i data-lucide="circle-chevron-right" class="w-5 h-5"></i>
      </button>
     </div>
@@ -45,8 +43,18 @@
 
    <!-- Recording List -->
    <div class="mb-6 w-full flex justify-center items-center">
-    @include('pages.recording.partials.recording_list')
+    <div id="recordingList"
+     class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 transition-all duration-500 ease-in-out">
+    </div>
    </div>
   </div>
  </div>
+
+ @push('styles')
+ <link rel="stylesheet" href="{{ asset('assets/css/recording/index.css') }}">
+ @endpush
+
+ @push('scripts')
+ <script src="{{ asset('assets/js/recording/index.js') }}"></script>
+ @endpush
 </x-app-layout>
