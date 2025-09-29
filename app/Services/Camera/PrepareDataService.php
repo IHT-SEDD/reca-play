@@ -31,11 +31,11 @@ class PrepareDataService
  {
   $urlStart = Api::where('name', 'LIKE', '%Start Manual Recording%')->value('url');
   $urlStop = Api::where('name', 'LIKE', '%Stop Manual Recording%')->value('url');
-  $portHttps = Port::where('name', 'HTTPS')->value('port_number');
+  $portHttps = Port::where('name', '%HTTPS%')->value('port_number');
 
   if (!$urlStart || !$urlStop || !$portHttps) {
-   Log::channel('camera-control')->error("Config host/port tidak lengkap");
-   throw new \RuntimeException('Config host/port tidak lengkap');
+   Log::channel('camera-control')->error("Config host/port not complete");
+   throw new \RuntimeException('Config host/port not complete');
   }
 
   return [

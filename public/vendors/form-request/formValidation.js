@@ -122,6 +122,26 @@ const FormValidation = (() => {
         });
     }
 
+    // ========== Public methods to add/remove rules ==========
+    function addRule(field, rule, value, message = null) {
+        if (!_rules[field]) _rules[field] = {};
+        _rules[field][rule] = value;
+
+        if (message) {
+            if (!_messages[field]) _messages[field] = {};
+            _messages[field][rule] = message;
+        }
+    }
+
+    function removeRule(field, rule) {
+        if (_rules[field]) {
+            delete _rules[field][rule];
+        }
+        if (_messages[field]) {
+            delete _messages[field][rule];
+        }
+    }
+
     // ========== Init function ==========
     function init({
         formSelector = ".ajax-form",
@@ -154,5 +174,7 @@ const FormValidation = (() => {
     return {
         init,
         validateForm,
+        addRule,
+        removeRule,
     };
 })();

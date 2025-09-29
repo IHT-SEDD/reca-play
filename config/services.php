@@ -45,5 +45,7 @@ return [
         'host' => env('MEDIAMTX_HOST', '127.0.0.1:8889'),
     ],
 
-
+    'under_maintenance' => [
+        'status' => env('APP_UNDER_MAINTENANCE', false),
+    ],
 ];

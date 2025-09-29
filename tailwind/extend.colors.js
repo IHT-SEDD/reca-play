@@ -4,13 +4,17 @@ export default {
     "white-owl": "#f5f4f4",
     "white-edgar": "#EEEDED",
     orochimaru: "#D9D9D9",
+
+    // Shades of grey
     magnesium: "#C2C2C2",
+    adhesion: "#9e9ea9",
+    "evening-inparis": "#93939f",
+    carbon: "#7d7d8c",
+    "reversed-grey": "#080808",
 
     // Shades of black
-    "adhesion": "#9e9ea9",
-    "evening-inparis": "#93939f",
-    "carbon": "#7d7d8c",
     "after-midnight": "#38383F",
+    "thamar-black": "#181818",
     "eerie-black": "#1C1C1C",
     "chaos-black": "#0F0F0F",
 
@@ -29,7 +33,11 @@ export default {
 
     // Shades of green
     "lilliputian-lime": "#7ed957",
+    "paradise-green": "#3e8545",
     "exit-light": "#5cc62f",
     "toxic-essence": "#ccf0bc",
     "winter-oasis": "#f2fbee",
+
+    // Shaedes of purple
+    "swiss-plum": "#5745b7",
 };

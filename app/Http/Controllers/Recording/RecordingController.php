@@ -12,24 +12,15 @@ class RecordingController extends Controller
 {
     public function index()
     {
-        $recordings = $this->getUserRecordings();
-        return view('pages.recording.index', compact('recordings'));
+        return view('pages.recording.index');
     }
 
-    protected function getUserRecordings()
+    public function getRecordings()
     {
-        return Recording::with(['field', 'recordedVideo'])
-            ->where('user_id', Auth::user()->id)
-            ->latest()
-            ->paginate(20);
-    }
+        $recordings = Recording::with(['field.venue', 'recordedVideo'])
+            ->where('user_id', Auth::id())
+            ->get();
 
-    public function show(RecordedVideo $video)
-    {
-        $path = storage_path('app/public/' . $video->video_path);
-
-        if (! file_exists($path)) {
-            abort(404, 'Video not found.');
-        }
+        return response()->json($recordings);
     }
 }

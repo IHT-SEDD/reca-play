@@ -19,7 +19,9 @@
 ])
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="bumblebee">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    x-data="{ darkMode: localStorage.getItem('dark') === 'true' }" x-bind:class="{ 'dark': darkMode }"
+    x-init="$watch('darkMode', val => localStorage.setItem('dark', val))" data-theme="bumblebee">
 
 <head>
     <meta charset="utf-8">
@@ -39,12 +41,17 @@
 </head>
 
 <body class="font-sans antialiased">
-    <div class="min-h-screen flex flex-col bg-white-chalk">
+    <div class="min-h-screen flex flex-col bg-white-chalk dark:bg-reversed-grey">
         @include('layouts.navigation')
 
         <!-- Super admin menu -->
         @if (Auth::user() && Auth::user()->isSuperAdmin())
         @include('layouts.superadmin-navigation')
+        @endif
+
+        <!-- Owner menu -->
+        @if (Auth::user() && Auth::user()->isOwner())
+        @include('layouts.owner-navigation')
         @endif
 
         <!-- Page Content -->

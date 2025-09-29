@@ -3,6 +3,8 @@
 namespace App\Services\Support;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Role;
 
 class SelectOptionService
 {
@@ -20,6 +22,7 @@ class SelectOptionService
       'qr-code' => [\App\Models\Master\QrCode::class, true],
       'venue' => [\App\Models\Master\Venue::class, false],
       'venue-type' => [\App\Models\Master\VenueType::class, true],
+      'role' => [Role::class, true],
     ];
 
     if (!isset($map[$option])) {
@@ -35,7 +38,7 @@ class SelectOptionService
   {
     $query = $model::query()->select('id', 'name as text');
 
-    if ($filterActive) {
+    if ($filterActive && Schema::hasColumn((new $model)->getTable(), 'is_active')) {
       $query->where('is_active', true);
     }
 

@@ -11,6 +11,8 @@ import daisyuiConfig from "./tailwind/daisyui-config.js";
 
 /** @type {import('tailwindcss').Config} */
 export default {
+    darkMode: "class",
+
     content: [
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./storage/framework/views/*.php",
@@ -25,7 +27,9 @@ export default {
                 sans: ["Montserrat", ...defaultTheme.fontFamily.sans],
             },
             // ========== CUSTOM COLORS ==========
-            colors: customColors,
+            colors: {
+                ...customColors,
+            },
             // ========== CUSTOM SIZES ==========
             maxWidth: customSizes,
         },
