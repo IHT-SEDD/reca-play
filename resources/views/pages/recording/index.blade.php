@@ -2,10 +2,10 @@
  <div class="py-8">
   <div class="w-full mx-auto md:px-8 px-5">
    <!-- Header -->
-   <div class="mb-6 w-full flex flex-col md:flex-row justify-between items-center">
-    <div class="flex justify-between items-center gap-3 md:mb-0 mb-4">
+   <div class="mb-6 w-full flex flex-col lg:flex-row justify-between items-center">
+    <div class="flex justify-between items-center gap-3 lg:mb-0 mb-4">
      <!-- Title -->
-     <h1 class=" md:text-4xl text-2xl font-bold text-after-midnight">
+     <h1 class="lg:text-4xl text-2xl font-bold text-after-midnight dark:text-white-chalk">
       MY RECORDINGS
      </h1>
 
@@ -25,17 +25,17 @@
    <!-- Toolbar Pagination -->
    <div class="mb-8 w-full flex flex-col md:flex-row justify-between items-center">
     <!-- Showing Data -->
-    <h1 id="showing-info" class="md:text-lg text-sm md:mb-0 mb-4 font-medium text-after-midnight">
+    <h1 id="showing-info" class="md:text-lg text-sm md:mb-0 mb-4 font-medium text-after-midnight dark:text-white-edgar">
      Showing 0 to 0 of 0 videos
     </h1>
 
     <!-- Pagination -->
     <div class="flex items-center justify-end gap-2" id="pagination">
-     <button id="prevPage" class="disabled:opacity-50">
+     <button id="prevPage" class="disabled:opacity-50 dark:text-white-edgar text-after-midnight">
       <i data-lucide="circle-chevron-left" class="w-5 h-5"></i>
      </button>
      <span id="pageNumbers" class="flex gap-2 text-sm font-medium"></span>
-     <button id="nextPage" class="disabled:opacity-50">
+     <button id="nextPage" class="disabled:opacity-50 dark:text-white-edgar text-after-midnight">
       <i data-lucide="circle-chevron-right" class="w-5 h-5"></i>
      </button>
     </div>
