@@ -145,6 +145,12 @@ return [
             'level' => 'debug',
         ],
 
+        'user_add_data' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/user/add-data.log'),
+            'level' => 'debug',
+        ],
+
         'creator' => [
             'driver' => 'single',
             'path' => storage_path('logs/creator/creator.log'),

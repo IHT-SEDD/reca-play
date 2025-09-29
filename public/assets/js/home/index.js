@@ -36,7 +36,7 @@ renderList = (videos) => {
 
     if (!videos || videos.length === 0) {
         listContainer.innerHTML = `
-            <p class="col-span-5 text-center text-sm text-magnesium">
+            <p class="col-span-5 text-center text-sm text-magnesium dark:text-white">
                 No videos found.
             </p>`;
         return;
@@ -49,30 +49,30 @@ renderList = (videos) => {
                 `
                 <div class="w-full">
                     <!-- Thumbnail -->
-                    <div class="bg-base-300 rounded-xl p-3 h-40 mb-2 relative"
+                    <div class="bg-base-200 rounded-xl p-3 min-h-44 mb-2 relative"
                          style="background-image: url('/storage/${
                              video.thumbnail_path
                          }');
                                 background-size: cover;
                                 background-position: center;">
-                        <div class="absolute bottom-2 right-3 text-sm font-mono bg-eerie-black/70 text-white p-2 rounded-xl">
+                        <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black/70 text-white p-2 rounded-xl">
                             ${videoItem.duration ?? "-"}
                         </div>
                     </div>
 
                     <!-- Description -->
                     <div class="text-sm space-y-1">
-                        <p class="font-medium">${
+                        <p class="font-medium text-hot-shot">${
                             videoItem.video_name ?? "-"
                         }</p>
-                        <p class="text-magnesium text-xs">
+                        <p class="text-after-midnight/50 dark:text-white-owl text-xs">
                             ${formatDateTime(videoItem.created_at)}
                         </p>
-                        <p class="flex items-center text-xs">
+                        <p class="flex items-center text-xs text-after-midnight dark:text-white-owl">
                             <i data-lucide="user" class="w-4 h-4 md:me-2"></i>
                             ${videoItem.user?.name ?? "Unknown"}
                         </p>
-                        <p class="text-xs font-medium tracking-wide">
+                        <p class="text-xs font-medium tracking-wide text-after-midnight dark:text-white-owl">
                             ${videoItem.field?.name ?? "-"} at ${
                     videoItem.field?.venue?.name ?? "-"
                 }
@@ -81,7 +81,7 @@ renderList = (videos) => {
 
                     <!-- Share Button -->
                     <div class="mt-2">
-                        <button class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition tooltip tooltip-bottom"
+                        <button class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
                                 data-id="${video.id}"
                                 data-tip="share">
                             <i data-lucide="forward" class="w-4 h-4"></i>

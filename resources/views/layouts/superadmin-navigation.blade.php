@@ -1,4 +1,5 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-base-200 py-3">
+<nav x-data="{ open: false }"
+  class="bg-white dark:bg-thamar-black border-b border-base-200 dark:border-transparent py-3">
   <!-- Primary Navigation Menu -->
   <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-end h-fit items-center">
@@ -8,52 +9,52 @@
         <x-dropdown.dropdown-flowbite trigger="Masters">
           <li class="w-full">
             <a href="{{ url('master/venue') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Venues
             </a>
             <a href="{{ url('master/venue-type') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Venue Types
             </a>
             <a href="{{ url('master/field') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Fields
             </a>
             <a href="{{ url('master/role') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Roles
             </a>
             <a href="{{ url('master/category') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Categories
             </a>
             <a href="{{ url('master/camera') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Cameras
             </a>
             <a href="{{ url('master/nvr') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               NVR's
             </a>
             <a href="{{ url('master/qr_code') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               QR Codes
             </a>
             <a href="{{ url('master/port') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               Port
             </a>
             <a href="{{ url('master/api') }}"
-              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+              class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot dark:hover:bg-orochimaru dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
               <i data-lucide="dot" class="w-4 h-auto me-2"></i>
               API
             </a>
@@ -69,7 +70,7 @@
       <!-- Hamburger -->
       <div class="-me-2 flex items-center sm:hidden">
         <button @click="open = ! open"
-          class="inline-flex items-center justify-center p-2 rounded-md text-after-midnight hover:text-hot-shot transition duration-150 ease-in-out">
+          class="inline-flex items-center justify-center p-2 rounded-md text-after-midnight dark:text-white hover:text-hot-shot dark:hover:text-hot-shot transition duration-150 ease-in-out">
           <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
             <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round"
               stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -89,7 +90,7 @@
       <div x-data="{ open: false }" class="sm:hidden">
         <!-- Toggle button -->
         <button @click="open = !open"
-          class="flex items-center justify-between w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start tracking-wide capitalize text-after-midnight font-medium hover:text-hot-shot hover:border-hot-shot transition duration-150 ease-in-out text-sm">
+          class="flex items-center justify-between w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start tracking-wide capitalize text-after-midnight dark:text-white font-medium hover:text-hot-shot dark:hover:text-hot-shot hover:border-hot-shot transition duration-150 ease-in-out text-sm">
           Masters
           <!-- Chevron -->
           <i data-lucide="chevron-down" :class="{ 'rotate-180': open }"

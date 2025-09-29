@@ -1,11 +1,14 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-base-200 py-3">
+<nav x-data="{ open: false }" class="bg-white dark:bg-thamar-black border-b border-base-200 dark:border-white/20 py-3">
     <!-- Primary Navigation Menu -->
     <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-fit items-center">
             <!-- Logo -->
             <div class="shrink-0 flex items-center">
                 <a href="/">
-                    <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA"
+                    <img x-show="!darkMode" src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA"
+                        class="w-8 h-8 md:w-11 md:h-11">
+
+                    <img x-show="darkMode" src="{{ asset('assets/img/logos/reca-white.png') }}" alt="Logo RECA"
                         class="w-8 h-8 md:w-11 md:h-11">
                 </a>
             </div>
@@ -32,11 +35,27 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <!-- Dark Mode toggle -->
+                <button @click="darkMode = !darkMode"
+                    class="p-1.5 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 me-4">
+                    <!-- Sun (Light mode) -->
+                    <div :class="darkMode ? 'bg-transparent text-white' : 'bg-base-200 text-hot-shot'"
+                        class="p-2 rounded-full transition">
+                        <i data-lucide="sun" class="w-4 h-auto"></i>
+                    </div>
+                    <!-- Moon (Dark mode) -->
+                    <div :class="darkMode ? 'bg-white text-eerie-black' : 'bg-transparent text-eerie-black'"
+                        class="p-2 rounded-full transition">
+                        <i data-lucide="moon" class="w-4 h-auto"></i>
+                    </div>
+                </button>
+
+                <!-- User dropdown -->
                 <x-dropdown.dropdown-flowbite :trigger="Auth::user()->name ?? 'Welcome, Guest'" iconTrigger="user">
                     <li class="w-full">
                         @auth
                         <a href="{{ url('/profile/edit') }}"
-                            class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+                            class="rounded-lg px-4 py-2 hover:bg-white-owl dark:hover:bg-orochimaru hover:text-hot-shot dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
                             <i data-lucide="user-round-pen" class="w-4 h-auto me-2"></i>
                             Profile
                         </a>
@@ -44,7 +63,7 @@
                             @csrf
                             <a href="{{ url('/logout') }}"
                                 onclick="event.preventDefault(); this.closest('form').submit();"
-                                class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+                                class="rounded-lg px-4 py-2 hover:bg-white-owl dark:hover:bg-orochimaru hover:text-hot-shot dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
                                 <i data-lucide="log-out" class="w-4 h-auto me-2"></i>
                                 Logout
                             </a>
@@ -53,12 +72,12 @@
 
                         @guest
                         <a href="{{ url('/register') }}"
-                            class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+                            class="rounded-lg px-4 py-2 hover:bg-white-owl dark:hover:bg-orochimaru hover:text-hot-shot dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
                             <i data-lucide="user-round-plus" class="w-4 h-auto me-2"></i>
                             Register
                         </a>
                         <a href="{{ url('/login') }}"
-                            class="rounded-lg px-4 py-2 hover:bg-white-owl hover:text-hot-shot inline-flex justify-start items-center w-full">
+                            class="rounded-lg px-4 py-2 hover:bg-white-owl dark:hover:bg-orochimaru hover:text-hot-shot dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
                             <i data-lucide="log-in" class="w-4 h-auto me-2"></i>
                             Login
                         </a>
@@ -69,8 +88,22 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
+                <button @click="darkMode = !darkMode"
+                    class="p-1 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 me-4">
+                    <!-- Sun (Light mode) -->
+                    <div :class="darkMode ? 'bg-transparent text-white' : 'bg-base-200 text-hot-shot'"
+                        class="p-1 rounded-full transition">
+                        <i data-lucide="sun" class="w-3 h-auto"></i>
+                    </div>
+                    <!-- Moon (Dark mode) -->
+                    <div :class="darkMode ? 'bg-white text-eerie-black' : 'bg-transparent text-eerie-black'"
+                        class="p-1 rounded-full transition">
+                        <i data-lucide="moon" class="w-3 h-auto"></i>
+                    </div>
+                </button>
+
                 <button @click="open = ! open"
-                    class="inline-flex items-center justify-center p-2 rounded-md text-after-midnight hover:text-hot-shot transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-center p-2 rounded-md text-after-midnight dark:text-white hover:text-hot-shot dark:hover:text-hot-shot transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex"
                             stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -110,15 +143,17 @@
             <div class="px-4">
                 <!-- Text in auth mode only :begin -->
                 @auth
-                <div class="font-medium text-md text-after-midnight">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-after-midnight/80">{{ Auth::user()->email }}</div>
+                <div class="font-medium text-md text-after-midnight dark:text-white">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-sm text-after-midnight/80 dark:text-white-owl">{{ Auth::user()->email }}
+                </div>
                 @endauth
                 <!-- Text in auth mode only :end -->
 
                 <!-- Text in guest mode only :begin -->
                 @guest
-                <div class="font-medium text-md text-after-midnight">Welcome, Guest!</div>
-                <div class="font-medium text-sm text-after-midnight/80">Please sign in or sign up to continue.</div>
+                <div class="font-medium text-md text-after-midnight dark:text-white">Welcome, Guest!</div>
+                <div class="font-medium text-sm text-after-midnight/80 dark:text-white-owl">Please sign in or sign up to
+                    continue.</div>
                 @endguest
                 <!-- Text in guest mode only :end -->
             </div>
