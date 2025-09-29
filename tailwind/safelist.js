@@ -83,4 +83,7 @@ export default [
 
     // ========== Gap ==========
     { pattern: /gap-[0-9]+/ },
+
+    // ========== Gap ==========
+    { pattern: /col-span-[0-9]+/ },
 ];

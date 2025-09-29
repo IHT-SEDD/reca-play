@@ -3,7 +3,8 @@ let renderList,
     renderPagination,
     goToPage,
     fetchRecordings,
-    formatDate;
+    formatDate,
+    flattenVideos;
 
 const perPage = 10;
 let currentPage = 1;
@@ -28,6 +29,16 @@ formatDate = (dateString) => {
     });
 };
 
+// ==== Utils: Flatten videos ==== //
+flattenVideos = () => {
+    return recordings.flatMap((rec) =>
+        (rec.recorded_video || []).map((video) => ({
+            ...video,
+            recording: rec,
+        }))
+    );
+};
+
 // ==== Fetch Recordings ==== //
 fetchRecordings = () => {
     return $.ajax({
@@ -36,7 +47,12 @@ fetchRecordings = () => {
         dataType: "json",
         success: (response) => {
             recordings = response ?? [];
-            total = recordings.length;
+
+            total = recordings.reduce(
+                (sum, rec) => sum + (rec.recorded_video?.length || 0),
+                0
+            );
+
             lastPage = Math.ceil(total / perPage);
 
             renderList();
@@ -53,57 +69,59 @@ fetchRecordings = () => {
 renderList = () => {
     listContainer.innerHTML = "";
 
+    const videos = flattenVideos();
     const start = (currentPage - 1) * perPage;
     const end = start + perPage;
-    const data = recordings.slice(start, end);
+    const data = videos.slice(start, end);
 
     if (data.length === 0) {
         listContainer.innerHTML = `<p class="col-span-5 text-center text-sm text-magnesium">No recordings found.</p>`;
         return;
     }
 
-    data.forEach((recording) => {
-        recording.recorded_video.forEach((video) => {
-            listContainer.insertAdjacentHTML(
-                "beforeend",
-                `
-                <div class="w-full">
-                    <!-- Thumbnail -->
-                    <div class="bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative"
-                         style="background-image: url('/storage/${
-                             video.thumbnail_path
-                         }');
-                                background-size: cover;
-                                background-position: center;">
-                        <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black/70 text-white p-2 rounded-xl">
-                            ${recording.duration ?? "-"}
-                        </div>
-                    </div>
-                    
-                    <!-- Info -->
-                    <div class="text-sm space-y-1">
-                        <div class="flex justify-between items-center gap-2">
-                            <p class="font-semibold">${recording.video_name}</p>
-                            <p class="font-medium text-adhesion text-xs tracking-wide">
-                                ${formatDate(recording.created_at)}
-                            </p>
-                        </div>
-                        <p class="text-xs tracking-wide">${
-                            recording.field?.venue?.name ?? "-"
-                        } - ${recording.field?.name ?? "-"}</p>
-                    </div>
-                    
-                    <!-- Share button -->
-                    <div class="mt-2">
-                        <button class="flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition tooltip tooltip-bottom"
-                                data-tip="share">
-                            <i data-lucide="forward" class="w-4 h-4"></i>
-                        </button>
+    data.forEach((item) => {
+        const rec = item.recording;
+        listContainer.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="w-full">
+                <!-- Thumbnail -->
+                <div class="bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative"
+                     style="background-image: url('/storage/${
+                         item.thumbnail_path
+                     }');
+                            background-size: cover;
+                            background-position: center;">
+                    <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black text-white p-2 rounded-xl">
+                        ${rec.duration ?? "-"}
                     </div>
                 </div>
-                `
-            );
-        });
+                
+                <!-- Info -->
+                <div class="text-sm space-y-1">
+                    <div class="flex justify-between items-center gap-2">
+                        <p class="font-semibold text-after-midnight dark:text-white-chalk">${
+                            rec.video_name
+                        }</p>
+                        <p class="font-medium text-adhesion text-xs tracking-wide">
+                            ${formatDate(rec.created_at)}
+                        </p>
+                    </div>
+                    <p class="text-xs tracking-wide text-after-midnight dark:text-white-chalk">${
+                        rec.field?.venue?.name ?? "-"
+                    } - ${rec.field?.name ?? "-"}</p>
+                </div>
+                
+                <!-- Share button -->
+                <div class="mt-2">
+                    <button class="flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition tooltip tooltip-bottom"
+                            data-tip="share">
+                        <i data-lucide="forward" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+            `
+        );
     });
 
     // Refresh icons
@@ -114,6 +132,11 @@ renderList = () => {
 
 // ==== Update Info ==== //
 updateInfo = () => {
+    if (total === 0) {
+        showingInfo.textContent = `Showing 0 to 0 of 0 videos`;
+        return;
+    }
+
     const from = (currentPage - 1) * perPage + 1;
     const to = Math.min(currentPage * perPage, total);
     showingInfo.textContent = `Showing ${from} to ${to} of ${total} videos`;
