@@ -2,6 +2,7 @@
 
 namespace App\Models\Record;
 
+use App\Models\Master\Camera;
 use App\Models\Master\Field;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -10,8 +11,7 @@ use Illuminate\Support\Carbon;
 class Recording extends Model
 {
     protected $guarded = ['id'];
-
-    protected $with = ['user', 'field', 'recordingLog', 'recordedVideo'];
+    protected $appends = ['duration_formatted'];
 
     public const Searchable = ['user_id', 'field_id', 'camera_id', 'video_name', 'start_time', 'end_time'];
     public const Unsearchable = ['id', 'duration', 'video_path', 'video_filename', 'video_size', 'created_at', 'updated_at'];
@@ -26,6 +26,11 @@ class Recording extends Model
         return $this->belongsTo(Field::class);
     }
 
+    public function camera()
+    {
+        return $this->belongsTo(Camera::class);
+    }
+
     public function recordingLog()
     {
         return $this->hasMany(RecordingLog::class);
@@ -38,6 +43,11 @@ class Recording extends Model
 
     public function getDurationAttribute()
     {
+        return $this->attributes['duration'] ?? null;
+    }
+
+    public function getDurationFormattedAttribute()
+    {
         if (!$this->start_time || !$this->end_time) {
             return null;
         }
@@ -45,7 +55,6 @@ class Recording extends Model
         $start = Carbon::parse($this->start_time);
         $end = Carbon::parse($this->end_time);
 
-        // ambil selisih dalam detik (selalu positif)
         $diffInSeconds = abs($end->diffInSeconds($start));
 
         $hours   = floor($diffInSeconds / 3600);

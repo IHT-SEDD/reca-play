@@ -13,9 +13,9 @@ use App\Http\Controllers\{
     Master\QrCode\QrCodeController,
     UserManagement\UserManagementController,
     Venue\VenueController,
+    Venue\Management\VenueManagementController
 };
 use App\Http\Controllers\Home\HomeController;
-use App\Http\Controllers\Venue\Management\VenueManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['check.maintenance'])->group(function () {
@@ -137,11 +137,18 @@ Route::middleware(['check.maintenance'])->group(function () {
 
         // Owner Routes
         Route::middleware('role:owner')->group(function () {
-            #region User Management
+            #region Venue Management
             Route::prefix('venue-management')->group(function () {
                 Route::get('/', [VenueManagementController::class, 'index'])->name('venue-management.index');
                 Route::get('/field-data', [VenueManagementController::class, 'fieldList'])->name('venue-management.field-list');
                 Route::get('/data', [VenueManagementController::class, 'data'])->name('venue-management.statistic-data');
+
+                Route::prefix('detail')->group(function () {
+                    Route::get('/{hashedId}', [VenueManagementController::class, 'detailFieldPage'])->name('venue-management.detail-field');
+                    Route::get('/data/{hashedId}', [VenueManagementController::class, 'detailFieldData'])->name('venue-management.detail-field-data');
+                    Route::get('/last-activity/data/{hashedId}', [VenueManagementController::class, 'lastActivity'])->name('venue-management.last-activity');
+                    Route::post('/status/update/{hashedId}', [VenueManagementController::class, 'updateStatusActive'])->name('venue-management.update-status');
+                });
             });
 
             #region Select Options

@@ -3,10 +3,12 @@
 namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
+use Vinkla\Hashids\Facades\Hashids;
 
 class Field extends Model
 {
     protected $guarded = ['id'];
+    protected $appends = ['hashed_id'];
 
     // protected $with = ['category', 'venue'];
 
@@ -33,5 +35,10 @@ class Field extends Model
     public function cameras()
     {
         return $this->hasMany(Camera::class);
+    }
+
+    public function getHashedIdAttribute()
+    {
+        return Hashids::connection('main')->encode($this->id);
     }
 }
