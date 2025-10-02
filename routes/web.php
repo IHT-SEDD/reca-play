@@ -13,7 +13,7 @@ use App\Http\Controllers\{
     Master\QrCode\QrCodeController,
     UserManagement\UserManagementController,
     Venue\VenueController,
-    Venue\Management\VenueManagementController
+    VenueManagement\VenueManagementController
 };
 use App\Http\Controllers\Home\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -46,8 +46,9 @@ Route::middleware(['check.maintenance'])->group(function () {
         Route::prefix('venue')->group(function () {
             Route::get('/', [VenueController::class, 'index'])->name('venue.index');
             Route::get('/data', [VenueController::class, 'data'])->name('venue.data');
-            Route::get('/detail/{code}', [VenueController::class, 'detail'])->name('venue.detail');
-            Route::get('/detail/{code}/data', [VenueController::class, 'dataDetailPage'])->name('venue.detail-data');
+            Route::get('/detail/{hashedId}', [VenueController::class, 'detail'])->name('venue.detail');
+            Route::get('/detail/data/{hashedId}', [VenueController::class, 'dataDetailPage'])->name('venue.detail-data');
+            Route::get('/detail/field/{hashedId}', [VenueController::class, 'dataField'])->name('venue.field-data');
         });
 
         #region Events
@@ -59,6 +60,7 @@ Route::middleware(['check.maintenance'])->group(function () {
         Route::prefix('my-recording')->group(function () {
             Route::get('/', [RecordingController::class, 'index'])->name('recording.index');
             Route::get('/recording-data', [RecordingController::class, 'getRecordings'])->name('recording.data');
+            Route::get('/watch/{hashedId}', [RecordingController::class, 'getRecordings'])->name('recording.data');
         });
 
         #region Creator

@@ -4,6 +4,7 @@ const colorNames = [
     "white-chalk",
     "white-owl",
     "white-edgar",
+    "christmas-silver",
     "orochimaru",
 
     // Shades of grey

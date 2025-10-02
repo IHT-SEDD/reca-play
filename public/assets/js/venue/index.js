@@ -22,7 +22,7 @@ populateData = (search = "", reset = true) => {
 
             if (venues.length === 0 && page === 1) {
                 container.html(
-                    `<p class="text-carbon w-full md:col-span-6 col-span-1 text-center text-lg font-semibold">No venues found.</p>`
+                    `<p class="text-adhesion dark:text-white-owl w-full md:col-span-6 col-span-1 text-center text-lg font-semibold">No venues found.</p>`
                 );
                 $("#seemore_btn").addClass("hidden");
                 return;
@@ -30,8 +30,10 @@ populateData = (search = "", reset = true) => {
 
             venues.forEach((venue) => {
                 let card = `
-                <a href="/venue/detail/${venue.code}">
-                    <div class="bg-white border border-base-200 shadow-sm rounded-xl py-3 px-4 h-fit w-full">
+                <a href="/venue/detail/${
+                    venue.hashed_id
+                }" target="_blank" rel="noopener noreferrer">
+                    <div class="bg-white dark:bg-christmas-silver dark:border-transparent border border-base-200 shadow-sm rounded-xl py-3 px-4 h-fit w-full">
                         <div class="flex justify-start gap-4 items-center w-fit">
                             <!-- Venue Logo -->
                             <div class="flex items-center justify-center rounded-full p-2">
@@ -43,8 +45,10 @@ populateData = (search = "", reset = true) => {
                             </div>
                             <!-- Venue Desc -->
                             <div class="flex flex-col justify-center items-start">
-                                <p class="text-sm font-medium">${venue.name}</p>
-                                <p class="text-sm text-magnesium">${
+                                <p class="text-sm font-medium text-after-midnight">${
+                                    venue.name
+                                }</p>
+                                <p class="text-sm text-carbon">${
                                     venue.address
                                 }</p>
                             </div>

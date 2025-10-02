@@ -1,10 +1,10 @@
-<div id="venue_loader" class="w-full justify-center absolute py-6 hidden">
+<div id="field_loader" class="w-full justify-center absolute py-6 hidden">
  <span class="loading loading-spinner text-hot-shot loading-lg"></span>
 </div>
 
 <div
  class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 transition-all duration-500 ease-in-out"
- id="container_venue_list">
+ id="container_field_list">
  <!-- See more btn -->
  <div class="items-center flex justify-center md:col-span-6 w-full mt-8">
   <x-secondary-button class="w-fit max-w-xs" btnId="seemore_btn" bg="bg-base-200" hoverBg="hover:bg-base-300"

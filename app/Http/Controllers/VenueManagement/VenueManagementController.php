@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Venue\Management;
+namespace App\Http\Controllers\VenueManagement;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\Field;
@@ -103,7 +103,10 @@ class VenueManagementController extends Controller
 
         $fieldId = $decoded[0];
 
-        $lastActivityData = Recording::with(['user'])->where('field_id', $fieldId);
+        $lastActivityData = Recording::with(['user'])
+            ->where('field_id', $fieldId)
+            ->orderByDesc('created_at')
+            ->limit(10);
 
         return CustomDatatableService::make(
             $lastActivityData,
