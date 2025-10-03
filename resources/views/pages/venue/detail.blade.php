@@ -1,37 +1,47 @@
 <x-app-layout :pageTitle="'Venue Detail'">
   <div class="py-8">
     <div class="w-full mx-auto md:px-8 px-5">
+      <!-- Back to venue list button :begin -->
+      <div class="w-full flex items-center justify-start gap-1.5 lg:mb-4 md:mb-3 mb-2">
+        <a href="{{ url('/venue') }}"
+          class="flex items-center justify-center gap-2 text-after-midnight hover:text-hot-shot text-xs lg:text-sm font-medium">
+          <i data-lucide="arrow-left" class="lg:w-5 md:w-4 w-3 h-auto"></i>
+          Back to venue list
+        </a>
+      </div>
+      <!-- Back to venue list button :end -->
+
       <!-- Venue Logo -->
       <div class="mb-3 w-full bg-base-200 rounded-xl h-12 p-2">
 
       </div>
 
       <!-- Text Header 1 -->
-      <div class="mb-2 w-full flex md:flex-row flex-col md:justify-between justify-center md:items-center items-start">
-        <h1 class=" md:text-4xl text-2xl font-bold text-after-midnight" id="venue_name">VENUE NAME</h1>
-        <h1 class=" md:text-2xl text-xl font-bold text-carbon" id="venue_address">VENUE ADDRESS</h1>
+      <div class="mb-4 w-full flex lg:flex-row flex-col justify-between lg:items-center md:items-center items-start">
+        <h1 class="lg:text-4xl md:text-3xl text-2xl font-bold text-hot-shot" id="venue_name"></h1>
+        <h1 class="lg:text-3xl md:text-2xl text-xl font-bold text-carbon" id="venue_address"></h1>
       </div>
 
       <!-- Venue description -->
       <div class="mb-4 w-full flex flex-col justify-center items-start gap-1">
-        <h1 class=" md:text-2xl text-xl font-bold text-after-midnight" id="venue_type">VENUE TYPE</h1>
+        <h1 class="lg:text-2xl md:text-xl text-lg font-bold text-after-midnight" id="venue_type"></h1>
         <div class="flex items-center justify-start gap-4 w-full">
-          <h1 class="md:text-lg text-md font-bold text-after-midnight">TOTAL COURT</h1>
-          <div class="md:text-lg text-md font-semibold text-hot-shot" id="total_court"></div>
+          <h1 class="lg:text-lg md:text-md text-sm font-bold text-after-midnight">TOTAL COURT</h1>
+          <div class="lg:text-lg md:text-md text-sm font-semibold text-hot-shot" id="total_court"></div>
         </div>
       </div>
 
       <!-- Search bar -->
-      <div class="mb-6 w-full flex justify-end items-center">
-        <div class="w-full max-w-xs">
-          <x-inputs.text-input id="search_venue" class="block mt-2 w-full" type="text" autofocus
-            placeholder="search venues..." />
+      <div class="md:mb-6 mb-3 w-full flex justify-end items-center">
+        <div class="w-full lg:max-w-xs md:max-w-xs">
+          <x-inputs.text-input id="search_field" class="block mt-2 w-full" type="text" autofocus
+            placeholder="search fields..." />
         </div>
       </div>
 
-      <!-- Venue List -->
+      <!-- Field List -->
       <div class="mb-6 w-full flex justify-center items-center">
-        {{-- @include('pages.venue.partials.venue_list') --}}
+        @include('pages.venue.partials.field_list')
       </div>
     </div>
   </div>

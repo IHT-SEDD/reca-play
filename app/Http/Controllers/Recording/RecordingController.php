@@ -17,10 +17,16 @@ class RecordingController extends Controller
 
     public function getRecordings()
     {
-        $recordings = Recording::with(['field.venue', 'recordedVideo'])
+        $recordings = Recording::select('*')
+            ->with(['field.venue', 'recordedVideo', 'user'])
             ->where('user_id', Auth::id())
             ->get();
 
         return response()->json($recordings);
+    }
+
+    public function watchVideo($hashedId)
+    {
+        return view('pages.recording.watch.video', compact('hashedId'));
     }
 }

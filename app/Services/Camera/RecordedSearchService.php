@@ -72,11 +72,11 @@ class RecordedSearchService
                     ->post("https://{$this->host}/ISAPI/ContentMgmt/search");
 
                 /** Uncomment this log for debugging the response XML ISAPI Search video */
-                // Log::channel('camera-record')->info("[RECORD SEARCH] Response XML for channel {$channel}", [
-                //     'payload' => $xmlPayload,
-                //     'status' => $response->status(),
-                //     'body' => $response->body()
-                // ]);
+                Log::channel('camera-record')->info("[RECORD SEARCH] Response XML for channel {$channel}", [
+                    'payload' => $xmlPayload,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
 
                 if (!$response->successful()) {
                     continue;
@@ -114,9 +114,7 @@ class RecordedSearchService
     public function downloadByPlaybackUris(array $playbackUris, int $fieldId, int $userId, string $videoName): array
     {
         $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
-        $savedFiles = [];
         $date = now()->format('dmy');
-        $sequence = 1;
 
         $client = new \GuzzleHttp\Client([
             'verify' => false,
@@ -124,92 +122,88 @@ class RecordedSearchService
             'timeout' => 0,
         ]);
 
+        $rawFiles = [];
+        $sequence = 1;
+
         foreach ($playbackUris as $playbackURI) {
             $xmlBody = $this->buildDownloadXmlPayload($playbackURI, $this->user, $this->pass);
+            $rawPath = storage_path("app/public/recordings/seg_{$sequence}.ps");
 
-            $success = false;
-            for ($attempt = 1; $attempt <= $this->downloadRetries; $attempt++) {
-                try {
-                    $filename = sprintf(
-                        '%s_%s_%d%d%d.mp4',
-                        $videoName,
-                        $date,
-                        $fieldId,
-                        $userId,
-                        $sequence
-                    );
-
-                    // $fullPath = storage_path("app/public/recordings/" . $filename);
-                    $videoPath = storage_path("app/public/recordings/" . $filename);
-                    @mkdir(dirname($videoPath), 0777, true);
-
-                    Log::channel('camera-record')->info("[RECORD DOWNLOAD] Request XML", [
-                        'playbackURI' => $playbackURI,
-                        'xmlBody' => $xmlBody
-                    ]);
-
-                    $response = $client->post($downloadUrl, [
-                        'headers' => [
-                            'Content-Type' => 'application/xml',
-                            'Accept' => '*/*'
-                        ],
-                        'body' => $xmlBody,
-                        'sink' => $videoPath,
-                    ]);
-
-                    Log::channel('camera-record')->info("[RECORD DOWNLOAD] Download response", [
-                        'status' => $response->getStatusCode(),
-                        'reason' => $response->getReasonPhrase()
-                    ]);
-
-                    $thumbnailDir = storage_path('app/public/thumbnails');
-                    @mkdir($thumbnailDir, 0777, true);
-                    $thumbnailPath = $thumbnailDir . '/' . pathinfo($filename, PATHINFO_FILENAME) . '_thumb.jpg';
-
-                    $this->generateThumbnail($videoPath, $thumbnailPath);
-
-                    // Convert video format to web browser friendly
-                    $convertedPath = storage_path("app/public/recordings/converted_" . $filename);
-                    $this->convertToWebFormat($videoPath, $convertedPath);
-
-                    if (file_exists($convertedPath)) {
-                        unlink($videoPath);
-                        rename($convertedPath, $videoPath);
-                    }
-
-                    $savedFiles[] = [
-                        'path' => 'recordings/' . $filename,
-                        'filename' => $filename,
-                        'size' => filesize($videoPath),
-                        'thumbnail' => 'thumbnails/' . pathinfo($filename, PATHINFO_FILENAME) . '_thumb.jpg'
-                    ];
-
-                    Log::channel('camera-record')->info("[RECORD DOWNLOAD] Video & thumbnail saved", [
-                        'video' => $videoPath,
-                        'thumbnail' => $thumbnailPath
-                    ]);
-
-                    $success = true;
-                    break;
-                } catch (\Throwable $e) {
-                    Log::channel('camera-record')->error("[RECORD DOWNLOAD] Error attempt #{$attempt}", [
-                        'playbackURI' => $playbackURI,
-                        'exception' => $e->getMessage()
-                    ]);
-                    sleep(2);
-                }
-            }
-
-            if (!$success) {
-                Log::channel('camera-record')->error("[RECORD DOWNLOAD] Failed after {$this->downloadRetries} attempts", [
-                    'playbackURI' => $playbackURI
+            try {
+                @mkdir(dirname($rawPath), 0777, true);
+                $client->post($downloadUrl, [
+                    'headers' => [
+                        'Content-Type' => 'application/xml',
+                        'Accept' => '*/*'
+                    ],
+                    'body' => $xmlBody,
+                    'sink' => $rawPath,
+                ]);
+                $rawFiles[] = $rawPath;
+            } catch (\Throwable $e) {
+                Log::channel('camera-record')->error("[RECORD DOWNLOAD] Error seg {$sequence}", [
+                    'playbackURI' => $playbackURI,
+                    'exception' => $e->getMessage()
                 ]);
             }
-
             $sequence++;
         }
 
-        return $savedFiles;
+        // gabungkan semua segmen
+        $concatFile = storage_path("app/public/recordings/concat_{$videoName}_{$date}.mp4");
+        $listFile = storage_path("app/public/recordings/concat_list.txt");
+
+        $fileList = "";
+        foreach ($rawFiles as $rf) {
+            $fileList .= "file '" . $rf . "'\n";
+        }
+        file_put_contents($listFile, $fileList);
+
+        $process = new Process([
+            'ffmpeg',
+            '-y',
+            '-f',
+            'concat',
+            '-safe',
+            '0',
+            '-i',
+            $listFile,
+            '-c:v',
+            'copy',
+            '-c:a',
+            'aac',
+            '-b:a',
+            '128k',
+            $concatFile
+        ]);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $finalFile = storage_path("app/public/recordings/{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
+        $this->trimVideo($concatFile, $finalFile, $this->startTime, $this->endTime);
+
+        $thumbnailDir = storage_path('app/public/thumbnails');
+        @mkdir($thumbnailDir, 0777, true);
+        $thumbnailPath = $thumbnailDir . '/' . pathinfo($finalFile, PATHINFO_FILENAME) . '_thumb.jpg';
+
+        $this->generateThumbnail($finalFile, $thumbnailPath);
+
+        // cleanup temp
+        @unlink($concatFile);
+        @unlink($listFile);
+        foreach ($rawFiles as $rf) {
+            @unlink($rf);
+        }
+
+        return [[
+            'path' => 'recordings/' . basename($finalFile),
+            'filename' => basename($finalFile),
+            'size' => filesize($finalFile),
+            'thumbnail' => 'thumbnails/' . pathinfo($finalFile, PATHINFO_FILENAME) . '_thumb.jpg'
+        ]];
     }
 
     // ========== Generate thumbnail ==========
@@ -220,10 +214,10 @@ class RecordedSearchService
         $process = new Process([
             'ffmpeg',
             '-y',
+            '-ss',
+            '2',
             '-i',
             $videoPath,
-            '-ss',
-            '00:00:10',
             '-vframes',
             '1',
             $thumbnailPath
@@ -231,33 +225,42 @@ class RecordedSearchService
 
         $process->run();
 
+        Log::channel('camera-record')->info("[THUMBNAIL GENERATE] THUMBNAIL STDOUT", [$process->getOutput()]);
+        Log::channel('camera-record')->error("[THUMBNAIL GENERATE] THUMBNAIL STDERR", [$process->getErrorOutput()]);
+
         if (!$process->isSuccessful()) {
             Log::channel('camera-record')->error("[THUMBNAIL GENERATE] Failed : ", [$process]);
             throw new ProcessFailedException($process);
         }
+
+        Log::channel('camera-record')->info("[THUMBNAIL GENERATE] Thumbnail generated", [
+            'thumbnailPath' => $thumbnailPath,
+        ]);
     }
 
-    // ========== Convert video format to web friendly ==========
-    protected function convertToWebFormat(string $inputPath, string $outputPath): void
+    // ========== Trim video sesuai start-end ==========
+    protected function trimVideo(string $input, string $output, string $start, string $end): void
     {
+        $startSec = strtotime($start);
+        $endSec   = strtotime($end);
+        $duration = $endSec - $startSec;
+
         $process = new Process([
             'ffmpeg',
             '-y',
+            '-ss',
+            '0',
             '-i',
-            $inputPath,
-            '-c:v',
+            $input,
+            '-t',
+            $duration,
+            '-c',
             'copy',
-            '-c:a',
-            'aac',
-            '-b:a',
-            '128k',
-            $outputPath
+            $output
         ]);
-
         $process->run();
 
         if (!$process->isSuccessful()) {
-            Log::channel('camera-record')->error("[VIDEO CONVERT] Failed : ", [$process->getErrorOutput()]);
             throw new ProcessFailedException($process);
         }
     }

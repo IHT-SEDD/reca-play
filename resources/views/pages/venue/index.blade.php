@@ -3,7 +3,7 @@
   <div class="w-full mx-auto md:px-8 px-5">
    <!-- Text Header 1 -->
    <div class="md:mb-8 mb-4 w-full flex justify-center items-center text-center">
-    <h1 class="md:text-4xl text-2xl font-bold text-after-midnight">
+    <h1 class="md:text-4xl text-2xl font-bold text-after-midnight dark:text-white-owl">
      LIST ALL VENUES THAT HAS
      <span class="text-hot-shot">INTEGRATED</span>
      WITH US
@@ -11,15 +11,15 @@
    </div>
 
    <!-- Text Header 2 -->
-   <div class="md:mb-8 mb-4 w-full flex justify-center items-center">
-    <h1 class=" md:text-2xl text-lg font-medium text-after-midnight">
+   <div class="md:mb-8 mb-4 w-full flex justify-center items-center text-center">
+    <h1 class="md:text-2xl text-lg font-medium text-after-midnight dark:text-white-owl/80">
      Hit our contact for integrating your venue with us!
     </h1>
    </div>
 
    <!-- Search bar -->
    <div class="md:mb-6 mb-3 w-full flex justify-end items-center">
-    <div class="w-full max-w-xs">
+    <div class="w-full lg:max-w-xs md:max-w-xs">
      <x-inputs.text-input id="search_venue" class="block mt-2 w-full" type="text" autofocus
       placeholder="search venues..." />
     </div>

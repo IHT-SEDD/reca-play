@@ -36,37 +36,41 @@
 
     <!-- Scripts CSS :begin -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('vendors/simplebar/simplebar.css') }}" />
     @stack('styles')
     <!-- Scripts CSS :end -->
 </head>
 
 <body class="font-sans antialiased">
-    <div class="min-h-screen flex flex-col bg-white-chalk dark:bg-reversed-grey">
-        @include('layouts.navigation')
+    <div data-simplebar style="height: 100vh;">
+        <div class="min-h-screen flex flex-col bg-white-chalk dark:bg-reversed-grey">
+            @include('layouts.navigation')
 
-        <!-- Super admin menu -->
-        @if (Auth::user() && Auth::user()->isSuperAdmin())
-        @include('layouts.superadmin-navigation')
-        @endif
+            <!-- Super admin menu -->
+            @if (Auth::user() && Auth::user()->isSuperAdmin())
+            @include('layouts.superadmin-navigation')
+            @endif
 
-        <!-- Owner menu -->
-        @if (Auth::user() && Auth::user()->isOwner())
-        @include('layouts.owner-navigation')
-        @endif
+            <!-- Owner menu -->
+            @if (Auth::user() && Auth::user()->isOwner())
+            @include('layouts.owner-navigation')
+            @endif
 
-        <!-- Page Content -->
-        <main class="flex-grow">
-            {{ $slot }}
-        </main>
+            <!-- Page Content -->
+            <main class="flex-grow">
+                {{ $slot }}
+            </main>
 
-        <footer class="mt-auto">
-            @include('layouts.footer')
-        </footer>
+            <footer class="mt-auto">
+                @include('layouts.footer')
+            </footer>
+        </div>
     </div>
 
     <!-- Scripts JS :begin -->
     <script src="{{ asset('vendors/jquery/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('vendors/dayjs/dayjs.min.js') }}"></script>
+    <script src="{{ asset('vendors/simplebar/simplebar.min.js') }}"></script>
     @stack('scripts')
     <!-- Scripts JS :end -->
 </body>

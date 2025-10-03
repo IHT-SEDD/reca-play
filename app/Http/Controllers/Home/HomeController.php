@@ -19,7 +19,7 @@ class HomeController extends Controller
     // ==== Get latest videos for homepage ==== //
     public function getVideos()
     {
-        $videos = Recording::with(['field.venue', 'recordedVideo'])
+        $videos = Recording::with(['field.venue', 'recordedVideo', 'user'])
             ->latest()
             ->take(10)
             ->get();

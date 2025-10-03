@@ -4,6 +4,7 @@ const colorNames = [
     "white-chalk",
     "white-owl",
     "white-edgar",
+    "christmas-silver",
     "orochimaru",
 
     // Shades of grey
@@ -37,6 +38,11 @@ const colorNames = [
     "exit-light",
     "toxic-essence",
     "winter-oasis",
+
+    // Shades of daisy ui
+    "base-100",
+    "base-200",
+    "base-300",
 ];
 
 // Generate class list langsung (tidak pakai regex)

@@ -37,7 +37,7 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <!-- Dark Mode toggle -->
                 <button @click="darkMode = !darkMode"
-                    class="p-1.5 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 me-4">
+                    class="p-1.5 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 dark:border-base-200/40 me-4">
                     <!-- Sun (Light mode) -->
                     <div :class="darkMode ? 'bg-transparent text-white' : 'bg-base-200 text-hot-shot'"
                         class="p-2 rounded-full transition">
@@ -89,7 +89,7 @@
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="darkMode = !darkMode"
-                    class="p-1 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 me-4">
+                    class="p-1 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 dark:border-base-200/40 me-4">
                     <!-- Sun (Light mode) -->
                     <div :class="darkMode ? 'bg-transparent text-white' : 'bg-base-200 text-hot-shot'"
                         class="p-1 rounded-full transition">

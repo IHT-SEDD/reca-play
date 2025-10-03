@@ -3,6 +3,7 @@ export default {
     "white-chalk": "#F7F4F1", // Background
     "white-owl": "#f5f4f4",
     "white-edgar": "#EEEDED",
+    "christmas-silver": "#e0e0e0",
     orochimaru: "#D9D9D9",
 
     // Shades of grey

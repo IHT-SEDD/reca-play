@@ -75,7 +75,7 @@ renderList = () => {
     const data = videos.slice(start, end);
 
     if (data.length === 0) {
-        listContainer.innerHTML = `<p class="col-span-5 text-center text-sm text-magnesium">No recordings found.</p>`;
+        listContainer.innerHTML = `<p class="col-span-5 text-center text-sm text-carbon dark:text-white-owl">No recordings found.</p>`;
         return;
     }
 
@@ -86,16 +86,17 @@ renderList = () => {
             `
             <div class="w-full">
                 <!-- Thumbnail -->
-                <div class="bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative"
-                     style="background-image: url('/storage/${
-                         item.thumbnail_path
-                     }');
-                            background-size: cover;
-                            background-position: center;">
+                <a href="/my-recording/watch/${item.id}" target="_blank"
+                   class="block bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative"
+                   style="background-image: url('/storage/${
+                       item.thumbnail_path
+                   }');
+                          background-size: cover;
+                          background-position: center;">
                     <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black text-white p-2 rounded-xl">
-                        ${rec.duration ?? "-"}
+                        ${rec.duration_formatted ?? "-"}
                     </div>
-                </div>
+                </a>
                 
                 <!-- Info -->
                 <div class="text-sm space-y-1">

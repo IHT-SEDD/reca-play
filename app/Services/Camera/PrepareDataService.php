@@ -31,7 +31,7 @@ class PrepareDataService
  {
   $urlStart = Api::where('name', 'LIKE', '%Start Manual Recording%')->value('url');
   $urlStop = Api::where('name', 'LIKE', '%Stop Manual Recording%')->value('url');
-  $portHttps = Port::where('name', '%HTTPS%')->value('port_number');
+  $portHttps = Port::where('name', 'LIKE', '%HTTPS%')->value('port_number');
 
   if (!$urlStart || !$urlStop || !$portHttps) {
    Log::channel('camera-control')->error("Config host/port not complete");
@@ -48,7 +48,9 @@ class PrepareDataService
  private function getNvrData(int $fieldId): array
  {
   $fieldData = Field::findOrFail($fieldId);
-  $cameras = Camera::where('field_id', $fieldId)->get(['id', 'code', 'name', 'channel', 'nvr_id']);
+  $cameras = Camera::where('field_id', $fieldId)
+   ->where('is_active', 1)
+   ->get(['id', 'code', 'name', 'channel', 'nvr_id']);
 
   if ($cameras->isEmpty()) {
    Log::channel('camera-control')->error("No cameras found for field_id {$fieldId}");

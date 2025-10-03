@@ -70,7 +70,11 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
 
         // Tambahkan padding hanya sekali
         $table.find("tbody").addClass("py-4");
-        $table.find("tbody td").addClass("py-4 break-words");
+        $table
+            .find("tbody td")
+            .addClass(
+                "py-3.5 break-words text-xs border border-transparent"
+            );
 
         window.lucide.createIcons({ icons: window.lucide.icons });
     });

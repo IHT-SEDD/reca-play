@@ -18,6 +18,7 @@ class LivePreviewService
  public function getLivePreviewUrl(int $fieldId): ?string
  {
   $camera = Camera::where('field_id', $fieldId)
+   ->where('is_active', 1)
    ->orderBy('code', 'asc')
    ->first();
 
@@ -28,7 +29,19 @@ class LivePreviewService
  {
   $camera = Camera::where('field_id', $fieldId)
    ->where('code', $cameraCode)
+   ->where('is_active', 1)
    ->first();
+
+  if (!$camera) {
+   Log::channel('camera-control')->warning(
+    "[Live Preview] Camera {$cameraCode} in field {$fieldId} is inactive, fallback to another camera."
+   );
+
+   $camera = Camera::where('field_id', $fieldId)
+    ->where('is_active', 1)
+    ->orderBy('code', 'asc')
+    ->first();
+  }
 
   return $camera ? $this->buildUrl($camera, $fieldId) : null;
  }
