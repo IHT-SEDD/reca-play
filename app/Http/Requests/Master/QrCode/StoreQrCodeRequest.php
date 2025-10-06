@@ -46,11 +46,11 @@ class StoreQrCodeRequest extends FormRequest
         $this->merge(['qr_token' => $token]);
 
         // Only encode token in the QR (safe for users)
-        $qrData = [
-            'token' => $token,
-        ];
+        // $qrData = [
+        //     'token' => $token,
+        // ];
 
-        // $qrData = url('/scan-qr/' . $token);
+        $qrData = url('/scan-qr/' . $token);
 
         // Generate QR Code image
         $service = app(\App\Services\QrCode\QrCodeService::class);
