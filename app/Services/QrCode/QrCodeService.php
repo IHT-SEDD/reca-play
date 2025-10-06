@@ -12,18 +12,18 @@ class QrCodeService
  /**
   * Generate QR Code image, save to storage, and return the path.
   *
-  * @param array $qrData
+  * @param string $qrData
   * @param string $fileName
   * @return string $path
   */
- public function generate(array $qrData, string $fileName): string
+ public function generate($qrData, string $fileName): string
  {
   $filePath = 'qr_codes/' . $fileName . '.png';
 
   try {
    $result = Builder::create()
     ->writer(new PngWriter())
-    ->data(json_encode($qrData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE))
+    ->data($qrData)
     ->size(300)
     ->margin(10)
     ->build();

@@ -13,7 +13,8 @@ use App\Http\Controllers\{
     Master\QrCode\QrCodeController,
     UserManagement\UserManagementController,
     Venue\VenueController,
-    VenueManagement\VenueManagementController
+    VenueManagement\VenueManagementController,
+    ScanQrController
 };
 use App\Http\Controllers\Home\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,8 @@ Route::middleware(['check.maintenance'])->group(function () {
         Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
         Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
     });
+
+    Route::get('scan-qr/{token}', [ScanQrController::class, 'index'])->name('scan-qr');
 
     // Authenticated & Verified Users
     Route::middleware(['auth', 'verified'])->group(function () {
@@ -154,9 +157,9 @@ Route::middleware(['check.maintenance'])->group(function () {
             });
 
             #region Select Options
-            Route::prefix('select')->group(function () {
-                Route::get('/{option}', [SupportingController::class, 'selectOptions'])->name('select.options');
-            });
+        Route::prefix('select')->group(function () {
+            Route::get('/{option}', [SupportingController::class, 'selectOptions'])->name('select.options');
+        });
         });
     });
 });
