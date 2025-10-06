@@ -43,6 +43,7 @@ class CreatorController extends Controller
     // ====== Show page after success scan QR ======
     public function scanSuccessPage()
     {
+        
         return view('pages.creator.scan-success');
     }
 

@@ -16,6 +16,7 @@ class QrSession extends Model
         'qr_code',
         'type',
         'qr_data',
+        'session_token',
         'last_active_at',
     ];
 

@@ -15,6 +15,7 @@ class RecordSession extends Model
         'recording_id',
         'qr_code',
         'status',
+        'session_token',
         'ip_address',
     ];
 

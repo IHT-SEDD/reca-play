@@ -27,8 +27,19 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
+
+        $sessionToken = session('qr_session_token');
+
+        if ($sessionToken) {
+            QrSession::where('session_token', $sessionToken)
+                ->update([
+                    'user_id' => Auth::user()->id,
+                    'last_active_at' => now(),
+                ]);
+
+            session()->forget('qr_session_token');
+        }
 
         $userId = Auth::id();
         $qrSession = QrSession::where('user_id', $userId)->latest()->first();
