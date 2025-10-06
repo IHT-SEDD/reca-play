@@ -46,7 +46,7 @@ class ScanQrService
     // session(['scanned_qr' => $qrCode]);
 
     \App\Models\Session\QrSession::updateOrCreate(
-      ['user_id' => $user->id],
+      ['user_id' => $user->id ?? null],
       [
         'qr_code_id' => $qrCode->id,
         'qr_code' => $qrCode->code,
