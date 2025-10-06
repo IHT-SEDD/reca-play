@@ -36,6 +36,7 @@ fieldTable = () => {
                 },
             },
         ],
+        withData: ["category", "venue"],
     });
 };
 

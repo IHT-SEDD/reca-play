@@ -84,8 +84,8 @@
  </div>
 
  <div class="mt-2">
-  <x-input-label for="field_id" :value="__('Field')" required />
-  <select id="select-field" placeholder="Select field..." autocomplete="off" name="field_id" class="my-1.5" required>
+  <x-input-label for="venue_id" :value="__('Venue')" required />
+  <select id="select-venue" placeholder="Select venue..." autocomplete="off" name="venue_id" class="my-1.5" required>
   </select>
  </div>
 

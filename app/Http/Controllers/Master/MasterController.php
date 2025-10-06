@@ -54,6 +54,11 @@ class MasterController extends Controller
 
         $query = $modelClass::query();
 
+        if ($request->has('with')) {
+            $relations = (array) $request->get('with');
+            $query->with($relations);
+        }
+
         return CustomDatatableService::make(
             $query,
             $request,

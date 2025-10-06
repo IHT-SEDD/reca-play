@@ -1,4 +1,4 @@
-let nvrTable, selectField, selectPort;
+let nvrTable, selectVenue, selectPort;
 
 nvrTable = () => {
     initCustomDatatable({
@@ -18,7 +18,7 @@ nvrTable = () => {
                 orderable: false,
             },
             { data: "ip_address", name: "ip_address", orderable: false },
-            { data: "field.name", name: "field.name", orderable: false },
+            { data: "venue.name", name: "venue.name", orderable: false },
             {
                 data: "port.port_number",
                 name: "port.port_number",
@@ -65,8 +65,8 @@ nvrTable = () => {
     });
 };
 
-selectField = () => {
-    new TomSelect("#select-field", {
+selectVenue = () => {
+    new TomSelect("#select-venue", {
         valueField: "id",
         labelField: "text",
         searchField: "text",
@@ -78,7 +78,7 @@ selectField = () => {
         },
         load: function (query, callback) {
             $.ajax({
-                url: "/select/field",
+                url: "/select/venue",
                 data: { q: query },
                 dataType: "json",
                 success: function (res) {
@@ -121,7 +121,7 @@ selectPort = () => {
 
 document.addEventListener("DOMContentLoaded", function () {
     nvrTable();
-    selectField();
+    selectVenue();
     selectPort();
     FormValidation.init({
         rules: {

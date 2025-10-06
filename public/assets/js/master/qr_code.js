@@ -29,12 +29,12 @@ qrCodeTable = () => {
                 render: function (data) {
                     console.log(data);
                     if (data == true) {
-                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-lilliputian-lime/90 text-base-100 flex justify-start w-fit items-center gap-1">
+                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-lilliputian-lime text-base-100 flex justify-start w-fit items-center gap-1">
                                     <i data-lucide="circle-check" class="w-4 h-4"></i>
                                     Active
                                 </span>`;
                     } else {
-                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-vivaldi-red/90 text-base-100 flex justify-start w-fit items-center gap-1">
+                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-vivaldi-red text-base-100 flex justify-start w-fit items-center gap-1">
                                     <i data-lucide="circle-x" class="w-4 h-4"></i>
                                     Active
                                 </span>`;

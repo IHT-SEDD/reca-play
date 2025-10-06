@@ -1,4 +1,4 @@
-function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
+function initCustomDatatable({ tableId, tableDataUrl, tableColumns, withData = [] }) {
     // Global variables
     const $table = $(`#${tableId}`);
     const $search = $(`#search-data-${tableId}`);
@@ -17,6 +17,7 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
             url: tableDataUrl,
             data: function (d) {
                 d.search = $search.val();
+                d.with = withData;
             },
         },
 

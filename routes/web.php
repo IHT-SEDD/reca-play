@@ -16,6 +16,7 @@ use App\Http\Controllers\{
     VenueManagement\VenueManagementController
 };
 use App\Http\Controllers\Home\HomeController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['check.maintenance'])->group(function () {
@@ -60,7 +61,7 @@ Route::middleware(['check.maintenance'])->group(function () {
         Route::prefix('my-recording')->group(function () {
             Route::get('/', [RecordingController::class, 'index'])->name('recording.index');
             Route::get('/recording-data', [RecordingController::class, 'getRecordings'])->name('recording.data');
-            Route::get('/watch/{hashedId}', [RecordingController::class, 'getRecordings'])->name('recording.data');
+            Route::get('/watch/{hashedId}', [RecordingController::class, 'getRecordings'])->name('recording.watch');
         });
 
         #region Creator
@@ -130,11 +131,6 @@ Route::middleware(['check.maintenance'])->group(function () {
                 Route::get('/users-data', [UserManagementController::class, 'usersData'])->name('user-management.data');
                 Route::post('/add-data', [UserManagementController::class, 'addData'])->name('user-management.add-data');
             });
-
-            #region Select Options
-            Route::prefix('select')->group(function () {
-                Route::get('/{option}', [SupportingController::class, 'selectOptions'])->name('select.options');
-            });
         });
 
         // Owner Routes
@@ -152,11 +148,11 @@ Route::middleware(['check.maintenance'])->group(function () {
                     Route::post('/status/update/{hashedId}', [VenueManagementController::class, 'updateStatusActive'])->name('venue-management.update-status');
                 });
             });
+        });
 
-            #region Select Options
-            Route::prefix('select')->group(function () {
-                Route::get('/{option}', [SupportingController::class, 'selectOptions'])->name('select.options');
-            });
+        #region Select Options
+        Route::prefix('select')->group(function () {
+            Route::get('/{option}', [SupportingController::class, 'selectOptions'])->name('select.options');
         });
     });
 });

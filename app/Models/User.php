@@ -21,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public const Searchable = ['name', 'username', 'email', 'role_id', 'venue_id'];
     public const Unsearchable = ['id', 'email_verified_at', 'password', 'remember_token', 'google_id', 'created_at', 'updated_at'];
 
+    protected $with = ['role', 'venue'];
     /**
      * The attributes that are mass assignable.
      *
