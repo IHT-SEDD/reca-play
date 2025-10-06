@@ -11,13 +11,12 @@ use App\Http\Controllers\{
     Event\EventController,
     Master\MasterController,
     Master\QrCode\QrCodeController,
+    ScanQrController,
     UserManagement\UserManagementController,
     Venue\VenueController,
     VenueManagement\VenueManagementController,
-    ScanQrController
 };
 use App\Http\Controllers\Home\HomeController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['check.maintenance'])->group(function () {
@@ -35,7 +34,7 @@ Route::middleware(['check.maintenance'])->group(function () {
     Route::get('scan-qr/{token}', [ScanQrController::class, 'index'])->name('scan-qr');
 
     // Authenticated & Verified Users
-    Route::middleware(['auth', 'verified'])->group(function () {
+    Route::middleware(['auth', 'verified', 'check.creator.session'])->group(function () {
         // Share video & watch
         Route::middleware('throttle:share-video')->group(function () {
             Route::post('/share/{videoId}', [HomeController::class, 'shareVideo'])->name('home.share');
@@ -69,6 +68,10 @@ Route::middleware(['check.maintenance'])->group(function () {
 
         #region Creator
         Route::prefix('creator')->group(function () {
+            Route::get('/redirect', function () {
+                return view('pages.creator.redirect');
+            })->name('creator.redirect');
+            
             // Scan QR
             Route::prefix('scan-qr')->group(function () {
                 Route::get('/', [CreatorController::class, 'scanQrPage'])->name('creator.scan');

@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Models\Session\QrSession;
+use App\Models\Session\RecordSession;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -27,6 +29,18 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        $userId = Auth::id();
+        $qrSession = QrSession::where('user_id', $userId)->latest()->first();
+        $recordSession = RecordSession::where('user_id', $userId)->latest()->first();
+
+        if ($recordSession && $qrSession) {
+            return redirect()->route('creator.redirect');
+        }
+
+        if ($qrSession && !$recordSession) {
+            return redirect()->route('creator.qr-success');
+        }
 
         return redirect()->intended(route('home.index', absolute: false));
     }

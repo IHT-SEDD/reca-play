@@ -7,6 +7,8 @@ use App\Models\Master\Camera;
 use App\Models\Record\RecordedVideo;
 use App\Models\Record\Recording;
 use App\Models\Record\RecordingLog;
+use App\Models\Session\QrSession;
+use App\Models\Session\RecordSession;
 use App\Services\Support\GetModelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,11 +35,15 @@ class RecordController extends Controller
     // ====== Check data record or streaming ======
     public function checkData(Request $request)
     {
-        $scannedQrData = session('scanned_qr');
-        $fieldId = $scannedQrData['field_id'] ?? null;
+        $userId = Auth::id();
         $type = $request->query('type');
 
-        $id = session('record_data_user');
+        $scannedQrData = $this->getQrSession();
+        $recordSession = $this->getRecordSession();
+
+        $fieldId = $scannedQrData?->qrCode?->field_id;
+        $id = $recordSession?->recording_id;
+
         if (!$id) {
             return response()->json([
                 'status' => 'error',
@@ -88,9 +94,8 @@ class RecordController extends Controller
 
                 if ($success) {
                     $startTime = now()->format('Y-m-d H:i:s');
-                    $data->update([
-                        'start_time' => $startTime,
-                    ]);
+                    $data->update(['start_time' => $startTime]);
+
                     RecordingLog::where('recording_id', $data->id)->update([
                         'status' => 'ongoing',
                         'updated_at' => now(),
@@ -120,10 +125,12 @@ class RecordController extends Controller
     // ====== stopRecording function ======
     public function stopRecording(Request $request)
     {
-        $id = session('record_data_user');
-        $scannedQrData = session('scanned_qr');
-        $fieldId = $scannedQrData['field_id'] ?? null;
-        $userId = Auth::user()->id;
+        $userId = Auth::id();
+        $recordSession = $this->getRecordSession();
+        $scannedQrData = $this->getQrSession();
+
+        $id = $recordSession?->recording_id;
+        $fieldId = $scannedQrData?->qrCode?->field_id;
 
         if (!$id) {
             return response()->json([
@@ -152,9 +159,7 @@ class RecordController extends Controller
             $cameraService->initialize($fieldId);
             $cameraService->stopRecording();
 
-            $data->update([
-                'end_time' => now(),
-            ]);
+            $data->update(['end_time' => now()]);
 
             RecordingLog::where('recording_id', $data->id)->update([
                 'status' => 'stopped',
@@ -194,9 +199,10 @@ class RecordController extends Controller
                 }
             }
 
-            DB::commit();
+            RecordSession::where('user_id', $userId)->delete();
+            QrSession::where('user_id', $userId)->delete();
 
-            session()->forget(['record_data_user', 'scanned_qr']);
+            DB::commit();
 
             return response()->json([
                 'status' => 'success',
@@ -248,9 +254,7 @@ class RecordController extends Controller
                 $cameraService->initialize($fieldId);
                 $cameraService->stopRecording();
 
-                $data->update([
-                    'end_time' => $now,
-                ]);
+                $data->update(['end_time' => $now]);
 
                 RecordingLog::where('recording_id', $data->id)->update([
                     'status' => 'finished',
@@ -266,5 +270,24 @@ class RecordController extends Controller
         }
 
         return null;
+    }
+
+    private function getQrSession(): ?QrSession
+    {
+        $userId = Auth::id();
+
+        return QrSession::with(['qrCode.field.venue'])
+            ->where('user_id', $userId)
+            ->latest()
+            ->first();
+    }
+
+    private function getRecordSession(): ?RecordSession
+    {
+        $userId = Auth::id();
+
+        return RecordSession::where('user_id', $userId)
+            ->latest()
+            ->first();
     }
 }

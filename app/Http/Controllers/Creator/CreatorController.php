@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Record\RecordingLog;
+use App\Models\Session\QrSession;
 use App\Services\Camera\LivePreviewService;
 use App\Services\Creator\AddData\NewDataFormRequestService;
 use App\Services\Creator\ScanQr\ScanQrService;
@@ -42,7 +43,6 @@ class CreatorController extends Controller
     // ====== Show page after success scan QR ======
     public function scanSuccessPage()
     {
-        dd(session()->all());
         return view('pages.creator.scan-success');
     }
 
@@ -78,7 +78,14 @@ class CreatorController extends Controller
     // ====== Check scanned QR ======
     public function checkScannedQr()
     {
-        $scannedQr = session('scanned_qr');
+        $userId = Auth::id();
+
+        $scannedQr = QrSession::with(['qrCode.field.venue'])
+            ->where('user_id', $userId)
+            ->latest()
+            ->first();
+
+        // $scannedQr = session('scanned_qr');
 
         if (!$scannedQr) {
             return response()->json([
@@ -101,8 +108,13 @@ class CreatorController extends Controller
         $validated = $this->newDataFormRequestService->getValidatedData($type, $request);
         $userId = Auth::id();
         $ip = $request->ip();
-        $scannedQrData = session('scanned_qr');
-        $qrCode = $scannedQrData['code'] ?? null;
+        // $scannedQrData = session('scanned_qr');
+
+        $scannedQrData = QrSession::with(['qrCode.field.venue'])
+            ->where('user_id', $userId)
+            ->latest()
+            ->first();
+        $qrCode = $scannedQrData?->qrCode?->code;
 
         try {
             DB::beginTransaction();
@@ -123,7 +135,15 @@ class CreatorController extends Controller
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-                session(['record_data_user' => $data->id]);
+
+                \App\Models\Session\RecordSession::create([
+                    'user_id' => $userId,
+                    'recording_id' => $data->id,
+                    'qr_code' => $qrCode,
+                    'status' => 'prepare',
+                    'ip_address' => $ip,
+                ]);
+                // session(['record_data_user' => $data->id]);
             } else {
                 session(['stream_data_user' => $data->id]);
             };
