@@ -29,12 +29,12 @@ qrCodeTable = () => {
                 render: function (data) {
                     console.log(data);
                     if (data == true) {
-                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-lilliputian-lime/90 text-base-100 flex justify-start w-fit items-center gap-1">
+                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-lilliputian-lime text-base-100 flex justify-start w-fit items-center gap-1">
                                     <i data-lucide="circle-check" class="w-4 h-4"></i>
                                     Active
                                 </span>`;
                     } else {
-                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-vivaldi-red/90 text-base-100 flex justify-start w-fit items-center gap-1">
+                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-vivaldi-red text-base-100 flex justify-start w-fit items-center gap-1">
                                     <i data-lucide="circle-x" class="w-4 h-4"></i>
                                     Active
                                 </span>`;
@@ -81,23 +81,26 @@ qrCodeTable = () => {
 };
 
 selectField = () => {
-    fieldSelectInput = new TomSelect("#select-field", {
+    new TomSelect("#select-field", {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
+        labelField: "label",
+        searchField: ["label"],
         preload: true,
         create: false,
-        sortField: {
-            field: "text",
-            direction: "asc",
-        },
+        sortField: { field: "label", direction: "asc" },
         load: function (query, callback) {
             $.ajax({
                 url: "/select/field",
-                data: { q: query },
+                data: { q: query, with: "venue" },
                 dataType: "json",
                 success: function (res) {
-                    callback(res);
+                    const formatted = res.map((item) => ({
+                        id: item.id,
+                        label: item.venue
+                            ? `${item.venue.name} - ${item.text}`
+                            : item.text,
+                    }));
+                    callback(formatted);
                 },
                 error: function () {
                     callback();

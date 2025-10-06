@@ -21,9 +21,16 @@ class QrCodeService
   $filePath = 'qr_codes/' . $fileName . '.png';
 
   try {
+   // $result = Builder::create()
+   //  ->writer(new PngWriter())
+   //  ->data($qrData)
+   //  ->size(300)
+   //  ->margin(10)
+   //  ->build();
+
    $result = Builder::create()
     ->writer(new PngWriter())
-    ->data($qrData)
+    ->data(json_encode($qrData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE))
     ->size(300)
     ->margin(10)
     ->build();

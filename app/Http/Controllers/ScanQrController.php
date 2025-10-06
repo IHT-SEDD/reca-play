@@ -16,6 +16,7 @@ class ScanQrController extends Controller
     public function index($token)
     {
         session(['qr_token' => $token]);
+        
         $result = $this->scanQrService->scan($token);
         if ($result['success']) {
             return redirect()->route('creator.qr-success');

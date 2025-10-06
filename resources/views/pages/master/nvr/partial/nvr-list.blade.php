@@ -7,7 +7,7 @@
  <th>Initial</th>
  <th>Description</th>
  <th>IP Address</th>
- <th>Field</th>
+ <th>Venue</th>
  <th>Port</th>
  <th>Auth Type</th>
  <th>Username</th>

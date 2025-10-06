@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckActiveCreatorSession;
 use App\Http\Middleware\CheckMaintenance;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'check.maintenance' => \App\Http\Middleware\CheckMaintenance::class,
+            'check.creator.session' => CheckActiveCreatorSession::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

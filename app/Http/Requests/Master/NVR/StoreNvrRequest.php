@@ -49,9 +49,9 @@ class StoreNvrRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'field_id' => ['required', 'string', 'exists:fields,id'],
+            'venue_id' => ['required', 'string', 'exists:venues,id'],
             'port_id' => ['nullable', 'integer', 'exists:ports,id'],
-            
+
             'code' => ['nullable', 'string', 'unique:nvrs,code', 'min:2'],
             'brand' => ['nullable', 'string', 'min:5'],
             'type' => ['nullable', 'string', 'min:5'],
@@ -69,8 +69,8 @@ class StoreNvrRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'field_id.required' => 'Field cannot be empty.',
-            'field_id.exists' => 'Field not found.',
+            'venue_id.required' => 'Venue cannot be empty.',
+            'venue_id.exists' => 'Venue not found.',
 
             'code.min' => 'Code minimum is 2 characters.',
             'code.unique' => 'Code already exists.',
@@ -87,7 +87,7 @@ class StoreNvrRequest extends FormRequest
             'ip_address.min' => 'IP Address minimum is 4 characters.',
 
             'auth_type.required' => 'Auth Type cannot be empty.',
-            
+
             'username.required' => 'Username cannot be empty.',
 
             'password.required' => 'Password cannot be empty.',

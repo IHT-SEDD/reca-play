@@ -37,7 +37,7 @@
      <!-- Mode choosed text & information -->
      <div class="flex flex-col justify-center items-center gap-2 mb-2" id="choosedModePanel">
       <!-- Choosed mode text -->
-      <div class="flex justify-center items-center gap-2">
+      <div class="flex lg:flex-row flex-col justify-center items-center gap-2">
        <h1 class="md:text-xl text-md text-center font-bold text-black">
         Great choice!
        </h1>

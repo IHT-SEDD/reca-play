@@ -8,18 +8,18 @@ class Nvr extends Model
 {
     protected $guarded = ['id'];
 
-    protected $with = ['field', 'port'];
+    protected $with = ['venue', 'port'];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
 
-    public const Searchable = ['field_id', 'code', 'brand', 'type', 'name', 'initial', 'ip_address', 'is_active'];
+    public const Searchable = ['venue_id', 'code', 'brand', 'type', 'name', 'initial', 'ip_address', 'is_active'];
     public const Unsearchable = ['id', 'description', 'port_id', 'auth_type', 'username', 'password', 'created_at', 'updated_at'];
 
-    public function field()
+    public function venue()
     {
-        return $this->belongsTo(Field::class);
+        return $this->belongsTo(Venue::class);
     }
 
     public function port()

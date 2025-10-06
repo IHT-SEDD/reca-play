@@ -3,6 +3,7 @@
 namespace App\Services\Creator\ScanQr;
 
 use App\Models\Master\QrCode;
+use Illuminate\Support\Facades\Auth;
 
 class ScanQrService
 {
@@ -40,9 +41,20 @@ class ScanQrService
       ];
     }
 
-    session([
-      'scanned_qr' => $qrCode
-    ]);
+    $user = Auth::user();
+
+    // session(['scanned_qr' => $qrCode]);
+
+    \App\Models\Session\QrSession::updateOrCreate(
+      ['user_id' => $user->id],
+      [
+        'qr_code_id' => $qrCode->id,
+        'qr_code' => $qrCode->code,
+        'type' => $qrCode->type,
+        'qr_data' => $qrCode->toArray(),
+        'last_active_at' => now(),
+      ]
+    );
 
     return [
       'success' => true,
