@@ -17,7 +17,9 @@ class SupportingController extends Controller
 
     public function selectOptions($option, Request $request)
     {
-        $results = $this->selectOptionService->getOptions($option, $request->get('q'));
+        $with = $request->get('with') ? explode(',', $request->get('with')) : [];
+
+        $results = $this->selectOptionService->getOptions($option, $request->get('q'), $with);
         return response()->json($results);
     }
 }

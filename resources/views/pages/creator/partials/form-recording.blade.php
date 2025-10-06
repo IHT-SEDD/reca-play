@@ -9,7 +9,7 @@
 
  <div class="mt-2">
   <x-input-label for="duration" :value="__('Duration Recording')" />
-  <div class="flex justify-between items-center w-full">
+  <div class="flex lg:flex-row flex-col justify-between lg:items-center items-start w-full">
    <x-inputs.radio-input id="duration" name="duration" value="30">30 Min</x-inputs.radio-input>
    <x-inputs.radio-input id="duration" name="duration" value="60">60 Min</x-inputs.radio-input>
    <x-inputs.radio-input id="duration" name="duration" value="120">120 Min</x-inputs.radio-input>

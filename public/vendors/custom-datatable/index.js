@@ -1,4 +1,9 @@
-function initCustomDatatable({ tableId, tableDataUrl, tableColumns, withData = [] }) {
+function initCustomDatatable({
+    tableId,
+    tableDataUrl,
+    tableColumns,
+    withData = [],
+}) {
     // Global variables
     const $table = $(`#${tableId}`);
     const $search = $(`#search-data-${tableId}`);
@@ -28,7 +33,7 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns, withData = [
         ordering: false,
         info: false,
 
-        pageLength: 5,
+        pageLength: 10,
         dom: "t",
 
         columns: tableColumns,
@@ -73,9 +78,7 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns, withData = [
         $table.find("tbody").addClass("py-4");
         $table
             .find("tbody td")
-            .addClass(
-                "py-3.5 break-words text-xs border border-transparent"
-            );
+            .addClass("py-3.5 break-words text-xs border border-transparent");
 
         window.lucide.createIcons({ icons: window.lucide.icons });
     });

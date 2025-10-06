@@ -17,7 +17,7 @@
 
     <!-- Record panel :begin -->
     <div class="rounded-xl p-3 bg-white w-full max-w-4xl h-auto inline-block shadow-sm border border-white-edgar">
-     <div class="flex justify-between items-start w-full p-2 gap-2">
+     <div class="flex lg:flex-row flex-col justify-between items-start w-full p-2 gap-2">
       <!-- Live Preview :begin -->
       <div class="h-auto w-full space-y-2">
        <!-- Video -->

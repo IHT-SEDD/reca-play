@@ -81,23 +81,26 @@ qrCodeTable = () => {
 };
 
 selectField = () => {
-    fieldSelectInput = new TomSelect("#select-field", {
+    new TomSelect("#select-field", {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
+        labelField: "label",
+        searchField: ["label"],
         preload: true,
         create: false,
-        sortField: {
-            field: "text",
-            direction: "asc",
-        },
+        sortField: { field: "label", direction: "asc" },
         load: function (query, callback) {
             $.ajax({
                 url: "/select/field",
-                data: { q: query },
+                data: { q: query, with: "venue" },
                 dataType: "json",
                 success: function (res) {
-                    callback(res);
+                    const formatted = res.map((item) => ({
+                        id: item.id,
+                        label: item.venue
+                            ? `${item.venue.name} - ${item.text}`
+                            : item.text,
+                    }));
+                    callback(formatted);
                 },
                 error: function () {
                     callback();

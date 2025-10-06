@@ -125,6 +125,7 @@ class CreatorController extends Controller
                 throw new \Exception("Model for {$type} not found");
             }
 
+            // dd($validated);
             $data = $modelClass::create($validated);
 
             if ($type == 'record') {

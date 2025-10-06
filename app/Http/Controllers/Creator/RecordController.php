@@ -130,7 +130,12 @@ class RecordController extends Controller
         $scannedQrData = $this->getQrSession();
 
         $id = $recordSession?->recording_id;
-        $fieldId = $scannedQrData?->qrCode?->field_id;
+
+        $qrData = $scannedQrData?->qr_data ?? [];
+        if (is_string($qrData)) {
+            $qrData = json_decode($qrData, true);
+        }
+        $fieldId = $qrData['field_id'] ?? null;
 
         if (!$id) {
             return response()->json([

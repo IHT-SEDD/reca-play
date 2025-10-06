@@ -10,7 +10,7 @@ class SelectOptionService
 {
   protected int $limit = 100;
 
-  public function getOptions(string $option, ?string $search = null)
+  public function getOptions(string $option, ?string $search = null, array $with = [])
   {
     $map = [
       'api' => [\App\Models\Master\Api::class, true],
@@ -31,14 +31,50 @@ class SelectOptionService
 
     [$model, $filterActive] = $map[$option];
 
-    return $this->buildQuery($model, $filterActive, $search)->get();
+    return $this->buildQuery($model, $filterActive, $search, $with)->get();
   }
 
-  protected function buildQuery(string $model, bool $filterActive, ?string $search = null): Builder
-  {
-    $query = $model::query()->select('id', 'name as text');
+  // protected function buildQuery(string $model, bool $filterActive, ?string $search = null, array $with = []): Builder
+  // {
+  //   $query = $model::query()->select('id', 'name as text');
 
-    if ($filterActive && Schema::hasColumn((new $model)->getTable(), 'is_active')) {
+  //   if (!empty($with)) {
+  //     $query->with($with);
+  //   }
+
+  //   if ($filterActive && Schema::hasColumn((new $model)->getTable(), 'is_active')) {
+  //     $query->where('is_active', true);
+  //   }
+
+  //   if ($search) {
+  //     $query->where('name', 'like', "%{$search}%");
+  //   }
+
+  //   return $query->limit($this->limit);
+  // }
+
+  protected function buildQuery(string $model, bool $filterActive, ?string $search = null, array $with = []): Builder
+  {
+    $instance = new $model;
+    $table = $instance->getTable();
+
+    $select = ['id', 'name as text'];
+
+    // ✅ tambahkan foreign key jika relasi disebut di $with
+    foreach ($with as $relation) {
+      $fk = "{$relation}_id";
+      if (Schema::hasColumn($table, $fk)) {
+        $select[] = $fk;
+      }
+    }
+
+    $query = $model::query()->select($select);
+
+    if (!empty($with)) {
+      $query->with($with);
+    }
+
+    if ($filterActive && Schema::hasColumn($table, 'is_active')) {
       $query->where('is_active', true);
     }
 

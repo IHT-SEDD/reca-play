@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Creator;
 
 use App\Models\Master\Camera;
+use App\Models\Session\QrSession;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,8 +12,20 @@ class StoreRecordRequest extends FormRequest
     protected function prepareForValidation()
     {
         $userId = Auth::id();
-        $scannedQrData = session('scanned_qr');
-        $fieldId = $scannedQrData['field_id'] ?? null;
+        // $scannedQrData = session('scanned_qr');
+        // $fieldId = $scannedQrData['field_id'] ?? null;
+        $scannedQr = QrSession::with(['qrCode.field.venue'])
+            ->where('user_id', $userId)
+            ->latest()
+            ->first();
+        $qrData = $scannedQr->qr_data ?? [];
+
+        if (is_string($qrData)) {
+            $qrData = json_decode($qrData, true);
+        }
+
+        $fieldId = $qrData['field_id'] ?? null;
+
         $cameraId = null;
         if ($fieldId) {
             $cameraId = Camera::where('field_id', $fieldId)->value('id');
