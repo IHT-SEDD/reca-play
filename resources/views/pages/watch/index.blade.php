@@ -4,8 +4,8 @@
       <!-- Text Header :begin -->
       <div class="w-full max-w-4xl mx-auto flex flex-col gap-3">
         <!-- Video Player :begin -->
-        <video controls class="rounded-xl w-full" id="video_player">
-          <source src="/storage/${data.video_path}" type="video/mp4">
+        <video controls playsinline class="rounded-xl w-full bg-after-midnight" id="video_player">
+          <source type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <!-- Video Player :end -->

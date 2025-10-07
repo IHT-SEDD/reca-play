@@ -50,51 +50,48 @@ renderList = (videos) => {
             listContainer.insertAdjacentHTML(
                 "beforeend",
                 `
-                <a href="/video/watch/${
-                    video.hashed_id
-                }" target="_blank" rel="noopener noreferrer" class="block">
-                    <div class="w-full">
-                        <!-- Thumbnail -->
-                        <div class="bg-base-200 rounded-xl p-3 min-h-44 mb-2 relative"
-                            style="background-image: url('/storage/${
-                                video.thumbnail_path
-                            }');
-                                    background-size: cover;
-                                    background-position: center;">
+                <div class="w-full">
+                    <!-- Thumbnail -->
+                    <a href="/video/watch/${
+                        video.hashed_id
+                    }" target="_blank" rel="noopener noreferrer" class="block">
+                        <div class="bg-base-200 rounded-xl p-3 min-h-44 mb-2 relative" style="background-image: url('/storage/${
+                            video.thumbnail_path
+                        }'); background-size: cover; background-position: center;">
                             <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black text-white p-2 rounded-xl">
                                 ${videoItem.duration_formatted ?? "-"}
                             </div>
                         </div>
+                     </a>
 
-                        <!-- Description -->
-                        <div class="text-sm space-y-1">
-                            <p class="font-medium text-hot-shot">${
-                                videoItem.video_name ?? "-"
-                            }</p>
-                            <p class="text-after-midnight/50 dark:text-white-owl text-xs">
-                                ${formatDateTime(videoItem.created_at)}
-                            </p>
-                            <p class="flex items-center text-xs text-after-midnight dark:text-white-owl">
-                                <i data-lucide="user" class="w-4 h-4 md:me-2"></i>
-                                ${videoItem.user?.name ?? "Unknown"}
-                            </p>
-                            <p class="text-xs font-medium tracking-wide text-after-midnight dark:text-white-owl">
-                                ${videoItem.field?.name ?? "-"} at ${
+                    <!-- Description -->
+                    <div class="text-sm space-y-1">
+                        <p class="font-medium text-hot-shot">${
+                            videoItem.video_name ?? "-"
+                        }</p>
+                        <p class="text-after-midnight/50 dark:text-white-owl text-xs">
+                            ${formatDateTime(videoItem.created_at)}
+                        </p>
+                        <p class="flex items-center text-xs text-after-midnight dark:text-white-owl">
+                            <i data-lucide="user" class="w-4 h-4 md:me-2"></i>
+                            ${videoItem.user?.name ?? "Unknown"}
+                        </p>
+                        <p class="text-xs font-medium tracking-wide text-after-midnight dark:text-white-owl">
+                            ${videoItem.field?.name ?? "-"} at ${
                     videoItem.field?.venue?.name ?? "-"
                 }
-                            </p>
-                        </div>
-
-                        <!-- Share Button -->
-                        <div class="mt-2">
-                            <button class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
-                                    data-id="${video.id}"
-                                    data-tip="share">
-                                <i data-lucide="forward" class="w-4 h-4"></i>
-                            </button>
-                        </div>
+                        </p>
                     </div>
-                </a>
+
+                    <!-- Share Button -->
+                    <div class="mt-2">
+                        <button class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
+                                data-id="${video.id}"
+                                data-tip="share">
+                            <i data-lucide="forward" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
                 `
             );
         });
