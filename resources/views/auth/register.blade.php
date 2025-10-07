@@ -1,48 +1,57 @@
 <x-guest-layout :pageTitle="'Register'" :title="'SIGN UP YOUR ACCOUNT'">
-
     <form method="POST" action="{{ route('register') }}">
         @csrf
         <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
-                autofocus placeholder="your full name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')"
+                required autofocus placeholder="your full name" />
+            <x-input-error id="input-name-error">
+                {{ $errors->first('name') }}
+            </x-input-error>
         </div>
 
         <!-- Username -->
         <div class="mt-4">
             <x-input-label for="username" :value="__('Username')" />
-            <x-text-input id="username" class="block mt-2 w-full" type="text" name="username" :value="old('username')"
-                required autofocus placeholder="your username" />
-            <x-input-error :messages="$errors->get('username')" class="mt-2" />
+            <x-inputs.text-input id="username" class="block mt-2 w-full" type="text" name="username"
+                :value="old('username')" required autofocus placeholder="your username" />
+            <x-input-error id="input-username-error">
+                {{ $errors->first('username') }}
+            </x-input-error>
         </div>
 
         <!-- Email Address -->
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-2 w-full" type="email" name="email" :value="old('email')" required
-                placeholder="your.email@example.com" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-inputs.text-input id="email" class="block mt-2 w-full" type="email" name="email" :value="old('email')"
+                required placeholder="your.email@example.com" />
+            <x-input-error id="input-email-error">
+                {{ $errors->first('email') }}
+            </x-input-error>
         </div>
 
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
 
-            <x-text-input id="password" class="block mt-2 w-full" type="password" name="password" required
+            <x-inputs.text-input id="password" class="block mt-2 w-full" type="password" name="password" required
                 autocomplete="new-password" placeholder="xxxxxxxx" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-input-error id="input-password-error">
+                {{ $errors->first('password') }}
+            </x-input-error>
+            <x-indicator-password id="strengthMeter"></x-indicator-password>
         </div>
 
         <!-- Confirm Password -->
         <div class="mt-4">
             <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
 
-            <x-text-input id="password_confirmation" class="block mt-2 w-full" type="password"
+            <x-inputs.text-input id="password_confirmation" class="block mt-2 w-full" type="password"
                 name="password_confirmation" required autocomplete="new-password" placeholder="xxxxxxxx" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <x-input-error id="input-password-confirmation-error">
+                {{ $errors->first('password-confirmation') }}
+            </x-input-error>
         </div>
 
         <!-- Actions button -->
@@ -53,13 +62,13 @@
             </x-primary-button>
 
             <!-- Divider -->
-            <p class="md:text-md text-xs font-medium text-center my-2 text-after-midnight">or sign in with</p>
+            <p class="md:text-md text-sm font-medium text-center my-2 text-after-midnight">or sign in with</p>
 
             <!-- Login via google btn -->
-            <x-secondary-button class="w-full">
+            <x-google-button class="w-full">
                 <img src="{{ asset('assets/icons/google.svg') }}" alt="Google Icon" class="inline-block me-2 w-5 h-5">
                 {{ __('Google') }}
-            </x-secondary-button>
+            </x-google-button>
 
             <!-- Login -->
             <a class="text-xs md:text-sm text-after-midnight/90 hover:text-miami tracking-wide"

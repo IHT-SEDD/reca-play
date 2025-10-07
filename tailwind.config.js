@@ -1,57 +1,42 @@
 import defaultTheme from "tailwindcss/defaultTheme";
 import forms from "@tailwindcss/forms";
 import daisyui from "daisyui";
+import flowbiteplugin from "flowbite/plugin";
+
+// ========== IMPORT FILES FROM TAILWIND FOLDER ==========
+import safelist from "./tailwind/safelist.js";
+import customColors from "./tailwind/extend.colors.js";
+import customSizes from "./tailwind/extend.sizes.js";
+import daisyuiConfig from "./tailwind/daisyui-config.js";
 
 /** @type {import('tailwindcss').Config} */
 export default {
+    darkMode: "class",
+
     content: [
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./storage/framework/views/*.php",
         "./resources/views/**/*.blade.php",
+        "./node_modules/flowbite/**/*.js",
     ],
 
     theme: {
         extend: {
-            // FONTS
+            // ========== FONTS ==========
             fontFamily: {
                 sans: ["Montserrat", ...defaultTheme.fontFamily.sans],
             },
-
-            // COLORS
+            // ========== CUSTOM COLORS ==========
             colors: {
-                "white-chalk": "#F7F4F1", // Background
-
-                // Shades of white
-                "white-owl": "#f5f4f4",
-                "white-edgar": "#EEEDED",
-                orochimaru: "#D9D9D9",
-                magnesium: "#C2C2C2",
-
-                // Shades of black
-                "after-midnight": "#38383F",
-                "eerie-black": "#1C1C1C",
-                "chaos-black": "#0F0F0F",
-
-                // Shades of red
-                "vivaldi-red": "#EA3A3A",
-                "hot-shot": "#EC5228",
-                miami: "#f6921e",
+                ...customColors,
             },
-
-            // MAX-W
-            maxWidth: {
-                "8xl": "88rem",
-                "9xl": "96rem",
-                "10xl": "102rem",
-                "11xl": "110rem",
-            },
+            // ========== CUSTOM SIZES ==========
+            maxWidth: customSizes,
         },
     },
-
-    plugins: [forms, daisyui],
-
-    daisyui: {
-        themes: ["bumblebee"],
-        darkTheme: "bumblebee",
-    },
+    plugins: [forms, daisyui, flowbiteplugin],
+    // ========== DAISY UI CONFIG ==========
+    daisyui: daisyuiConfig,
+    // ========== SAFELIST FOR CLASSES ==========
+    safelist,
 };

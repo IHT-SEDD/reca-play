@@ -1,0 +1,3 @@
+#container_venue_list {
+    transition: grid-template-columns 0.5s ease-in-out;
+}

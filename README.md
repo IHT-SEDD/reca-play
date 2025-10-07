@@ -35,15 +35,22 @@
 <h3 align="center">RECA PLAY</h3>
 
   <p align="center">
-    A platform to level up your activities with modern vibes and features that fit your sporty lifestyle
-    <br />
-    <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
-    &middot;
-    <a href="https://github.com/github_username/IHT-SEDD/reca-play/new?labels=bug&template=bug-report---.md">Report Bug</a>
-    &middot;
-    <a href="https://github.com/github_username/IHT-SEDD/reca-play/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
-  </p>
+  A platform to level up your activities with modern vibes and features that fit your sporty lifestyle
+  <br />
+  <br />
+  <a href="https://github.com/github_username/repo_name">
+    <img src="https://img.shields.io/badge/View%20Demo-000000?style=for-the-badge&logo=github&logoColor=white" alt="View Demo"/>
+  </a>
+  <a href="https://github.com/IHT-SEDD/reca-play/issues/new?labels=bug&template=bug-report---.md">
+    <img src="https://img.shields.io/badge/Report%20Bug-red?style=for-the-badge&logo=github&logoColor=white" alt="Report Bug"/>
+  </a>
+  <a href="https://github.com/IHT-SEDD/reca-play/issues/new?labels=enhancement&template=feature-request---.md">
+    <img src="https://img.shields.io/badge/Request%20Feature-blue?style=for-the-badge&logo=github&logoColor=white" alt="Request Feature"/>
+  </a>
+  <a href="https://github.com/IHT-SEDD/reca-play/blob/main/.github/SUPPORT.md">
+    <img src="https://img.shields.io/badge/Support-success?style=for-the-badge&logo=github&logoColor=white" alt="Support"/>
+  </a>
+</p>
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -130,35 +137,47 @@ This is an example of how to list things you need to use the software and how to
     ```sh
     git clone https://github.com/IHT-SEDD/reca-play.git
     ```
-2. Install NPM packages
-    ```sh
-    npm install
-    ```
-3. Dump autoload the project
-    ```sh
-    composer dump autoload
-    ```
-4. Change git remote url to avoid accidental pushes to base project
+2. Change git remote url to avoid accidental pushes to base project
     ```sh
     git remote set-url origin github_username/repo_name
     git remote -v # confirm the changes
     ```
-5. Change environment variables
+3. Install NPM packages
+    ```sh
+    npm install
+    ```
+4. Install composer packages
+    ```sh
+    composer install
+    ```
+5. Copy and paste .env.example
+    ```sh
+    cp .env.example .env
+    ```
+6. Copy and paste .env.example
+    ```sh
+    php artisan key:generate
+    ```
+7. Change environment variables
     ```sh
     DB_CONNECTION=mysql
     DB_HOST=your_database_host # default is 127.0.0.1
     DB_PORT=your_database_port # default is 3306
     DB_DATABASE=your_database_name
-    DB_USERNAME=your_database_username
-    DB_PASSWORD=your_database_password
+    DB_USERNAME=your_database_username # default is root
+    DB_PASSWORD=your_database_password # default is blank
     ```
-6. Run the database migrations
+8. Run the database migrations
     ```sh
     php artisan migrate
     ```
-7. Run the database seeder
+9. Run the database seeder
     ```sh
     php artisan db:seed
+    ```
+10. Run storage linkage
+    ```sh
+    php artisan storage:link
     ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -232,7 +251,7 @@ Project Link: [https://github.com/IHT-SEDD/reca-play](https://github.com/IHT-SED
 [issues-shield]: https://img.shields.io/github/issues/IHT-SEDD/reca-play.svg?style=for-the-badge
 [issues-url]: https://github.com/IHT-SEDD/reca-play/issues
 [license-shield]: https://img.shields.io/github/license/IHT-SEDD/reca-play.svg?style=for-the-badge
-[license-url]: https://github.com/IHT-SEDD/reca-play/blob/master/LICENSE.txt
+[license-url]: https://github.com/IHT-SEDD/reca-play/blob/production/LICENSE.md
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: public/assets/img/others/home.png
