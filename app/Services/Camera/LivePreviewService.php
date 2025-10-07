@@ -61,7 +61,7 @@ class LivePreviewService
   ]);
 
   $whepUrl = sprintf(
-   "http://%s/%s/whep",
+   "https://%s/%s/whep",
    $this->mediamtxHost,
    $cameraPath
   );
