@@ -52,7 +52,8 @@ class RecordedSearchService
     // ========== Search recording ==========
     public function getAllPlaybackUris(): array
     {
-        $playbackUris = [];
+        // $playbackUris = [];
+        $allUris = [];
         $tz = new \DateTimeZone(config('app.timezone'));
         $start = (new \DateTime($this->startTime, $tz))->format('Y-m-d\TH:i:s\Z');
         $end = (new \DateTime($this->endTime, $tz))->format('Y-m-d\TH:i:s\Z');
@@ -96,114 +97,152 @@ class RecordedSearchService
                     ->toArray();
 
                 if (!empty($uris)) {
-                    $playbackUris = array_merge($playbackUris, $uris);
-                    Log::channel('camera-record')->info("[RECORD SEARCH] Found URIs", [
-                        'channel' => $channel,
-                        'uris' => $uris
-                    ]);
+                    // $playbackUris = array_merge($playbackUris, $uris);
+                    // Log::channel('camera-record')->info("[RECORD SEARCH] Found URIs", [
+                    //     'channel' => $channel,
+                    //     'uris' => $uris
+                    // ]);
+                    $allUris["camera_{$channel}"] = $uris;
                 }
             } catch (\Throwable $e) {
                 Log::channel('camera-record')->error("[RECORD SEARCH] Channel {$channel} search error: " . $e->getMessage());
             }
         }
 
-        return $playbackUris;
+        // return $playbackUris;
+        return $allUris;
     }
 
     // ==================== Download videos to storage ====================
-    public function downloadByPlaybackUris(array $playbackUris, int $fieldId, int $userId, string $videoName): array
+    public function downloadByPlaybackUris(array $allUris, int $fieldId, int $userId, string $videoName): array
     {
-        $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
+        // array $playbackUris,
+        $results = [];
         $date = now()->format('dmy');
 
-        $client = new \GuzzleHttp\Client([
-            'verify' => false,
-            'auth' => [$this->user, $this->pass, 'digest'],
-            'timeout' => 0,
-        ]);
+        foreach ($allUris as $cameraKey => $playbackUris) {
+            $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
+            $client = new \GuzzleHttp\Client([
+                'verify' => false,
+                'auth' => [$this->user, $this->pass, 'digest'],
+                'timeout' => 0,
+            ]);
 
-        $rawFiles = [];
-        $sequence = 1;
+            $rawFiles = [];
+            $sequence = 1;
 
-        foreach ($playbackUris as $playbackURI) {
-            $xmlBody = $this->buildDownloadXmlPayload($playbackURI, $this->user, $this->pass);
-            $rawPath = storage_path("app/public/recordings/seg_{$sequence}.ps");
+            foreach ($playbackUris as $playbackURI) {
+                $xmlBody = $this->buildDownloadXmlPayload($playbackURI, $this->user, $this->pass);
+                $rawPath = storage_path("app/public/recordings/seg_{$sequence}.ps");
 
-            try {
-                @mkdir(dirname($rawPath), 0777, true);
-                $client->post($downloadUrl, [
-                    'headers' => [
-                        'Content-Type' => 'application/xml',
-                        'Accept' => '*/*'
-                    ],
-                    'body' => $xmlBody,
-                    'sink' => $rawPath,
-                ]);
-                $rawFiles[] = $rawPath;
-            } catch (\Throwable $e) {
-                Log::channel('camera-record')->error("[RECORD DOWNLOAD] Error seg {$sequence}", [
-                    'playbackURI' => $playbackURI,
-                    'exception' => $e->getMessage()
-                ]);
+                try {
+                    @mkdir(dirname($rawPath), 0777, true);
+                    $client->post($downloadUrl, [
+                        'headers' => [
+                            'Content-Type' => 'application/xml',
+                            'Accept' => '*/*'
+                        ],
+                        'body' => $xmlBody,
+                        'sink' => $rawPath,
+                    ]);
+                    $rawFiles[] = $rawPath;
+                } catch (\Throwable $e) {
+                    Log::channel('camera-record')->error("[RECORD DOWNLOAD] Error seg {$sequence}", [
+                        'playbackURI' => $playbackURI,
+                        'exception' => $e->getMessage()
+                    ]);
+                }
+                $sequence++;
             }
-            $sequence++;
+
+            // $concatFile = storage_path("app/public/recordings/concat_{$videoName}_{$date}.mp4");
+            // $listFile = storage_path("app/public/recordings/concat_list.txt");
+
+            $concatFile = storage_path("app/public/recordings/concat_{$cameraKey}_{$videoName}_{$date}.mp4");
+            $listFile = storage_path("app/public/recordings/concat_list_{$cameraKey}.txt");
+
+            // $fileList = "";
+            // foreach ($rawFiles as $rf) {
+            //     $fileList .= "file '" . $rf . "'\n";
+            // }
+            // file_put_contents($listFile, $fileList);
+            $fileList = collect($rawFiles)->map(fn($f) => "file '{$f}'")->implode("\n");
+            file_put_contents($listFile, $fileList);
+
+            $process = new Process([
+                'ffmpeg',
+                '-y',
+                '-f',
+                'concat',
+                '-safe',
+                '0',
+                '-i',
+                $listFile,
+                '-c:v',
+                // new :begin
+                'libx264',
+                '-preset',
+                'slow',
+                '-crf',
+                '23',
+                // new :end
+                // existing :begin
+                // 'copy',
+                // existing :end
+                '-c:a',
+                'aac',
+                '-b:a',
+                '128k',
+                // new :begin
+                '-movflags',
+                '+faststart',
+                // new :end
+                $concatFile
+            ]);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            }
+
+            // $finalFile = storage_path("app/public/recordings/{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
+            // $this->trimVideo($concatFile, $finalFile, $this->startTime, $this->endTime);
+
+            // $thumbnailDir = storage_path('app/public/thumbnails');
+            // @mkdir($thumbnailDir, 0777, true);
+            // $thumbnailPath = $thumbnailDir . '/' . pathinfo($finalFile, PATHINFO_FILENAME) . '_thumb.jpg';
+
+            // $this->generateThumbnail($finalFile, $thumbnailPath);
+            $finalFile = storage_path("app/public/recordings/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
+            rename($concatFile, $finalFile);
+
+            $thumbnailDir = storage_path('app/public/thumbnails');
+            @mkdir($thumbnailDir, 0777, true);
+            $thumbnailPath = $thumbnailDir . '/' . pathinfo($finalFile, PATHINFO_FILENAME) . '_thumb.jpg';
+
+            $this->generateThumbnail($finalFile, $thumbnailPath);
+
+            // cleanup temp
+            // @unlink($concatFile);
+            // @unlink($listFile);
+            // foreach ($rawFiles as $rf) {
+            //     @unlink($rf);
+            // }
+            @unlink($listFile);
+            foreach ($rawFiles as $rf) {
+                @unlink($rf);
+            }
+
+            // 
+            $results[] = [
+                'camera' => $cameraKey,
+                'path' => 'recordings/' . basename($finalFile),
+                'filename' => basename($finalFile),
+                'size' => filesize($finalFile),
+                'thumbnail' => 'thumbnails/' . basename($thumbnailPath),
+            ];
         }
-
-        // gabungkan semua segmen
-        $concatFile = storage_path("app/public/recordings/concat_{$videoName}_{$date}.mp4");
-        $listFile = storage_path("app/public/recordings/concat_list.txt");
-
-        $fileList = "";
-        foreach ($rawFiles as $rf) {
-            $fileList .= "file '" . $rf . "'\n";
-        }
-        file_put_contents($listFile, $fileList);
-
-        $process = new Process([
-            'ffmpeg',
-            '-y',
-            '-f',
-            'concat',
-            '-safe',
-            '0',
-            '-i',
-            $listFile,
-            '-c:v',
-            'copy',
-            '-c:a',
-            'aac',
-            '-b:a',
-            '128k',
-            $concatFile
-        ]);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
-        $finalFile = storage_path("app/public/recordings/{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
-        $this->trimVideo($concatFile, $finalFile, $this->startTime, $this->endTime);
-
-        $thumbnailDir = storage_path('app/public/thumbnails');
-        @mkdir($thumbnailDir, 0777, true);
-        $thumbnailPath = $thumbnailDir . '/' . pathinfo($finalFile, PATHINFO_FILENAME) . '_thumb.jpg';
-
-        $this->generateThumbnail($finalFile, $thumbnailPath);
-
-        // cleanup temp
-        @unlink($concatFile);
-        @unlink($listFile);
-        foreach ($rawFiles as $rf) {
-            @unlink($rf);
-        }
-
-        return [[
-            'path' => 'recordings/' . basename($finalFile),
-            'filename' => basename($finalFile),
-            'size' => filesize($finalFile),
-            'thumbnail' => 'thumbnails/' . pathinfo($finalFile, PATHINFO_FILENAME) . '_thumb.jpg'
-        ]];
+        return $results;
     }
 
     // ========== Generate thumbnail ==========
@@ -254,8 +293,25 @@ class RecordedSearchService
             $input,
             '-t',
             $duration,
+            // existing :begin
             '-c',
             'copy',
+            // existing :end
+
+            // new :begin
+            '-c:v',
+            'libx264',
+            '-preset',
+            'slow',
+            '-crf',
+            '23',
+            '-c:a',
+            'aac',
+            '-b:a',
+            '128k',
+            '-movflags',
+            '+faststart',
+            // new :end
             $output
         ]);
         $process->run();
