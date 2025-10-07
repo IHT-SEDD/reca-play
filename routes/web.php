@@ -11,18 +11,21 @@ use App\Http\Controllers\{
     Event\EventController,
     Master\MasterController,
     Master\QrCode\QrCodeController,
-    ScanQrController,
     UserManagement\UserManagementController,
     Venue\VenueController,
     VenueManagement\VenueManagementController,
 };
 use App\Http\Controllers\Home\HomeController;
+use App\Http\Controllers\Watch\WatchController;
+use App\Http\Controllers\ScanQrController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['check.maintenance'])->group(function () {
     #region Home
     Route::get('/', [HomeController::class, 'index'])->name('home.index');
     Route::get('/video-list', [HomeController::class, 'getVideos'])->name('home.data');
+    Route::get('/video/watch/{videoEncrypt}', [WatchController::class, 'index'])->name('watch.index');
+    Route::get('/video/watch/data/{videoEncrypt}', [WatchController::class, 'watchData'])->name('watch.data');
 
     // Guest Users
     Route::middleware('guest')->group(function () {
@@ -38,7 +41,6 @@ Route::middleware(['check.maintenance'])->group(function () {
         // Share video & watch
         Route::middleware('throttle:share-video')->group(function () {
             Route::post('/share/{videoId}', [HomeController::class, 'shareVideo'])->name('home.share');
-            Route::get('/video/watch/{videoEncrypt}', [HomeController::class, 'watchVideo'])->name('home.watch');
         });
 
         Route::get('/camera/live', [TestingController::class, 'livePreview'])->name('camera.live');
@@ -71,7 +73,7 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::get('/redirect', function () {
                 return view('pages.creator.redirect');
             })->name('creator.redirect');
-            
+
             // Scan QR
             Route::prefix('scan-qr')->group(function () {
                 Route::get('/', [CreatorController::class, 'scanQrPage'])->name('creator.scan');
