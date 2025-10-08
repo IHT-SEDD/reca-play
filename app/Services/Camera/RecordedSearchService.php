@@ -140,8 +140,8 @@ class RecordedSearchService
             foreach ($playbackUris as $playbackURI) {
                 $xmlBody = $this->buildDownloadXmlPayload($playbackURI, $this->user, $this->pass);
                 // $rawPath = storage_path("app/public/recordings/{$cameraKey}_seg_{$sequence}.ps");
-                $rawPs = "{$storageDir}/{$cameraKey}_seg_{$sequence}.ps";
-                $rawTs = "{$storageDir}/{$cameraKey}_seg_{$sequence}.ts";
+                $rawPs = storage_path("app/public/recordings/{$cameraKey}_seg_{$sequence}.ps");
+                $rawTs = storage_path("app/public/recordings/{$cameraKey}_seg_{$sequence}.ts");
 
                 try {
                     // @mkdir(dirname($rawPath), 0777, true);
@@ -161,10 +161,18 @@ class RecordedSearchService
                         '-y',
                         '-i',
                         $rawPs,
-                        '-c',
-                        'copy',
-                        '-bsf:v',
-                        'h264_mp4toannexb',
+                        '-c:v',
+                        'libx264',
+                        '-preset',
+                        'veryfast',
+                        '-crf',
+                        '23',
+                        '-c:a',
+                        'aac',
+                        '-b:a',
+                        '128k',
+                        '-movflags',
+                        '+faststart',
                         $rawTs
                     ]);
                     $convert->run();
@@ -196,8 +204,8 @@ class RecordedSearchService
             // $concatFile = storage_path("app/public/recordings/concat_{$videoName}_{$date}.mp4");
             // $listFile = storage_path("app/public/recordings/concat_list.txt");
 
-            $listFile = "{$storageDir}/list_{$cameraKey}.txt";
-            $concatFile = "{$storageDir}/concat_{$cameraKey}_{$videoName}_{$date}.mp4";
+            $listFile = storage_path("app/public/recordings/list_{$cameraKey}.txt");
+            $concatFile = storage_path("app/public/recordings/concat_{$cameraKey}_{$videoName}_{$date}.mp4");
 
             $fileList = implode("\n", array_map(fn($f) => "file '{$f}'", $rawFiles));
             file_put_contents($listFile, $fileList);
@@ -252,7 +260,7 @@ class RecordedSearchService
                 continue;
             }
 
-            $finalFile = "{$storageDir}/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4";
+            $finalFile = storage_path("app/public/recordings/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
             try {
                 $this->trimVideo($concatFile, $finalFile, $this->startTime, $this->endTime);
                 @unlink($concatFile);
