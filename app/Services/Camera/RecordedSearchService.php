@@ -133,7 +133,7 @@ class RecordedSearchService
 
             foreach ($playbackUris as $playbackURI) {
                 $xmlBody = $this->buildDownloadXmlPayload($playbackURI, $this->user, $this->pass);
-                $rawPath = storage_path("app/public/recordings/seg_{$sequence}.ps");
+                $rawPath = storage_path("app/public/recordings/{$cameraKey}_seg_{$sequence}.ps");
 
                 try {
                     @mkdir(dirname($rawPath), 0777, true);
@@ -200,6 +200,11 @@ class RecordedSearchService
                 $concatFile
             ]);
             $process->run();
+
+            Log::channel('camera-record')->info("[RECORD DOWNLOAD] FFmpeg output for {$cameraKey}", [
+                'stdout' => $process->getOutput(),
+                'stderr' => $process->getErrorOutput(),
+            ]);
 
             if (!$process->isSuccessful()) {
                 throw new ProcessFailedException($process);
