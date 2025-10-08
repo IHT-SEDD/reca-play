@@ -119,6 +119,7 @@ class RecordedSearchService
         // array $playbackUris,
         $results = [];
         $date = now()->format('dmy');
+        $storageDir = storage_path("app/public/recordings");
 
         foreach ($allUris as $cameraKey => $playbackUris) {
             $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
@@ -131,21 +132,53 @@ class RecordedSearchService
             $rawFiles = [];
             $sequence = 1;
 
+            Log::channel('camera-record')->info("[RECORD] Start download for {$cameraKey}", [
+                'segments' => count($playbackUris),
+                'range' => "{$this->startTime} → {$this->endTime}",
+            ]);
+
             foreach ($playbackUris as $playbackURI) {
                 $xmlBody = $this->buildDownloadXmlPayload($playbackURI, $this->user, $this->pass);
-                $rawPath = storage_path("app/public/recordings/{$cameraKey}_seg_{$sequence}.ps");
+                // $rawPath = storage_path("app/public/recordings/{$cameraKey}_seg_{$sequence}.ps");
+                $rawPs = "{$storageDir}/{$cameraKey}_seg_{$sequence}.ps";
+                $rawTs = "{$storageDir}/{$cameraKey}_seg_{$sequence}.ts";
 
                 try {
-                    @mkdir(dirname($rawPath), 0777, true);
+                    // @mkdir(dirname($rawPath), 0777, true);
+                    @mkdir(dirname($rawPs), 0777, true);
                     $client->post($downloadUrl, [
                         'headers' => [
                             'Content-Type' => 'application/xml',
                             'Accept' => '*/*'
                         ],
                         'body' => $xmlBody,
-                        'sink' => $rawPath,
+                        // 'sink' => $rawPath,
+                        'sink' => $rawPs,
                     ]);
-                    $rawFiles[] = $rawPath;
+
+                    $convert = new Process([
+                        'ffmpeg',
+                        '-y',
+                        '-i',
+                        $rawPs,
+                        '-c',
+                        'copy',
+                        '-bsf:v',
+                        'h264_mp4toannexb',
+                        $rawTs
+                    ]);
+                    $convert->run();
+
+                    if (!$convert->isSuccessful()) {
+                        Log::channel('camera-record')->error("[FFMPEG CONVERT FAIL] {$cameraKey}_seg_{$sequence}", [
+                            'error' => $convert->getErrorOutput(),
+                        ]);
+                        continue;
+                    }
+
+                    // $rawFiles[] = $rawPath;
+                    $rawFiles[] = $rawTs;
+                    @unlink($rawPs);
                 } catch (\Throwable $e) {
                     Log::channel('camera-record')->error("[RECORD DOWNLOAD] Error seg {$sequence}", [
                         'playbackURI' => $playbackURI,
@@ -155,21 +188,32 @@ class RecordedSearchService
                 $sequence++;
             }
 
+            if (empty($rawFiles)) {
+                Log::channel('camera-record')->warning("[NO FILES] {$cameraKey}");
+                continue;
+            }
+
             // $concatFile = storage_path("app/public/recordings/concat_{$videoName}_{$date}.mp4");
             // $listFile = storage_path("app/public/recordings/concat_list.txt");
 
-            $concatFile = storage_path("app/public/recordings/concat_{$cameraKey}_{$videoName}_{$date}.mp4");
-            $listFile = storage_path("app/public/recordings/concat_list_{$cameraKey}.txt");
+            $listFile = "{$storageDir}/list_{$cameraKey}.txt";
+            $concatFile = "{$storageDir}/concat_{$cameraKey}_{$videoName}_{$date}.mp4";
+
+            $fileList = implode("\n", array_map(fn($f) => "file '{$f}'", $rawFiles));
+            file_put_contents($listFile, $fileList);
+
+            // $concatFile = storage_path("app/public/recordings/concat_{$cameraKey}_{$videoName}_{$date}.mp4");
+            // $listFile = storage_path("app/public/recordings/concat_list_{$cameraKey}.txt");
 
             // $fileList = "";
             // foreach ($rawFiles as $rf) {
             //     $fileList .= "file '" . $rf . "'\n";
             // }
             // file_put_contents($listFile, $fileList);
-            $fileList = collect($rawFiles)->map(fn($f) => "file '{$f}'")->implode("\n");
-            file_put_contents($listFile, $fileList);
+            // $fileList = collect($rawFiles)->map(fn($f) => "file '{$f}'")->implode("\n");
+            // file_put_contents($listFile, $fileList);
 
-            $process = new Process([
+            $concat = new Process([
                 'ffmpeg',
                 '-y',
                 '-f',
@@ -182,9 +226,9 @@ class RecordedSearchService
                 // new :begin
                 'libx264',
                 '-preset',
-                'slow',
+                'medium',
                 '-crf',
-                '23',
+                '22',
                 // new :end
                 // existing :begin
                 // 'copy',
@@ -199,15 +243,24 @@ class RecordedSearchService
                 // new :end
                 $concatFile
             ]);
-            $process->run();
+            $concat->run();
 
-            Log::channel('camera-record')->info("[RECORD DOWNLOAD] FFmpeg output for {$cameraKey}", [
-                'stdout' => $process->getOutput(),
-                'stderr' => $process->getErrorOutput(),
-            ]);
+            if (!$concat->isSuccessful()) {
+                Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL] {$cameraKey}", [
+                    'error' => $concat->getErrorOutput(),
+                ]);
+                continue;
+            }
 
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
+            $finalFile = "{$storageDir}/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4";
+            try {
+                $this->trimVideo($concatFile, $finalFile, $this->startTime, $this->endTime);
+                @unlink($concatFile);
+            } catch (\Throwable $e) {
+                Log::channel('camera-record')->error("[FFMPEG TRIM FAIL] {$cameraKey}", [
+                    'error' => $e->getMessage(),
+                ]);
+                rename($concatFile, $finalFile);
             }
 
             // $finalFile = storage_path("app/public/recordings/{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
@@ -218,13 +271,11 @@ class RecordedSearchService
             // $thumbnailPath = $thumbnailDir . '/' . pathinfo($finalFile, PATHINFO_FILENAME) . '_thumb.jpg';
 
             // $this->generateThumbnail($finalFile, $thumbnailPath);
-            $finalFile = storage_path("app/public/recordings/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
-            rename($concatFile, $finalFile);
+            // $finalFile = storage_path("app/public/recordings/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
 
             $thumbnailDir = storage_path('app/public/thumbnails');
             @mkdir($thumbnailDir, 0777, true);
             $thumbnailPath = $thumbnailDir . '/' . pathinfo($finalFile, PATHINFO_FILENAME) . '_thumb.jpg';
-
             $this->generateThumbnail($finalFile, $thumbnailPath);
 
             // cleanup temp
@@ -299,15 +350,15 @@ class RecordedSearchService
             '-t',
             $duration,
             // existing :begin
-            '-c',
-            'copy',
+            // '-c',
+            // 'copy',
             // existing :end
 
             // new :begin
             '-c:v',
             'libx264',
             '-preset',
-            'slow',
+            'medium',
             '-crf',
             '23',
             '-c:a',
