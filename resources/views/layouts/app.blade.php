@@ -52,8 +52,8 @@
             @endif
 
             <!-- Owner menu -->
-            @if (Auth::user() && Auth::user()->isOwner())
-            @include('layouts.owner-navigation')
+            @if (Auth::user() && Auth::user()->isVenueManagement())
+            @include('layouts.venue-navigation')
             @endif
 
             <!-- Page Content -->

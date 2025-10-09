@@ -4,6 +4,7 @@ namespace App\Http\Requests\Creator;
 
 use App\Models\Master\Camera;
 use App\Models\Session\QrSession;
+use App\Models\Session\SessionCode;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,10 +32,15 @@ class StoreRecordRequest extends FormRequest
             $cameraId = Camera::where('field_id', $fieldId)->value('id');
         }
 
+        $sessionCodeId = SessionCode::where('generated_code', $this->session_code)
+            ->where('user_id', $userId)
+            ->value('id');
+
         $this->merge([
             'user_id' => $userId,
             'field_id' => $fieldId,
             'camera_id' => $cameraId,
+            'session_code_id' => $sessionCodeId,
         ]);
     }
 
@@ -57,7 +63,10 @@ class StoreRecordRequest extends FormRequest
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'field_id' => ['nullable', 'integer', 'exists:fields,id'],
             'camera_id' => ['nullable', 'integer', 'exists:cameras,id'],
+            'session_code_id' => ['nullable', 'integer', 'exists:session_codes,id'],
 
+            'session_token' => ['nullable', 'string'],
+            'session_code' => ['required', 'string'],
             'video_name' => ['required', 'string', 'max:255', 'min:5'],
             'duration' => ['required', 'integer'],
 
@@ -73,8 +82,12 @@ class StoreRecordRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'session_code.required' => 'Session code cannot be empty.',
+
             'video_name.required' => 'Video name cannot be empty.',
             'video_name.min' => 'Video name minimum is 5 characters',
+
+            'session_code.required' => 'Session code cannot be empty',
 
             'duration.required' => 'Duration cannot be empty',
             'duration.integer' => 'Duration must be a number',
@@ -82,6 +95,7 @@ class StoreRecordRequest extends FormRequest
             'user_id.exist' => 'User ID does not exist',
             'field_id.exist' => 'Field ID does not exist',
             'camera_id.exist' => 'Camera ID does not exist',
+            'session_code_id.exist' => 'Session Code not valid',
         ];
     }
 }

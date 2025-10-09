@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\Field;
 use App\Models\Master\Venue;
 use App\Models\Record\Recording;
+use App\Models\Session\SessionCode;
 use App\Services\CustomDatatable\CustomDatatableService;
 use Illuminate\Support\Facades\URL;
 use Vinkla\Hashids\Facades\Hashids;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -152,5 +154,68 @@ class VenueManagementController extends Controller
                 'message' => $th->getMessage()
             ], 500);
         }
+    }
+
+    public function generateAccessCode($hashedId)
+    {
+        try {
+            DB::beginTransaction();
+            $decoded  = Hashids::connection('main')->decode($hashedId);
+            if (empty($decoded)) {
+                return response()->json(['error' => 'Invalid ID'], 400);
+            }
+
+            $fieldId = $decoded[0];
+            $field = Field::select('id', 'venue_id', 'name')->findOrFail($fieldId);
+            $venue = $field->venue()->select('id', 'name')->first();
+
+            $generatedCode = $this->generateCode($venue->name ?? '', $field->name ?? '');
+
+            $sessionCode = SessionCode::create([
+                'field_id' => $fieldId,
+                'venue_id' => $field->venue_id,
+                'generate_by_user_id' => Auth::id(),
+                'status' => 'active',
+                'generated_code' => $generatedCode,
+                'expired_at' => Carbon::now()->addDay(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Access code generated successfully',
+                'generated_code' => $sessionCode->generated_code,
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollback();
+            return response()->json([
+                'error' => 'Failed to generate access code',
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    private function generateCode(string $venueName, string $fieldName): string
+    {
+        $venueInitial = $this->getInitial($venueName);
+        $fieldInitial = $this->getInitial($fieldName);
+        $randomNumber = str_pad(random_int(0, 99999), 5, '0', STR_PAD_LEFT);
+
+        return "{$venueInitial}-{$fieldInitial}{$randomNumber}";
+    }
+
+    private function getInitial(string $name): string
+    {
+        $cleanName = strtoupper(preg_replace('/[^A-Z ]/i', '', $name));
+        $words = preg_split('/\s+/', trim($cleanName));
+
+        if (count($words) > 1) {
+            $initial = substr($words[0], 0, 1) . substr($words[1], 0, 1);
+        } else {
+            $initial = substr($cleanName, 0, 2);
+        }
+
+        return str_pad($initial, 2, 'X');
     }
 }

@@ -36,7 +36,7 @@
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <!-- Dark Mode toggle -->
-                <button @click="darkMode = !darkMode"
+                {{-- <button @click="darkMode = !darkMode"
                     class="p-1.5 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 dark:border-base-200/40 me-4">
                     <!-- Sun (Light mode) -->
                     <div :class="darkMode ? 'bg-transparent text-white' : 'bg-base-200 text-hot-shot'"
@@ -48,7 +48,7 @@
                         class="p-2 rounded-full transition">
                         <i data-lucide="moon" class="w-4 h-auto"></i>
                     </div>
-                </button>
+                </button> --}}
 
                 <!-- User dropdown -->
                 <x-dropdown.dropdown-flowbite :trigger="Auth::user()->name ?? 'Welcome, Guest'" iconTrigger="user">
@@ -88,7 +88,7 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="darkMode = !darkMode"
+                {{-- <button @click="darkMode = !darkMode"
                     class="p-1 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 dark:border-base-200/40 me-4">
                     <!-- Sun (Light mode) -->
                     <div :class="darkMode ? 'bg-transparent text-white' : 'bg-base-200 text-hot-shot'"
@@ -100,7 +100,7 @@
                         class="p-1 rounded-full transition">
                         <i data-lucide="moon" class="w-3 h-auto"></i>
                     </div>
-                </button>
+                </button> --}}
 
                 <button @click="open = ! open"
                     class="inline-flex items-center justify-center p-2 rounded-md text-after-midnight dark:text-white hover:text-hot-shot dark:hover:text-hot-shot transition duration-150 ease-in-out">
