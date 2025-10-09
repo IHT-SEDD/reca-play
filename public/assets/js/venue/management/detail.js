@@ -1,4 +1,9 @@
-let fetchData, populateData, toggleState, currentState, lastActivityTable;
+let fetchData,
+    populateData,
+    toggleState,
+    currentState,
+    lastActivityTable,
+    generateCode;
 
 const pathParts = window.location.pathname.split("/");
 const hashedId = pathParts[pathParts.length - 1];
@@ -139,10 +144,48 @@ lastActivityTable = (hashedId) => {
     });
 };
 
+generateCode = () => {
+    $.ajax({
+        url: `/venue-management/detail/code-access/generate/${hashedId}`,
+        method: "POST",
+        dataType: "json",
+        success: function (res) {
+            if (res.success) {
+                notyf.success(
+                    res.message || "Access code generated successfully"
+                );
+                $("#access_code").text(res.generated_code);
+
+                const modal = document.getElementById("access_code_modal");
+                if (modal) {
+                    modal.showModal();
+                }
+            } else {
+                notyf.error(res.message || "Failed to generate access code!");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("Failed to generate access code:", error);
+            notyf.error(
+                "Failed to generate access code! Please try again later."
+            );
+        },
+    });
+};
+
+$(document).on("click", "#copy_code_btn", function () {
+    const code = $("#access_code").text().trim();
+    navigator.clipboard.writeText(code);
+    notyf.success("Code copied to clipboard!");
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     fetchData(hashedId);
     lastActivityTable(hashedId);
     $("#toggle_button").on("click", function () {
         toggleState();
+    });
+    $("#generate_code_button").on("click", function () {
+        generateCode();
     });
 });

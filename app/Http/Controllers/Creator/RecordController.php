@@ -9,6 +9,8 @@ use App\Models\Record\Recording;
 use App\Models\Record\RecordingLog;
 use App\Models\Session\QrSession;
 use App\Models\Session\RecordSession;
+use App\Models\Session\SessionCode;
+use App\Models\Session\SessionLog;
 use App\Services\Support\GetModelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -100,6 +102,16 @@ class RecordController extends Controller
                         'status' => 'ongoing',
                         'updated_at' => now(),
                     ]);
+
+                    SessionLog::where('recording_id', $data->id)
+                        ->where('user_id', $userId)
+                        ->where('session_token', $recordSession->session_token)
+                        ->where('status', 'in use')
+                        ->update([
+                            'start_time' => now(),
+                            'status' => 'recording',
+                            'updated_at' => $startTime,
+                        ]);
                 } else {
                     throw new \Exception("Failed to start recording on one or more cameras");
                 }
@@ -128,6 +140,13 @@ class RecordController extends Controller
         $userId = Auth::id();
         $recordSession = $this->getRecordSession();
         $scannedQrData = $this->getQrSession();
+        $sessionToken = session('qr_session_token');
+
+        $sessionCodeId = SessionCode::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->where('status', '!=', 'expired')
+            ->latest()
+            ->value('id');
 
         $id = $recordSession?->recording_id;
 
@@ -144,7 +163,11 @@ class RecordController extends Controller
             ]);
         }
 
-        $data = Recording::with(['user', 'field', 'camera'])->find($id);
+        $data = Recording::with(['user', 'field', 'camera'])
+            ->where('session_code_id', $sessionCodeId)
+            ->where('session_token', $sessionToken)
+            ->find($id);
+
         if (!$data) {
             return response()->json([
                 'status' => 'error',
@@ -171,6 +194,14 @@ class RecordController extends Controller
                 'updated_at' => now(),
             ]);
 
+            SessionLog::where('recording_id', $data->id)
+                ->where('session_token', $sessionToken)
+                ->where('session_code_id', $sessionCodeId)
+                ->update([
+                    'end_time' => now(),
+                    'inactive_at' => now(),
+                    'status' => 'finished',
+                ]);
             // ========== Search & Download recorded videos ==========
             $recordedSearch = app(\App\Services\Camera\RecordedSearchService::class);
             $recordedSearch->initialize($fieldId, $data->start_time, $data->end_time);
@@ -204,8 +235,8 @@ class RecordController extends Controller
                 }
             }
 
-            RecordSession::where('user_id', $userId)->delete();
-            QrSession::where('user_id', $userId)->delete();
+            RecordSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
+            QrSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
 
             DB::commit();
 
@@ -280,19 +311,40 @@ class RecordController extends Controller
     private function getQrSession(): ?QrSession
     {
         $userId = Auth::id();
+        $sessionToken = session('qr_session_token');
+
+        if (!$userId || !$sessionToken) {
+            return null;
+        }
 
         return QrSession::with(['qrCode.field.venue'])
             ->where('user_id', $userId)
-            ->latest()
+            ->where('session_token', $sessionToken)
+            ->latest('last_active_at')
             ->first();
     }
 
     private function getRecordSession(): ?RecordSession
     {
         $userId = Auth::id();
+        $sessionToken = session('qr_session_token');
 
-        return RecordSession::where('user_id', $userId)
+        if (!$userId || !$sessionToken) {
+            return null;
+        }
+
+        $recordingId = SessionCode::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->where('status', 'in use')
             ->latest()
-            ->first();
+            ->value('recording_id');
+
+        $query = RecordSession::where('user_id', $userId);
+
+        if ($recordingId) {
+            $query->where('recording_id', $recordingId);
+        }
+
+        return $query->latest('created_at')->first();
     }
 }

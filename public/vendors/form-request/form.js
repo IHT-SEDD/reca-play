@@ -59,6 +59,38 @@ formRequestInit = () => {
     }
 
     // ============================
+    // Custom session code message handler
+    // ============================
+    function handleSessionCodeError(message) {
+        if (!message) return false;
+
+        const lowerMsg = message.toLowerCase();
+
+        if (lowerMsg.includes("session code not found")) {
+            notyf.error(
+                "Access code not found! Please go to cashier and ask for the access code."
+            );
+            return true;
+        }
+
+        if (lowerMsg.includes("session code has expired")) {
+            notyf.error(
+                "This access code has expired. Please ask cashier for a new code."
+            );
+            return true;
+        }
+
+        if (lowerMsg.includes("session code is already in use")) {
+            notyf.error(
+                "This access code is already being used by another user."
+            );
+            return true;
+        }
+
+        return false;
+    }
+
+    // ============================
     // Form submit handler
     // ============================
     function formAdd() {
@@ -96,6 +128,13 @@ formRequestInit = () => {
                                     .DataTable()
                                     .ajax.reload(null, false);
                             }
+                        } else if (result.status === "error") {
+                            if (!handleSessionCodeError(result.message)) {
+                                notyf.error(
+                                    result.message ||
+                                        "An error occurred. Please try again."
+                                );
+                            }
                         } else {
                             console.error(result.message);
                             notyf.error("An error occurred. Please try again.");
@@ -109,7 +148,13 @@ formRequestInit = () => {
                             );
                             notyf.error("Please check the form for errors.");
                         } else {
-                            notyf.error("An error occurred. Please try again.");
+                            const response = xhr.responseJSON;
+                            if (!handleSessionCodeError(response?.message)) {
+                                notyf.error(
+                                    response?.message ||
+                                        "An error occurred. Please try again."
+                                );
+                            }
                             console.error(xhr);
                         }
                     },

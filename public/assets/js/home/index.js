@@ -55,7 +55,7 @@ renderList = (videos) => {
                     <a href="/video/watch/${
                         video.hashed_id
                     }" target="_blank" rel="noopener noreferrer" class="block">
-                        <div class="bg-base-200 rounded-xl p-3 min-h-44 mb-2 relative" style="background-image: url('/storage/${
+                        <div class="bg-base-200 dark:bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative" style="background-image: url('/storage/${
                             video.thumbnail_path
                         }'); background-size: cover; background-position: center;">
                             <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black text-white p-2 rounded-xl">
@@ -125,10 +125,20 @@ shareVideo = (videoId) => {
         url: `/share/${videoId}`,
         method: "POST",
         success: (response) => {
+            console.log(response);
             showShareModal(response.url);
         },
-        error: () => {
-            notyf.error("Failed to generate share link.");
+        error: (xhr) => {
+            if (xhr.status === 401) {
+                notyf.error(
+                    "You are not logged in. Redirecting to the login page..."
+                );
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 2000);
+            } else {
+                notyf.error("Failed to generate share link.");
+            }
         },
     });
 };

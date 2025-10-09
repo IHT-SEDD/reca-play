@@ -54,7 +54,8 @@ selectRole = () => {
             });
         },
         onChange: function (value) {
-            if (value == "10") {
+            const needVenue = ["10", "11"];
+            if (needVenue) {
                 new TomSelect("#select-venue", {
                     valueField: "id",
                     labelField: "text",
@@ -80,7 +81,7 @@ selectRole = () => {
                     },
                 });
 
-                $("#select_venue_owner").show();
+                $("#select_venue_user").show();
                 $("#select-venue").attr("required", true);
 
                 FormValidation.addRule("venue_id", {
@@ -90,7 +91,7 @@ selectRole = () => {
                     required: "Venue cannot be empty.",
                 });
             } else {
-                $("#select_venue_owner").hide();
+                $("#select_venue_user").hide();
                 $("#select-venue").removeAttr("required");
 
                 FormValidation.removeRule("venue_id");
@@ -98,7 +99,7 @@ selectRole = () => {
         },
     });
 
-    $("#select_venue_owner").hide();
+    $("#select_venue_user").hide();
 };
 
 document.addEventListener("DOMContentLoaded", function () {

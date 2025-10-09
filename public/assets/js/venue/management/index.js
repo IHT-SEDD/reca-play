@@ -12,7 +12,7 @@ fieldTable = () => {
                 orderable: false,
                 render: function (data, type, row) {
                     return `
-                    <a href="/venue-management/detail/${row.hashed_id}" class="hover:text-hot-shot" target="_blank" rel="noopener noreferrer">${data}</a>`;
+                    <a href="/venue-management/detail/${row.hashed_id}" class="font-semibold italic hover:text-hot-shot" target="_blank" rel="noopener noreferrer">${data}</a>`;
                 },
             },
             { data: "name", name: "name", orderable: false },
