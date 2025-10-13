@@ -45,10 +45,21 @@ class ScanQrService
       ];
     }
 
+    $existingSession = QrSession::whereNotNull('user_id')
+      ->where('qr_code', $qrCode->code)
+      ->whereNotNull('session_token')
+      ->first();
+
+    if ($existingSession) {
+      return [
+        'success' => false,
+        'message' => 'This field is currently in use. Please wait until the previous session is finished.',
+      ];
+    }
+
     $user = Auth::user();
 
     // session(['scanned_qr' => $qrCode]);
-
     $sessionToken = Str::uuid()->toString();
 
     QrSession::create([
