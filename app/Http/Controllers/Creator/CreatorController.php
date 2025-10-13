@@ -81,16 +81,7 @@ class CreatorController extends Controller
     // ====== Check scanned QR ======
     public function checkScannedQr()
     {
-        $userId = Auth::id();
-        $sessionToken = session('qr_session_token');
-
-        $scannedQr = QrSession::with(['qrCode.field.venue'])
-            ->where('user_id', $userId)
-            ->where('session_token', $sessionToken)
-            ->latest()
-            ->first();
-
-        // $scannedQr = session('scanned_qr');
+        $scannedQr = $this->getActiveQrSession();
 
         if (!$scannedQr) {
             return response()->json([
@@ -113,15 +104,18 @@ class CreatorController extends Controller
         $userId = Auth::id();
         $ip = $request->ip();
         // $scannedQrData = session('scanned_qr');
-        $sessionToken = session('qr_session_token');
 
-        $scannedQrData = QrSession::with(['qrCode.field.venue'])
-            ->where('user_id', $userId)
-            ->where('session_token', $sessionToken)
-            ->latest()
-            ->first();
+        $scannedQrData = $this->getActiveQrSession();
+
+        if (!$scannedQrData) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No active QR session found. Please scan a QR code first.'
+            ], 400);
+        }
 
         $qrCode = $scannedQrData?->qrCode?->code;
+        $sessionToken = session('qr_session_token');
 
         try {
             DB::beginTransaction();
@@ -136,10 +130,6 @@ class CreatorController extends Controller
             $data = $modelClass::create($validated);
 
             if ($type == 'record') {
-                if (!$scannedQrData) {
-                    throw new \Exception('QR session not found, please scan again.');
-                }
-
                 $inputCode = $request->input('session_code');
                 if (!$inputCode) {
                     throw new \Exception('Session code is required.');
@@ -232,5 +222,26 @@ class CreatorController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function getActiveQrSession(bool $requireActiveSession = true): ?QrSession
+    {
+        $userId = Auth::id();
+        $sessionToken = session('qr_session_token');
+
+        if (!$userId || !$sessionToken) {
+            return null;
+        }
+
+        $query = QrSession::with(['qrCode.field.venue'])
+            ->where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest();
+
+        if ($requireActiveSession) {
+            $query->whereNotNull('session_token');
+        }
+
+        return $query->first();
     }
 }
