@@ -576,7 +576,6 @@ class RecordedSearchService
         ]);
     }
 
-
     // ========== Build XML Payload for searching ==========
     protected function buildSearchXmlPayload(string $channel, string $start, string $end): string
     {

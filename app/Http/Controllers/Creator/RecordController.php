@@ -138,9 +138,15 @@ class RecordController extends Controller
     public function stopRecording(Request $request)
     {
         $userId = Auth::id();
+        $sessionToken = session('qr_session_token');
+
+        Log::channel('camera-record')->info("[STOP RECORDING] === Start stopRecording ===", [
+            'user_id' => $userId,
+            'session_token' => $sessionToken,
+        ]);
+
         $recordSession = $this->getRecordSession();
         $scannedQrData = $this->getQrSession();
-        $sessionToken = session('qr_session_token');
 
         $sessionCodeId = SessionCode::where('user_id', $userId)
             ->where('session_token', $sessionToken)
@@ -149,14 +155,21 @@ class RecordController extends Controller
             ->value('id');
 
         $id = $recordSession?->recording_id;
-
         $qrData = $scannedQrData?->qr_data ?? [];
+
         if (is_string($qrData)) {
             $qrData = json_decode($qrData, true);
         }
         $fieldId = $qrData['field_id'] ?? null;
 
+        Log::channel('camera-record')->info("[STOP RECORDING] Session data loaded", [
+            'recording_id' => $id,
+            'session_code_id' => $sessionCodeId,
+            'field_id' => $fieldId,
+        ]);
+
         if (!$id) {
+            Log::channel('camera-record')->warning("[STOP RECORDING] No recording data found in session");
             return response()->json([
                 'status' => 'error',
                 'message' => 'No record data found in session'
@@ -169,6 +182,9 @@ class RecordController extends Controller
             ->find($id);
 
         if (!$data) {
+            Log::channel('camera-record')->warning("[STOP RECORDING] Recording data not found", [
+                'recording_id' => $id
+            ]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Data not found'
@@ -182,12 +198,18 @@ class RecordController extends Controller
         try {
             DB::beginTransaction();
 
+            Log::channel('camera-record')->info("[STOP RECORDING] Stopping camera", [
+                'field_id' => $fieldId,
+                'recording_id' => $data->id
+            ]);
+
             // ========== Stop camera recording ==========
             $cameraService = app(\App\Services\Camera\CameraControlService::class);
             $cameraService->initialize($fieldId);
             $cameraService->stopRecording();
 
             $data->update(['end_time' => now()]);
+            Log::channel('camera-record')->info("[STOP RECORDING] Camera stopped successfully");
 
             RecordingLog::where('recording_id', $data->id)->update([
                 'status' => 'stopped',
@@ -202,11 +224,18 @@ class RecordController extends Controller
                     'inactive_at' => now(),
                     'status' => 'finished',
                 ]);
+
+            Log::channel('camera-record')->info("[STOP RECORDING] Session and recording logs updated");
+
             // ========== Search & Download recorded videos ==========
             $recordedSearch = app(\App\Services\Camera\RecordedSearchService::class);
             $recordedSearch->initialize($fieldId, $data->start_time, $data->end_time);
 
             $playbackUris = $recordedSearch->getAllPlaybackUris();
+            Log::channel('camera-record')->info("[STOP RECORDING] Playback URIs fetched", [
+                'count' => count($playbackUris)
+            ]);
+
             $savedFiles = [];
 
             if (!empty($playbackUris)) {
@@ -216,6 +245,10 @@ class RecordController extends Controller
                     $userId,
                     $videoName
                 );
+
+                Log::channel('camera-record')->info("[STOP RECORDING] Downloaded files info", [
+                    'files' => array_column($savedFiles, 'filename')
+                ]);
 
                 foreach ($savedFiles as $file) {
                     $thumbnailPath = $file['thumbnail'] ?? null;
@@ -235,10 +268,17 @@ class RecordController extends Controller
                 }
             }
 
+            Log::channel('camera-record')->info("[STOP RECORDING] Cleaning up sessions");
+
             RecordSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
             QrSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
 
             DB::commit();
+
+            Log::channel('camera-record')->info("[STOP RECORDING] === Completed successfully ===", [
+                'recording_id' => $data->id,
+                'downloaded_files' => count($savedFiles)
+            ]);
 
             return response()->json([
                 'status' => 'success',
@@ -248,7 +288,10 @@ class RecordController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::channel('camera-record')->error("[STOP RECORDING CONTROLLER] Exception: " . $e->getMessage());
+            Log::channel('camera-record')->error("[STOP RECORDING] Exception caught", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage()

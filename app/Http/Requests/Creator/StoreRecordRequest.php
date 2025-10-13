@@ -36,11 +36,14 @@ class StoreRecordRequest extends FormRequest
             // ->where('user_id', $userId)
             ->value('id');
 
+        $sessionToken = session('qr_session_token');
+
         $this->merge([
             'user_id' => $userId,
             'field_id' => $fieldId,
             'camera_id' => $cameraId,
             'session_code_id' => $sessionCodeId,
+            'session_token' => $sessionToken,
         ]);
     }
 
