@@ -72,7 +72,7 @@
   <div class="modal-box">
    <h3 class="text-lg font-bold">Here's your access code!</h3>
    <div class="py-4 flex items-center gap-3">
-    <p id="access_code" class="text-xl font-mono text-hot-shot"></p>
+    <p id="access_code" class="text-xl font-semibold tracking-wide text-hot-shot"></p>
     <button id="copy_code_btn" class="btn btn-sm">Copy</button>
    </div>
    <p class="py-2 text-sm text-gray-500">Press ESC or click the button below to close</p>
