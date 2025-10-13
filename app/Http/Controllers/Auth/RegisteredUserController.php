@@ -43,10 +43,13 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
+            'role_id' => 2,
             'email' => $request->email,
             'email_verified_at' => now(),
             'password' => Hash::make($request->password),
         ]);
+
+        $user->assignRole('member');
 
         event(new Registered($user));
 
@@ -68,7 +71,7 @@ class RegisteredUserController extends Controller
             SessionLog::where('session_token', $sessionToken)
                 ->update(['user_id' => Auth::user()->id,]);
 
-            session()->forget('qr_session_token');
+            // session()->forget('qr_session_token');
         }
 
         $userId = Auth::id();
