@@ -52,7 +52,7 @@ class ScanQrService
     $sessionToken = Str::uuid()->toString();
 
     QrSession::create([
-      'user_id' => $user->id,
+      'user_id' => null,
       'session_token' => $sessionToken,
       'qr_code_id' => $qrCode->id,
       'qr_code' => $qrCode->code,

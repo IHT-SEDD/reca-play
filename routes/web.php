@@ -171,6 +171,7 @@ Route::middleware(['check.maintenance'])->group(function () {
         |--------------------------------------------------------------------------
         */
         Route::prefix('profile')->group(function () {
+            Route::get('/', [ProfileController::class, 'index'])->name('profile.index');
             Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
             Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
             Route::delete('/delete', [ProfileController::class, 'destroy'])->name('profile.destroy');
