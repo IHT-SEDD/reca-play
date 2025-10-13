@@ -356,13 +356,13 @@ class RecordController extends Controller
         $userId = Auth::id();
         $sessionToken = session('qr_session_token');
 
-        if (!$userId || !$sessionToken) {
-            return null;
-        }
+        // if (!$userId || !$sessionToken) {
+        //     return null;
+        // }
 
         return QrSession::with(['qrCode.field.venue'])
             ->where('user_id', $userId)
-            ->where('session_token', $sessionToken)
+            // ->where('session_token', $sessionToken)
             ->latest('last_active_at')
             ->first();
     }
@@ -377,9 +377,9 @@ class RecordController extends Controller
         }
 
         $recordingId = SessionCode::where('user_id', $userId)
-            ->where('session_token', $sessionToken)
-            ->where('status', 'in use')
-            ->latest()
+            // ->where('session_token', $sessionToken)
+            ->where('status', '=', 'in use')
+            ->whereNotNull('recording_id')
             ->value('recording_id');
 
         $query = RecordSession::where('user_id', $userId);

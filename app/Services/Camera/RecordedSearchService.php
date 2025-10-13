@@ -53,8 +53,20 @@ class RecordedSearchService
         // $playbackUris = [];
         $allUris = [];
         $tz = new \DateTimeZone(config('app.timezone'));
+
+        Log::channel('camera-record')->info("[RECORD SEARCH] Raw times", [
+            'raw_startTime' => $this->startTime,
+            'raw_endTime' => $this->endTime,
+            'timezone' => config('app.timezone'),
+        ]);
+
         $start = (new \DateTime($this->startTime, $tz))->format('Y-m-d\TH:i:s\Z');
         $end = (new \DateTime($this->endTime, $tz))->format('Y-m-d\TH:i:s\Z');
+
+        Log::channel('camera-record')->info("[RECORD SEARCH] Converted times", [
+            'start_utc' => $start,
+            'end_utc' => $end,
+        ]);
 
         foreach ($this->manualChannel as $channel) {
             $xmlPayload = $this->buildSearchXmlPayload($channel, $start, $end);
@@ -72,11 +84,19 @@ class RecordedSearchService
 
                 /** Uncomment this log for debugging the response XML ISAPI Search video */
                 Log::channel('camera-record')->info("[RECORD SEARCH] Response XML for channel {$channel}", [
-                    'payload' => $xmlPayload,
+                    'payload_sent' => $xmlPayload,
                     'status' => $response->status(),
+                    'response_body_snippet' => mb_substr($response->body(), 0, 1000),
                 ]);
 
-                if (!$response->successful()) continue;
+                if (!$response->successful()) {
+                    Log::channel('camera-record')->warning("[RECORD SEARCH] Non-success status", [
+                        'channel' => $channel,
+                        'status' => $response->status(),
+                        'body' => mb_substr($response->body(), 0, 500),
+                    ]);
+                    continue;
+                }
 
                 $xml = @simplexml_load_string($response->body());
                 if (!$xml || !isset($xml->matchList)) continue;
@@ -89,7 +109,18 @@ class RecordedSearchService
                     ->values()
                     ->toArray();
 
-                if ($uris) $allUris["camera_{$channel}"] = $uris;
+                if ($uris) {
+                    Log::channel('camera-record')->info("[RECORD SEARCH] Found URIs", [
+                        'channel' => $channel,
+                        'uri_count' => count($uris),
+                        'first_uri' => $uris[0] ?? null,
+                    ]);
+                    $allUris["camera_{$channel}"] = $uris;
+                } else {
+                    Log::channel('camera-record')->info("[RECORD SEARCH] No URIs found for channel", [
+                        'channel' => $channel,
+                    ]);
+                }
             } catch (\Throwable $e) {
                 Log::channel('camera-record')->error("[RECORD SEARCH ERROR] Channel {$channel}: {$e->getMessage()}");
             }
