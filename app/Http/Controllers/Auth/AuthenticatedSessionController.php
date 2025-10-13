@@ -46,7 +46,7 @@ class AuthenticatedSessionController extends Controller
             SessionLog::where('session_token', $sessionToken)
                 ->update(['user_id' => Auth::user()->id,]);
 
-            session()->forget('qr_session_token');
+            // session()->forget('qr_session_token');
         }
 
         $userId = Auth::id();
