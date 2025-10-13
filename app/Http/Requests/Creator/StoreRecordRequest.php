@@ -33,7 +33,7 @@ class StoreRecordRequest extends FormRequest
         }
 
         $sessionCodeId = SessionCode::where('generated_code', $this->session_code)
-            ->where('user_id', $userId)
+            // ->where('user_id', $userId)
             ->value('id');
 
         $this->merge([

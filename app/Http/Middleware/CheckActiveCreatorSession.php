@@ -22,8 +22,16 @@ class CheckActiveCreatorSession
         }
 
         $userId = Auth::id();
-        $qrSession = QrSession::where('user_id', $userId)->latest()->first();
-        $recordSession = RecordSession::where('user_id', $userId)->latest()->first();
+        $sessionToken = session('qr_session_token');
+
+        $qrSession = QrSession::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->first();
+        $recordSession = RecordSession::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->first();
         $path = $request->path();
 
         $excludedRecordRoutes = ['creator/redirect*', 'creator/record*', 'logout', 'creator/scan-qr*', 'creator/new*'];
