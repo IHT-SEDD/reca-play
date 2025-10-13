@@ -456,7 +456,6 @@ class RecordedSearchService
         return $results;
     }
 
-
     // ========== Generate thumbnail ==========
     public function generateThumbnail(string $videoPath, string $thumbnailPath): void
     {
