@@ -96,28 +96,29 @@ class RecordedSearchService
                 if (!$xml || !isset($xml->matchList)) continue;
 
                 $uris = collect($xml->matchList->searchMatchItem ?? [])
-                    // ->filter(
-                    //     fn($item) =>
-                    //     strtotime((string)$item->timeSpan->endTime) >= strtotime($this->startTime) &&
-                    //         strtotime((string)$item->timeSpan->startTime) <= strtotime($this->endTime)
-                    // )
                     ->map(fn($i) => (string) $i->mediaSegmentDescriptor->playbackURI)
                     ->values()
                     ->toArray();
 
-                if ($uris) {
-                    $uris = collect($uris)
-                        ->sortBy(fn($uri) => $this->extractStartTimeFromUri($uri))
-                        ->values()
-                        ->toArray();
+                // if ($uris) {
+                //     $uris = collect($uris)
+                //         ->sortBy(fn($uri) => $this->extractStartTimeFromUri($uri))
+                //         ->values()
+                //         ->toArray();
 
-                    $allUris["camera_{$channel}"] = $uris;
-                    Log::channel('camera-record')->info("[SEARCH OK] Found URIs", [
-                        'channel' => $channel,
-                        'count' => count($uris),
-                        'uris' => $uris
-                    ]);
-                }
+                //     $allUris["camera_{$channel}"] = $uris;
+                //     Log::channel('camera-record')->info("[SEARCH OK] Found URIs", [
+                //         'channel' => $channel,
+                //         'count' => count($uris),
+                //         'uris' => $uris
+                //     ]);
+                // }
+                $allUris["camera_{$channel}"] = $uris;
+                Log::channel('camera-record')->info("[SEARCH OK] Found URIs", [
+                    'channel' => $channel,
+                    'count' => count($uris),
+                    'uris' => $uris
+                ]);
             } catch (\Throwable $e) {
                 Log::channel('camera-record')->error("[SEARCH ERROR] {$channel}", [
                     'error' => $e->getMessage(),
