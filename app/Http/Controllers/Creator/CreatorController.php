@@ -57,10 +57,10 @@ class CreatorController extends Controller
     }
 
     // ====== Process the scanned QR ======
-    public function scanQrProcess(Request $request)
+    public function scanQrProcess($token)
     {
-        $request->validate(['token' => 'required|string']);
-        $result = $this->scanQrService->scan($request->token);
+        session(['qr_token' => $token]);
+        $result = $this->scanQrService->scan($token);
 
         return response()->json([
             'status' => $result['success'] ? 'success' : 'error',

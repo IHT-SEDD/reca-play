@@ -277,25 +277,17 @@ class RecordedSearchService
     // =========================================================
     // STEP 3: TRIM FINAL VIDEO
     // =========================================================
-    public function trimVideo(string $inputFile, string $startTime, string $endTime, string $videoName, string $cameraKey): ?string
+    public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile): ?bool
     {
-        $startSec = strtotime($startTime);
-        $endSec = strtotime($endTime);
-        $duration = $endSec - $startSec;
-
-        $outputDir = storage_path('app/public/recordings');
-        @mkdir($outputDir, 0777, true);
-        $outputFile = "{$outputDir}/trimmed_" . basename($inputFile);
-
         $process = new Process([
             'ffmpeg',
             '-y',
             '-ss',
-            $startSec,
+            (string)$startSec,
             '-i',
             $inputFile,
             '-t',
-            $duration,
+            (string)$duration,
             '-c:v',
             'libx264',
             '-preset',
@@ -313,18 +305,11 @@ class RecordedSearchService
         $process->setTimeout(0)->run();
 
         if (!$process->isSuccessful()) {
-            Log::channel('camera-record')->error("[TRIM FAIL] {$cameraKey}", [
-                'error' => $process->getErrorOutput()
-            ]);
-            return null;
+            Log::channel('camera-record')->error("[TRIM FAIL]", ['error' => $process->getErrorOutput()]);
+            return false;
         }
 
-        Log::channel('camera-record')->info("[TRIM OK] {$cameraKey}", [
-            'output' => basename($outputFile),
-            'duration' => $duration
-        ]);
-
-        return $outputFile;
+        return true;
     }
 
     // =========================================================
@@ -333,7 +318,8 @@ class RecordedSearchService
     public function generateThumbnail(string $videoPath, string $thumbnailPath): void
     {
         @mkdir(dirname($thumbnailPath), 0777, true);
-        $process = new Process([
+
+        $process = new \Symfony\Component\Process\Process([
             'ffmpeg',
             '-y',
             '-ss',
@@ -347,13 +333,9 @@ class RecordedSearchService
         $process->setTimeout(0)->run();
 
         if (!$process->isSuccessful()) {
-            Log::channel('camera-record')->error("[THUMB FAIL]", [
-                'error' => $process->getErrorOutput()
-            ]);
+            Log::channel('camera-record')->error("[THUMB FAIL]", ['error' => $process->getErrorOutput()]);
         } else {
-            Log::channel('camera-record')->info("[THUMB OK]", [
-                'path' => $thumbnailPath
-            ]);
+            Log::channel('camera-record')->info("[THUMB OK]", ['path' => $thumbnailPath]);
         }
     }
 
