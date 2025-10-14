@@ -113,7 +113,7 @@ class RecordedSearchService
                     Log::channel('camera-record')->info("[RECORD SEARCH] Found URIs", [
                         'channel' => $channel,
                         'uri_count' => count($uris),
-                        'first_uri' => $uris[0] ?? null,
+                        'uris' => $uris,
                     ]);
                     $allUris["camera_{$channel}"] = $uris;
                 } else {
@@ -335,6 +335,10 @@ class RecordedSearchService
         $date = now()->format('dmy');
 
         foreach ($allUris as $cameraKey => $uris) {
+            Log::channel('camera-record')->info("[DOWNLOAD] URIs to download for {$cameraKey}", [
+                'uris' => $uris,
+            ]);
+
             $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
             $client = new \GuzzleHttp\Client([
                 'verify' => false,
