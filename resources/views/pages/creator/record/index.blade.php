@@ -24,14 +24,14 @@
        <video id="preview_cam" autoplay playsinline muted class="rounded-2xl bg-after-midnight block w-full"></video>
 
        <!-- Control Panel :begin -->
-       <div class="flex items-center justify-between bg-orochimaru/70 p-3 rounded-2xl w-full space-x-4">
+       <div class="flex lg:flex-row flex-col items-center justify-between bg-orochimaru/70 p-3 rounded-2xl w-full space-x-4">
         <!-- Cam Data Section :begin -->
-        <div class="flex flex-col">
+        {{-- <div class="flex flex-col"> --}}
          <div class="flex items-center gap-2 text-md font-semibold text-after-midnight">
           <i data-lucide="cctv" class="w-5 h-5"></i>
-          <span id="cam_name"></span> - <span id="cam_code"></span>
+          <span id="cam_name"></span>
          </div>
-        </div>
+        {{-- </div> --}}
         <!-- Cam Data Section :end -->
 
         <!-- Button Section :begin -->
