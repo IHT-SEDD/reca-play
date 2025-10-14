@@ -87,7 +87,7 @@ class TrimVideoJob implements ShouldQueue
             $safeName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $this->videoName);
             $outputFile = "{$outputDir}/{$safeName}_{$this->cameraKey}_{$date}.mp4";
 
-            $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile);
+            $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
             if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
                 Log::channel('camera-record')->warning('[TRIM WARN] Trim gagal atau output kosong', [
                     'camera_key' => $this->cameraKey,
