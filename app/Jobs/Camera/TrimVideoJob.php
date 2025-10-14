@@ -56,8 +56,8 @@ class TrimVideoJob implements ShouldQueue
                 'recording_id' => $this->recordingId,
             ]);
 
-            $startSec = strtotime($this->startTime);
-            $endSec = strtotime($this->endTime);
+            $startSec = (int) strtotime($this->startTime);
+            $endSec = (int) strtotime($this->endTime);
             $duration = max(0, $endSec - $startSec);
             if ($duration <= 0) {
                 Log::channel('camera-record')->warning("[JOB] TrimVideoJob invalid duration", [
@@ -70,11 +70,12 @@ class TrimVideoJob implements ShouldQueue
             $date = now()->format('dmy');
             $outputDir = storage_path('app/public/recordings');
             @mkdir($outputDir, 0777, true);
+
             $outputFile = "{$outputDir}/{$this->cameraKey}_{$this->videoName}_{$date}.mp4";
 
-            $process = $recordedSearch->trimVideo($this->inputFile, $startSec, $duration, $outputFile);
-            if (!$process) {
-                Log::channel('camera-record')->warning("[JOB] TrimVideoJob failed ffmpeg", [
+            $success = $recordedSearch->trimVideo($this->inputFile, $startSec, $duration, $outputFile);
+            if (!$success || !file_exists($outputFile) || filesize($outputFile) === 0) {
+                Log::channel('camera-record')->warning("[JOB] TrimVideoJob failed or empty output", [
                     'camera_key' => $this->cameraKey
                 ]);
                 return;
@@ -87,24 +88,22 @@ class TrimVideoJob implements ShouldQueue
             $thumbnailDir = storage_path('app/public/thumbnails');
             @mkdir($thumbnailDir, 0777, true);
             $thumbnailFile = "{$thumbnailDir}/{$this->cameraKey}_{$this->videoName}_{$date}_thumb.jpg";
+
             ThumbnailVideoJob::dispatch($outputFile, $thumbnailFile)
                 ->onQueue('camera-record-video-thumb');
 
-            InsertRecordedVideoJob::dispatch(
-                $this->recordingId,
-                $outputFile,
-                basename($outputFile),
-                $thumbnailFile,
-                basename($thumbnailFile)
-            )->onQueue('camera-record-video-insert');
+            if (!\App\Models\Record\RecordedVideo::where('recording_id', $this->recordingId)
+                ->where('video_filename', basename($outputFile))
+                ->exists()) {
 
-            $trimmed = $recordedSearch->trimVideo(
-                $this->inputFile,
-                $this->startTime,
-                $this->endTime,
-                $this->videoName,
-                $this->cameraKey
-            );
+                InsertRecordedVideoJob::dispatch(
+                    $this->recordingId,
+                    "recordings/" . basename($outputFile),
+                    basename($outputFile),
+                    "thumbnails/" . basename($thumbnailFile),
+                    basename($thumbnailFile)
+                )->onQueue('camera-record-video-insert');
+            }
         } catch (\Throwable $e) {
             Log::channel('camera-record')->error("[JOB ERROR] TrimVideoJob failed", [
                 'error' => $e->getMessage(),

@@ -277,9 +277,11 @@ class RecordedSearchService
     // =========================================================
     // STEP 3: TRIM FINAL VIDEO
     // =========================================================
-    public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile): ?bool
+    public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile): bool
     {
-        $process = new Process([
+        if (!file_exists($inputFile) || filesize($inputFile) === 0) return false;
+
+        $process = new \Symfony\Component\Process\Process([
             'ffmpeg',
             '-y',
             '-ss',
@@ -304,8 +306,12 @@ class RecordedSearchService
         ]);
         $process->setTimeout(0)->run();
 
-        if (!$process->isSuccessful()) {
-            Log::channel('camera-record')->error("[TRIM FAIL]", ['error' => $process->getErrorOutput()]);
+        if (!$process->isSuccessful() || !file_exists($outputFile) || filesize($outputFile) === 0) {
+            Log::channel('camera-record')->error("[TRIM FAIL]", [
+                'input' => $inputFile,
+                'output' => $outputFile,
+                'error' => $process->getErrorOutput()
+            ]);
             return false;
         }
 
