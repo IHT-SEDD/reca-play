@@ -89,7 +89,10 @@ getDataRecord = () => {
         headers: {
             "X-Requested-With": "XMLHttpRequest",
         },
+        dataType: "json",
         success: function (res) {
+            console.log("Response from server:", res);
+
             if (res?.status === "error") {
                 notyf.error(res.message);
                 setTimeout(() => {
