@@ -1,6 +1,6 @@
 <x-app-layout :pageTitle="'Record a Moment'">
  <div class="py-8 flex justify-center items-center">
-  <div class="w-full max-w-6xl mx-auto md:px-8 px-5">
+  <div class="w-full max-w-8xl mx-auto md:px-8 px-5">
    <div class="flex justify-center items-center flex-col gap-4">
     <!-- Title -->
     <div class="flex flex-col justify-center items-center gap-1 mb-4">
@@ -17,14 +17,14 @@
 
     <!-- Record panel :begin -->
     <div class="rounded-xl p-3 bg-white w-full max-w-4xl h-auto inline-block shadow-sm border border-white-edgar">
-     <div class="flex lg:flex-row flex-col justify-between items-start w-full p-2 gap-2">
+     <div class="flex md:flex-row flex-col justify-between items-start w-full p-2 gap-2">
       <!-- Live Preview :begin -->
       <div class="w-full space-y-2">
        <!-- Video -->
        <video id="preview_cam" autoplay playsinline muted class="rounded-2xl bg-after-midnight block w-full"></video>
 
        <!-- Control Panel :begin -->
-       <div class="flex lg:flex-row flex-col items-center justify-between bg-orochimaru/70 p-3 rounded-2xl w-full space-x-4">
+       <div class="flex md:flex-row flex-col items-center justify-between bg-orochimaru/70 p-3 rounded-2xl w-full space-x-4 gap-3 md:gap-0">
         <!-- Cam Data Section :begin -->
         {{-- <div class="flex flex-col"> --}}
          <div class="flex items-center gap-2 text-md font-semibold text-after-midnight">
