@@ -331,7 +331,7 @@ class RecordController extends Controller
     {
         $response = ['status' => 'error', 'message' => $message];
         if ($redirect) $response['redirect'] = $redirect;
-        return response()->json($response, $code);
+        return response()->json($response);
     }
 
     private function livePreview(int $fieldId)
@@ -384,24 +384,35 @@ class RecordController extends Controller
     {
         $userId = Auth::id();
         $sessionToken = session('qr_session_token');
-        if (!$userId || !$sessionToken) return null;
+        if (!$userId) return null;
 
         Log::channel('camera-record')->debug('[PREPARE RECORDING] Checking record session', [
             'user_id' => $userId,
             'session_token' => $sessionToken,
             'found' => RecordSession::where('user_id', $userId)
-                ->where('session_token', $sessionToken)
+                // ->where('session_token', $sessionToken)
                 ->exists(),
         ]);
 
         $recordingId = SessionCode::where('user_id', $userId)
-            ->where('status', '=', 'in use')
-            ->whereNotNull('recording_id')
+            // ->where('session_token', $sessionToken)
+            ->where('status', 'in use')
             ->value('recording_id');
 
         $query = RecordSession::where('user_id', $userId);
-        if ($recordingId) $query->where('recording_id', $recordingId);
+        // ->where('session_token', $sessionToken);
 
-        return $query->latest('created_at')->first();
+        if ($recordingId) {
+            $query->where('recording_id', $recordingId);
+        }
+
+        $recordSession = $query->latest('created_at')->first();
+
+        Log::channel('camera-record')->debug('[PREPARE RECORDING] RecordSession result', [
+            'found' => (bool) $recordSession,
+            'recording_id' => $recordingId,
+        ]);
+
+        return $recordSession;
     }
 }
