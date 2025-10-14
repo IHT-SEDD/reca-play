@@ -26,7 +26,7 @@ class DownloadVideoJob implements ShouldQueue
     protected string $endTime;
     protected int $recordingId;
 
-    public ?string $queue = 'camera-record-video-download';
+    // public ?string $queue = 'camera-record-video-download';
     public $tries = 3;
     public $timeout = 0;
     public $backoff = [60, 180, 300];
