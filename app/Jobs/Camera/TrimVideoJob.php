@@ -73,7 +73,7 @@ class TrimVideoJob implements ShouldQueue
             ]);
 
             if ($duration <= 0) {
-                Log::channel('camera-record')->warning("[JOB] TrimVideoJob invalid duration", [
+                Log::channel('camera-record')->warning("[TRIM WARN] Invalid duration, skipping trim", [
                     'start' => $this->startTime,
                     'end' => $this->endTime
                 ]);
@@ -89,7 +89,7 @@ class TrimVideoJob implements ShouldQueue
 
             $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile);
             if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
-                Log::channel('camera-record')->warning('[JOB] TrimVideoJob failed or empty output', [
+                Log::channel('camera-record')->warning('[TRIM WARN] Trim gagal atau output kosong', [
                     'camera_key' => $this->cameraKey,
                     'outputFile' => $outputFile
                 ]);
@@ -105,19 +105,25 @@ class TrimVideoJob implements ShouldQueue
             @mkdir($thumbnailDir, 0777, true);
             $thumbnailFile = "{$thumbnailDir}/{$safeName}_{$this->cameraKey}_{$date}_thumb.jpg";
 
-            ThumbnailVideoJob::dispatch($outputFile, $thumbnailFile)
-                ->onQueue('camera-record-video-thumb');
+            if (file_exists($outputFile) && filesize($outputFile) > 0) {
+                ThumbnailVideoJob::dispatch($outputFile, $thumbnailFile)
+                    ->onQueue('camera-record-video-thumb');
+            } else {
+                Log::channel('camera-record')->warning("[TRIM WARN] File mp4 tidak valid, skip thumbnail", [
+                    'file' => $outputFile
+                ]);
+            }
 
-            if (! \App\Models\Record\RecordedVideo::where('recording_id', $this->recordingId)
+            if (!\App\Models\Record\RecordedVideo::where('recording_id', $this->recordingId)
                 ->where('video_filename', basename($outputFile))
                 ->exists()) {
 
                 InsertRecordedVideoJob::dispatch(
+                    (int) $this->recordingId,
                     $outputFile,
                     basename($outputFile),
                     $thumbnailFile,
-                    basename($thumbnailFile),
-                    $this->recordingId
+                    basename($thumbnailFile)
                 )->onQueue('camera-record-video-insert');
             }
         } catch (\Throwable $e) {
