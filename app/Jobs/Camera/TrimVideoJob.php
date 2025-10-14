@@ -21,7 +21,6 @@ class TrimVideoJob implements ShouldQueue
     protected string $videoName;
     protected int $recordingId;
 
-    // public ?string $queue = 'camera-record-video-trim';
     public $tries = 3;
     public $timeout = 0;
 
@@ -49,6 +48,8 @@ class TrimVideoJob implements ShouldQueue
      */
     public function handle(RecordedSearchService $recordedSearch): void
     {
+        if (!file_exists($this->inputFile)) return;
+
         try {
             Log::channel('camera-record')->info("[JOB] TrimVideoJob started", [
                 'camera_key' => $this->cameraKey,
@@ -67,6 +68,18 @@ class TrimVideoJob implements ShouldQueue
                 Log::channel('camera-record')->info("[JOB] TrimVideoJob finished successfully", [
                     'output' => basename($trimmed),
                 ]);
+
+                $thumbnailPath = str_replace('.mp4', '_thumb.jpg', $trimmed);
+                ThumbnailVideoJob::dispatch($trimmed, $thumbnailPath)
+                    ->onQueue('camera-record-video-thumb');
+
+                InsertRecordedVideoJob::dispatch(
+                    $this->recordingId,
+                    $trimmed,
+                    basename($trimmed),
+                    $thumbnailPath,
+                    basename($thumbnailPath)
+                )->onQueue('camera-record-video-insert');
             } else {
                 Log::channel('camera-record')->warning("[JOB] TrimVideoJob failed to produce output", [
                     'camera_key' => $this->cameraKey,

@@ -89,8 +89,6 @@ class RecordedSearchService
                 $xml = @simplexml_load_string($response->body());
                 if (!$xml || !isset($xml->matchList)) continue;
 
-                // $xml->registerXPathNamespace('ns', 'http://www.hikvision.com/ver20/XMLSchema');
-
                 $uris = collect($xml->matchList->searchMatchItem ?? [])
                     ->map(fn($i) => (string) $i->mediaSegmentDescriptor->playbackURI)
                     ->filter()
@@ -163,7 +161,6 @@ class RecordedSearchService
             $xml = $this->buildDownloadXmlPayload($uri, $this->user, $this->pass);
 
             try {
-                // Download raw stream (.ps)
                 $client->post($downloadUrl, [
                     'headers' => ['Content-Type' => 'application/xml'],
                     'body' => $xml,
@@ -186,7 +183,8 @@ class RecordedSearchService
                     'mpegts',
                     $rawTs
                 ]);
-                $convert->run();
+                $convert->setTimeout(0)->run();
+
                 if ($convert->isSuccessful()) {
                     $rawFiles[] = $rawTs;
                     @unlink($rawPs);
@@ -223,7 +221,7 @@ class RecordedSearchService
             'copy',
             $concatFile
         ]);
-        $concat->run();
+        $concat->setTimeout(0)->run();
 
         if (!$concat->isSuccessful()) {
             Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL] {$cameraKey}", [
@@ -232,7 +230,10 @@ class RecordedSearchService
             return null;
         }
 
-        $finalFile = storage_path("app/public/recordings/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4");
+        $finalDir = storage_path("app/public/recordings");
+        @mkdir($finalDir, 0777, true);
+
+        $finalFile = "{$finalDir}/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4";
         $encode = new Process([
             'ffmpeg',
             '-y',
@@ -252,8 +253,7 @@ class RecordedSearchService
             '+faststart',
             $finalFile
         ]);
-        $encode->setTimeout(0);
-        $encode->run();
+        $encode->setTimeout(0)->run();
 
         if (!$encode->isSuccessful()) {
             Log::channel('camera-record')->error("[FFMPEG ENCODE FAIL] {$cameraKey}", [
@@ -262,7 +262,9 @@ class RecordedSearchService
             return null;
         }
 
-        foreach ([$listFile, $concatFile, ...$rawFiles] as $f) @unlink($f);
+        foreach ([$listFile, $concatFile, ...$rawFiles] as $f) {
+            if (is_file($f)) @unlink($f);
+        }
         @rmdir($tmpDir);
 
         Log::channel('camera-record')->info("[DOWNLOAD OK] {$cameraKey}", [
@@ -281,12 +283,15 @@ class RecordedSearchService
         $endSec = strtotime($endTime);
         $duration = $endSec - $startSec;
 
-        $outputFile = storage_path('app/public/recordings/trimmed_' . basename($inputFile));
+        $outputDir = storage_path('app/public/recordings');
+        @mkdir($outputDir, 0777, true);
+        $outputFile = "{$outputDir}/trimmed_" . basename($inputFile);
+
         $process = new Process([
             'ffmpeg',
             '-y',
             '-ss',
-            '0',
+            $startSec,
             '-i',
             $inputFile,
             '-t',
@@ -305,8 +310,7 @@ class RecordedSearchService
             '+faststart',
             $outputFile
         ]);
-        $process->setTimeout(0);
-        $process->run();
+        $process->setTimeout(0)->run();
 
         if (!$process->isSuccessful()) {
             Log::channel('camera-record')->error("[TRIM FAIL] {$cameraKey}", [
@@ -340,7 +344,8 @@ class RecordedSearchService
             '1',
             $thumbnailPath
         ]);
-        $process->run();
+        $process->setTimeout(0)->run();
+
         if (!$process->isSuccessful()) {
             Log::channel('camera-record')->error("[THUMB FAIL]", [
                 'error' => $process->getErrorOutput()

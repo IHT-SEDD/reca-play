@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\Camera\GetPlaybackUrisJob;
+use App\Jobs\Camera\InsertRecordedVideoJob;
+use App\Jobs\Camera\ThumbnailVideoJob;
+use App\Jobs\Camera\TrimVideoJob;
 use App\Models\Master\Camera;
 use App\Models\Record\RecordedVideo;
 use App\Models\Record\Recording;
@@ -164,17 +167,10 @@ class RecordController extends Controller
             RecordSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
             QrSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
 
-            DB::commit();
+            GetPlaybackUrisJob::dispatch($fieldId, $recording->start_time, $recording->end_time, $userId, $videoName, $recording->id)
+                ->onQueue('camera-record-video-search');
 
-            // ✅ Dispatch the first job only
-            dispatch(new GetPlaybackUrisJob(
-                $fieldId,
-                $recording->start_time,
-                $recording->end_time,
-                $userId,
-                $videoName,
-                $recording->id
-            ))->onQueue('camera-record-video-search');
+            DB::commit();
 
             Log::channel('camera-record')->info('[STOP RECORDING] Queued GetPlaybackUrisJob', [
                 'recording_id' => $recording->id,
