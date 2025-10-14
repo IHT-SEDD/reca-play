@@ -96,15 +96,12 @@ class RecordedSearchService
                 if (!$xml || !isset($xml->matchList)) continue;
 
                 $uris = collect($xml->matchList->searchMatchItem ?? [])
-                    ->filter(function ($item) {
-                        $segStart = strtotime((string)$item->timeSpan->startTime);
-                        $segEnd = strtotime((string)$item->timeSpan->endTime);
-                        $recStart = strtotime($this->startTime);
-                        $recEnd = strtotime($this->endTime);
-                        return $segEnd >= $recStart && $segStart <= $recEnd;
-                    })
+                    // ->filter(
+                    //     fn($item) =>
+                    //     strtotime((string)$item->timeSpan->endTime) >= strtotime($this->startTime) &&
+                    //         strtotime((string)$item->timeSpan->startTime) <= strtotime($this->endTime)
+                    // )
                     ->map(fn($i) => (string) $i->mediaSegmentDescriptor->playbackURI)
-                    ->filter()
                     ->values()
                     ->toArray();
 
