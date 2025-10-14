@@ -174,7 +174,7 @@ class RecordController extends Controller
                 $userId,
                 $videoName,
                 $recording->id
-            ))->onQueue('recording');
+            ))->onQueue('camera-record-video-search');
 
             Log::channel('camera-record')->info('[STOP RECORDING] Queued GetPlaybackUrisJob', [
                 'recording_id' => $recording->id,
