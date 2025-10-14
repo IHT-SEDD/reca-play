@@ -46,26 +46,31 @@ class InsertRecordedVideoJob implements ShouldQueue
      */
     public function handle()
     {
-        if (!file_exists($this->videoPath)) return;
-
         Log::channel('camera-record')->info("[JOB] InsertRecordedVideoJob started", [
             'recording_id' => $this->recordingId,
-            'video' => $this->videoFilename
+            'videoPath' => $this->videoPath,
+            'thumbnailPath' => $this->thumbnailPath
         ]);
 
-        $videoSize = filesize($this->videoPath);
+        if (!file_exists($this->videoPath)) {
+            Log::channel('camera-record')->warning("[INSERT FAIL] Video tidak ditemukan", [
+                'videoPath' => $this->videoPath
+            ]);
+            return;
+        }
 
         RecordedVideo::create([
             'recording_id' => $this->recordingId,
-            'video_path' => 'recordings/' . $this->videoFilename,
+            'video_path' => str_replace(storage_path('app/public/'), '', $this->videoPath),
             'video_filename' => $this->videoFilename,
-            'thumbnail_path' => 'thumbnails/' . $this->thumbnailFilename,
+            'thumbnail_path' => str_replace(storage_path('app/public/'), '', $this->thumbnailPath),
             'thumbnail_filename' => $this->thumbnailFilename,
             'video_size' => filesize($this->videoPath),
         ]);
 
         Log::channel('camera-record')->info("[JOB] InsertRecordedVideoJob finished", [
-            'recording_id' => $this->recordingId
+            'recording_id' => $this->recordingId,
+            'video_filename' => $this->videoFilename
         ]);
     }
 }

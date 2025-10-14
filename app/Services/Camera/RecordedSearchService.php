@@ -61,6 +61,14 @@ class RecordedSearchService
 
         foreach ($this->manualChannel as $channel) {
             $xmlPayload = $this->buildSearchXmlPayload($channel, $start, $end);
+
+            Log::channel('camera-record')->info("[DEBUG XML PAYLOAD]", [
+                'channel' => $channel,
+                'payload' => $xmlPayload,
+                'expected_start' => $start,
+                'expected_end' => $end
+            ]);
+
             try {
                 $response = Http::withOptions([
                     'verify' => false,
@@ -71,11 +79,10 @@ class RecordedSearchService
                 ])->withBody($xmlPayload, 'application/xml')
                     ->post("https://{$this->host}/ISAPI/ContentMgmt/search");
 
-                /** Uncomment this log for debugging the response XML ISAPI Search video */
-                Log::channel('camera-record')->info("[RECORD SEARCH] Response XML for channel {$channel}", [
-                    'payload_sent' => $xmlPayload,
+                Log::channel('camera-record')->info("[DEBUG XML RESPONSE FULL]", [
+                    'channel' => $channel,
                     'status' => $response->status(),
-                    'response_body_snippet' => mb_substr($response->body(), 0, 1000),
+                    'body' => $response->body()
                 ]);
 
                 if (!$response->successful()) {
@@ -99,7 +106,8 @@ class RecordedSearchService
                     $allUris["camera_{$channel}"] = $uris;
                     Log::channel('camera-record')->info("[SEARCH OK] Found URIs", [
                         'channel' => $channel,
-                        'count' => count($uris)
+                        'count' => count($uris),
+                        'uris' => $uris
                     ]);
                 }
             } catch (\Throwable $e) {

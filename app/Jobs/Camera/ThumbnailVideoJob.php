@@ -34,24 +34,30 @@ class ThumbnailVideoJob implements ShouldQueue
      */
     public function handle(RecordedSearchService $recordedSearch)
     {
+        Log::channel('camera-record')->info("[JOB] ThumbnailVideoJob started", [
+            'videoPath' => $this->videoPath,
+            'thumbnailPath' => $this->thumbnailPath
+        ]);
+
         if (!file_exists($this->videoPath) || filesize($this->videoPath) === 0) {
-            Log::channel('camera-record')->error("[THUMB FAIL] Video tidak valid: {$this->videoPath}");
+            Log::channel('camera-record')->error("[THUMB FAIL] Video tidak valid", [
+                'videoPath' => $this->videoPath
+            ]);
             return;
         }
-
-        Log::channel('camera-record')->info("[JOB] ThumbnailVideoJob started", [
-            'video' => basename($this->videoPath)
-        ]);
 
         try {
             $recordedSearch->generateThumbnail($this->videoPath, $this->thumbnailPath);
 
             Log::channel('camera-record')->info("[JOB] ThumbnailVideoJob finished", [
-                'thumbnail' => basename($this->thumbnailPath)
+                'thumbnailPath' => $this->thumbnailPath,
+                'size' => file_exists($this->thumbnailPath) ? filesize($this->thumbnailPath) : 0
             ]);
         } catch (\Throwable $e) {
             Log::channel('camera-record')->error("[THUMB FAIL]", [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'videoPath' => $this->videoPath,
+                'thumbnailPath' => $this->thumbnailPath
             ]);
         }
     }
