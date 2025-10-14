@@ -84,8 +84,8 @@ class TrimVideoJob implements ShouldQueue
             $outputDir = storage_path('app/public/recordings');
             @mkdir($outputDir, 0777, true);
 
-            $safeName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $this->videoName);
-            $outputFile = "{$outputDir}/{$safeName}_{$this->cameraKey}_{$date}.mp4";
+            // $safeName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $this->videoName);
+            $outputFile = "{$outputDir}/{$this->videoName}_{$this->cameraKey}_{$date}.mp4";
 
             $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
             if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
@@ -103,7 +103,7 @@ class TrimVideoJob implements ShouldQueue
 
             $thumbnailDir = storage_path('app/public/thumbnails');
             @mkdir($thumbnailDir, 0777, true);
-            $thumbnailFile = "{$thumbnailDir}/{$safeName}_{$this->cameraKey}_{$date}_thumb.jpg";
+            $thumbnailFile = "{$thumbnailDir}/{$this->videoName}_{$this->cameraKey}_{$date}_thumb.jpg";
 
             if (file_exists($outputFile) && filesize($outputFile) > 0) {
                 ThumbnailVideoJob::dispatch($outputFile, $thumbnailFile)
