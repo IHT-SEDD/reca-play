@@ -82,6 +82,7 @@ class DownloadVideoJob implements ShouldQueue
                 $this->startTime,
                 $this->endTime
             );
+            
 
             if ($file && file_exists($file) && filesize($file) > 0) {
                 TrimVideoJob::dispatch(

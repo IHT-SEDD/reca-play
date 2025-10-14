@@ -63,8 +63,9 @@ class GetPlaybackUrisJob implements ShouldQueue
             $uris = $recordedSearch->getAllPlaybackUris();
 
             if (empty($uris)) {
-                Log::channel('camera-job')->warning("[JOB] No playback URIs found", [
-                    'recording_id' => $this->recordingId,
+                Log::channel('camera-job')->warning("[JOB] No playback URIs found for field {$this->fieldId}, user {$this->userId}", [
+                    'start_time' => $this->startTime,
+                    'end_time' => $this->endTime,
                 ]);
                 return;
             }
