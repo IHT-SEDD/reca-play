@@ -168,6 +168,12 @@ return [
             'path' => storage_path('logs/camera/control.log'),
             'level' => 'debug',
         ],
+
+        'camera-job' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/camera/job.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];
