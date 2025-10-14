@@ -291,22 +291,47 @@ class RecordedSearchService
     {
         if (!file_exists($inputFile) || filesize($inputFile) < 1024) return false;
 
-        $cmd = [
-            'ffmpeg',
-            '-y',
-            '-ss',
-            (string)$startSec,
-            '-i',
-            $inputFile,
-            '-t',
-            (string)$duration
-        ];
+        // $cmd = [
+        //     'ffmpeg',
+        //     '-y',
+        //     '-ss',
+        //     (string)$startSec,
+        //     '-i',
+        //     $inputFile,
+        //     '-t',
+        //     (string)$duration
+        // ];
+        $cmd = ['ffmpeg', '-y'];
 
-        if (!$forceEncode) {
-            $cmd[] = '-c';
-            $cmd[] = 'copy';
-        } else {
+        // if (!$forceEncode) {
+        //     $cmd[] = '-c';
+        //     $cmd[] = 'copy';
+        // } else {
+        //     $cmd = array_merge($cmd, [
+        //         '-c:v',
+        //         'libx264',
+        //         '-preset',
+        //         'fast',
+        //         '-crf',
+        //         '23',
+        //         '-c:a',
+        //         'aac',
+        //         '-b:a',
+        //         '128k',
+        //         '-movflags',
+        //         '+faststart'
+        //     ]);
+        // }
+
+        if ($forceEncode) {
+            // Re-encode untuk akurasi
             $cmd = array_merge($cmd, [
+                '-ss',
+                (string)$startSec,
+                '-i',
+                $inputFile,
+                '-t',
+                (string)$duration,
                 '-c:v',
                 'libx264',
                 '-preset',
@@ -318,14 +343,36 @@ class RecordedSearchService
                 '-b:a',
                 '128k',
                 '-movflags',
-                '+faststart'
+                '+faststart',
+                $outputFile
+            ]);
+        } else {
+            // Copy stream → lebih cepat tapi trim akurat hanya di keyframe
+            $cmd = array_merge($cmd, [
+                '-i',
+                $inputFile,
+                '-ss',
+                (string)$startSec,
+                '-t',
+                (string)$duration,
+                '-c',
+                'copy',
+                $outputFile
             ]);
         }
 
-        $cmd[] = $outputFile;
+        // $cmd[] = $outputFile;
 
+        // $process = new Process($cmd);
+        // $process->setTimeout(0)->run();
+
+        // return $process->isSuccessful() && file_exists($outputFile) && filesize($outputFile) > 0;
         $process = new Process($cmd);
         $process->setTimeout(0)->run();
+
+        if (!$process->isSuccessful()) {
+            Log::channel('camera-record')->error("[TRIM FAIL]", ['error' => $process->getErrorOutput()]);
+        }
 
         return $process->isSuccessful() && file_exists($outputFile) && filesize($outputFile) > 0;
     }

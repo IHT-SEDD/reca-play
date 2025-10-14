@@ -153,7 +153,7 @@ class RecordController extends Controller
                 return $this->errorResponse('Recording not found', null, 404);
             }
 
-            $videoName = strtolower(preg_replace('/[^a-z0-9_\-]/', '', str_replace(' ', '_', $recording->video_name ?? 'recording')));
+            $videoName = str_replace(' ', '', $recording->video_name ?? 'recording');
 
             DB::beginTransaction();
 
