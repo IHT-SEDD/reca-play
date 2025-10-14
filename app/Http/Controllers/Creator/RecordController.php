@@ -153,7 +153,7 @@ class RecordController extends Controller
                 return $this->errorResponse('Recording not found', null, 404);
             }
 
-            $videoName = $this->formatVideoName($recording->video_name);
+            $videoName = strtolower(preg_replace('/[^a-z0-9_\-]/', '', str_replace(' ', '_', $recording->video_name ?? 'recording')));
 
             DB::beginTransaction();
 
@@ -235,11 +235,6 @@ class RecordController extends Controller
                 'inactive_at' => now(),
                 'status' => 'finished',
             ]);
-    }
-
-    private function formatVideoName(string $name): string
-    {
-        return strtolower(preg_replace('/[^a-z0-9_\-]/', '', str_replace(' ', '_', $name)));
     }
 
     private function extractFieldId($scannedQrData): ?int

@@ -55,9 +55,8 @@ class RecordedSearchService
     public function getAllPlaybackUris(): array
     {
         $allUris = [];
-        $tz = new \DateTimeZone(config('app.timezone'));
-        $start = (new \DateTime($this->startTime, $tz))->format('Y-m-d\TH:i:s\Z');
-        $end = (new \DateTime($this->endTime, $tz))->format('Y-m-d\TH:i:s\Z');
+        $start = (new \DateTime($this->startTime, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
+        $end = (new \DateTime($this->endTime, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
 
         foreach ($this->manualChannel as $channel) {
             $xmlPayload = $this->buildSearchXmlPayload($channel, $start, $end);
@@ -97,6 +96,13 @@ class RecordedSearchService
                 if (!$xml || !isset($xml->matchList)) continue;
 
                 $uris = collect($xml->matchList->searchMatchItem ?? [])
+                    ->filter(function ($item) {
+                        $segStart = strtotime((string)$item->timeSpan->startTime);
+                        $segEnd = strtotime((string)$item->timeSpan->endTime);
+                        $recStart = strtotime($this->startTime);
+                        $recEnd = strtotime($this->endTime);
+                        return $segEnd >= $recStart && $segStart <= $recEnd;
+                    })
                     ->map(fn($i) => (string) $i->mediaSegmentDescriptor->playbackURI)
                     ->filter()
                     ->values()
