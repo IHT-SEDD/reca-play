@@ -74,7 +74,7 @@ class GetPlaybackUrisJob implements ShouldQueue
                 $cameraInfo = $recordedSearch->getCameraConnection($cameraKey);
 
                 $cameraUris = collect($cameraUris)
-                    ->sortBy(fn($uri) => $recordedSearch->extractStartTimeFromUri($uri))
+                    // ->sortBy(fn($uri) => $recordedSearch->extractStartTimeFromUri($uri))
                     ->values()
                     ->toArray();
 
