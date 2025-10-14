@@ -84,7 +84,7 @@ class DownloadVideoJob implements ShouldQueue
             );
 
             if ($file && file_exists($file) && filesize($file) > 0) {
-                Log::channel('camera-record')->info('[JOB] Download complete — chaining TrimVideoJob', [
+                Log::channel('camera-record')->info('[JOB] Download complete — dispatching next jobs', [
                     'file' => basename($file),
                 ]);
 
