@@ -95,35 +95,34 @@ class RecordedSearchService
                 $xml = @simplexml_load_string($response->body());
                 if (!$xml || !isset($xml->matchList)) continue;
 
-                // $uris = collect($xml->matchList->searchMatchItem ?? [])
-                //     ->map(fn($i) => (string) $i->mediaSegmentDescriptor->playbackURI)
-                //     ->values()
-                //     ->toArray();
-
                 $uris = [];
-                if (isset($xml->matchList->searchMatchItem)) {
-                    foreach ($xml->matchList->searchMatchItem as $item) {
-                        $uri = (string) $item->mediaSegmentDescriptor->playbackURI;
-                        if (!empty($uri)) {
-                            $uris[] = $uri;
-                        }
+                foreach ($xml->matchList->searchMatchItem as $item) {
+                    $segStart = strtotime((string)$item->timeSpan->startTime);
+                    $segEnd   = strtotime((string)$item->timeSpan->endTime);
+
+                    // ambil segmen yang overlap
+                    if ($segEnd <= $start || $segStart >= $end) continue;
+
+                    $uri = (string) $item->mediaSegmentDescriptor->playbackURI;
+                    if (empty($uri)) continue;
+
+                    preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $s);
+                    preg_match('/endtime=(\d{8}T\d{6})Z?/', $uri, $e);
+
+                    if (isset($s[1], $e[1])) {
+                        $startTs = max(\DateTime::createFromFormat('Ymd\THis', $s[1], new \DateTimeZone('UTC'))->getTimestamp(), $start);
+                        $endTs   = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $end);
+
+                        $startStr = gmdate('Ymd\THis', $startTs);
+                        $endStr   = gmdate('Ymd\THis', $endTs);
+
+                        $uri = preg_replace('/starttime=\d{8}T\d{6}/', "starttime={$startStr}", $uri);
+                        $uri = preg_replace('/endtime=\d{8}T\d{6}/', "endtime={$endStr}", $uri);
                     }
+
+                    $uris[] = $uri;
                 }
 
-                // if ($uris) {
-                //     $uris = collect($uris)
-                //         ->sortBy(fn($uri) => $this->extractStartTimeFromUri($uri))
-                //         ->values()
-                //         ->toArray();
-
-                //     $allUris["camera_{$channel}"] = $uris;
-                //     Log::channel('camera-record')->info("[SEARCH OK] Found URIs", [
-                //         'channel' => $channel,
-                //         'count' => count($uris),
-                //         'uris' => $uris
-                //     ]);
-                // }
-                $allUris["camera_{$channel}"] = $uris;
                 Log::channel('camera-record')->info("[SEARCH OK] Found URIs", [
                     'channel' => $channel,
                     'count' => count($uris),

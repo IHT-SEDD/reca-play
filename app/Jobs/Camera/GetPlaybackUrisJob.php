@@ -73,11 +73,6 @@ class GetPlaybackUrisJob implements ShouldQueue
             foreach ($uris as $cameraKey => $cameraUris) {
                 $cameraInfo = $recordedSearch->getCameraConnection($cameraKey);
 
-                $cameraUris = collect($cameraUris)
-                    // ->sortBy(fn($uri) => $recordedSearch->extractStartTimeFromUri($uri))
-                    ->values()
-                    ->toArray();
-
                 Log::channel('camera-job')->info("[DEBUG] Dispatching DownloadVideoJob", [
                     'camera_key' => $cameraKey,
                     'uri_count' => count($cameraUris),
