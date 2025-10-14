@@ -55,17 +55,28 @@ class RecordedSearchService
     public function getAllPlaybackUris(): array
     {
         $allUris = [];
-        $start = (new \DateTime($this->startTime, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
-        $end = (new \DateTime($this->endTime, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
+        // $start = (new \DateTime($this->startTime, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
+        // $end = (new \DateTime($this->endTime, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
+        $startTs = (new \DateTime($this->startTime, new \DateTimeZone('UTC')))->getTimestamp();
+        $endTs   = (new \DateTime($this->endTime, new \DateTimeZone('UTC')))->getTimestamp();
 
         foreach ($this->manualChannel as $channel) {
-            $xmlPayload = $this->buildSearchXmlPayload($channel, $start, $end);
+            // $xmlPayload = $this->buildSearchXmlPayload($channel, $start, $end);
+
+            // Log::channel('camera-record')->info("[DEBUG XML PAYLOAD]", [
+            //     'channel' => $channel,
+            //     'payload' => $xmlPayload,
+            //     'expected_start' => $start,
+            //     'expected_end' => $end
+            // ]);
+
+            $xmlPayload = $this->buildSearchXmlPayload($channel, gmdate('Y-m-d\TH:i:s\Z', $startTs), gmdate('Y-m-d\TH:i:s\Z', $endTs));
 
             Log::channel('camera-record')->info("[DEBUG XML PAYLOAD]", [
                 'channel' => $channel,
                 'payload' => $xmlPayload,
-                'expected_start' => $start,
-                'expected_end' => $end
+                'expected_start' => gmdate('Y-m-d\TH:i:s\Z', $startTs),
+                'expected_end' => gmdate('Y-m-d\TH:i:s\Z', $endTs)
             ]);
 
             try {
@@ -100,8 +111,7 @@ class RecordedSearchService
                     $segStart = strtotime((string)$item->timeSpan->startTime);
                     $segEnd   = strtotime((string)$item->timeSpan->endTime);
 
-                    // ambil segmen yang overlap
-                    if ($segEnd <= $start || $segStart >= $end) continue;
+                    if ($segEnd <= $startTs || $segStart >= $endTs) continue;
 
                     $uri = (string) $item->mediaSegmentDescriptor->playbackURI;
                     if (empty($uri)) continue;
@@ -110,17 +120,22 @@ class RecordedSearchService
                     preg_match('/endtime=(\d{8}T\d{6})Z?/', $uri, $e);
 
                     if (isset($s[1], $e[1])) {
-                        $startTs = max(\DateTime::createFromFormat('Ymd\THis', $s[1], new \DateTimeZone('UTC'))->getTimestamp(), $start);
-                        $endTs   = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $end);
+                        $uriStart = max(\DateTime::createFromFormat('Ymd\THis', $s[1], new \DateTimeZone('UTC'))->getTimestamp(), $startTs);
+                        $uriEnd   = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $endTs);
 
-                        $startStr = gmdate('Ymd\THis', $startTs);
-                        $endStr   = gmdate('Ymd\THis', $endTs);
+                        $startStr = gmdate('Ymd\THis', $uriStart);
+                        $endStr   = gmdate('Ymd\THis', $uriEnd);
 
                         $uri = preg_replace('/starttime=\d{8}T\d{6}/', "starttime={$startStr}", $uri);
                         $uri = preg_replace('/endtime=\d{8}T\d{6}/', "endtime={$endStr}", $uri);
                     }
 
                     $uris[] = $uri;
+                }
+
+                if ($uris) {
+                    usort($uris, fn($a, $b) => $this->extractStartTimeFromUri($a) <=> $this->extractStartTimeFromUri($b));
+                    $allUris["camera_{$channel}"] = $uris;
                 }
 
                 Log::channel('camera-record')->info("[SEARCH OK] Found URIs", [
