@@ -95,10 +95,20 @@ class RecordedSearchService
                 $xml = @simplexml_load_string($response->body());
                 if (!$xml || !isset($xml->matchList)) continue;
 
-                $uris = collect($xml->matchList->searchMatchItem ?? [])
-                    ->map(fn($i) => (string) $i->mediaSegmentDescriptor->playbackURI)
-                    ->values()
-                    ->toArray();
+                // $uris = collect($xml->matchList->searchMatchItem ?? [])
+                //     ->map(fn($i) => (string) $i->mediaSegmentDescriptor->playbackURI)
+                //     ->values()
+                //     ->toArray();
+
+                $uris = [];
+                if (isset($xml->matchList->searchMatchItem)) {
+                    foreach ($xml->matchList->searchMatchItem as $item) {
+                        $uri = (string) $item->mediaSegmentDescriptor->playbackURI;
+                        if (!empty($uri)) {
+                            $uris[] = $uri;
+                        }
+                    }
+                }
 
                 // if ($uris) {
                 //     $uris = collect($uris)
