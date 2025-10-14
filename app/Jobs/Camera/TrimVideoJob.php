@@ -21,7 +21,7 @@ class TrimVideoJob implements ShouldQueue
     protected string $videoName;
     protected int $recordingId;
 
-    public $queue = 'camera-record-video-trim';
+    public ?string $queue = 'camera-record-video-trim';
     public $tries = 3;
     public $timeout = 0;
 

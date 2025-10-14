@@ -28,7 +28,7 @@ class GetPlaybackUrisJob implements ShouldQueue
      */
     public $timeout = 600; // 10 minutes
     public $tries = 3;
-    public $queue = 'camera-record-video-search';
+    public ?string $queue = 'camera-record-video-search';
 
     /**
      * Create a new job instance.
