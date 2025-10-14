@@ -48,17 +48,29 @@ class TrimVideoJob implements ShouldQueue
      */
     public function handle(RecordedSearchService $recordedSearch): void
     {
-        if (!file_exists($this->inputFile)) return;
+        if (!file_exists($this->inputFile)) {
+            Log::channel('camera-record')->warning("[TRIM FAIL] Input file tidak ditemukan", [
+                'inputFile' => $this->inputFile
+            ]);
+            return;
+        }
 
         try {
             Log::channel('camera-record')->info("[JOB] TrimVideoJob started", [
                 'camera_key' => $this->cameraKey,
                 'recording_id' => $this->recordingId,
+                'inputFileSize' => filesize($this->inputFile)
             ]);
 
             $startDT  = new \DateTime($this->startTime);
             $endDT    = new \DateTime($this->endTime);
             $duration = $endDT->getTimestamp() - $startDT->getTimestamp();
+
+            Log::channel('camera-record')->info("[TRIM DEBUG] Calculated duration", [
+                'start' => $this->startTime,
+                'end' => $this->endTime,
+                'duration' => $duration
+            ]);
 
             if ($duration <= 0) {
                 Log::channel('camera-record')->warning("[JOB] TrimVideoJob invalid duration", [
@@ -79,15 +91,16 @@ class TrimVideoJob implements ShouldQueue
             if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
                 Log::channel('camera-record')->warning('[JOB] TrimVideoJob failed or empty output', [
                     'camera_key' => $this->cameraKey,
+                    'outputFile' => $outputFile
                 ]);
                 return;
             }
 
             Log::channel('camera-record')->info('[JOB] TrimVideoJob finished successfully', [
                 'output' => basename($outputFile),
+                'size' => filesize($outputFile)
             ]);
 
-            // Thumbnail
             $thumbnailDir = storage_path('app/public/thumbnails');
             @mkdir($thumbnailDir, 0777, true);
             $thumbnailFile = "{$thumbnailDir}/{$safeName}_{$this->cameraKey}_{$date}_thumb.jpg";
@@ -95,17 +108,16 @@ class TrimVideoJob implements ShouldQueue
             ThumbnailVideoJob::dispatch($outputFile, $thumbnailFile)
                 ->onQueue('camera-record-video-thumb');
 
-            // Insert DB row (only once)
             if (! \App\Models\Record\RecordedVideo::where('recording_id', $this->recordingId)
                 ->where('video_filename', basename($outputFile))
                 ->exists()) {
 
                 InsertRecordedVideoJob::dispatch(
-                    $this->recordingId,
-                    'recordings/' . basename($outputFile),
+                    $outputFile,
                     basename($outputFile),
-                    'thumbnails/' . basename($thumbnailFile),
-                    basename($thumbnailFile)
+                    $thumbnailFile,
+                    basename($thumbnailFile),
+                    $this->recordingId
                 )->onQueue('camera-record-video-insert');
             }
         } catch (\Throwable $e) {

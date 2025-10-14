@@ -82,7 +82,12 @@ class DownloadVideoJob implements ShouldQueue
                 $this->startTime,
                 $this->endTime
             );
-            
+
+            Log::channel('camera-record')->info('[DEBUG] DownloadVideoJob output file', [
+                'file' => $file,
+                'exists' => $file ? file_exists($file) : false,
+                'size' => $file && file_exists($file) ? filesize($file) : 0
+            ]);
 
             if ($file && file_exists($file) && filesize($file) > 0) {
                 TrimVideoJob::dispatch(
