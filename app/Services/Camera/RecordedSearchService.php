@@ -156,6 +156,11 @@ class RecordedSearchService
             'timeout' => 0,
         ]);
 
+        $uris = collect($uris)
+            ->sortBy(fn($uri) => $this->extractStartTimeFromUri($uri))
+            ->values()
+            ->toArray();
+
         $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
         @mkdir($tmpDir, 0777, true);
 
@@ -249,49 +254,6 @@ class RecordedSearchService
         ]);
 
         return $concatFile;
-
-        // $finalDir = storage_path("app/public/recordings");
-        // @mkdir($finalDir, 0777, true);
-
-        // $finalFile = "{$finalDir}/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4";
-        // $encode = new Process([
-        //     'ffmpeg',
-        //     '-y',
-        //     '-i',
-        //     $concatFile,
-        //     '-c:v',
-        //     'libx264',
-        //     '-preset',
-        //     'fast',
-        //     '-crf',
-        //     '23',
-        //     '-c:a',
-        //     'aac',
-        //     '-b:a',
-        //     '128k',
-        //     '-movflags',
-        //     '+faststart',
-        //     $finalFile
-        // ]);
-        // $encode->setTimeout(0)->run();
-
-        // if (!$encode->isSuccessful()) {
-        //     Log::channel('camera-record')->error("[FFMPEG ENCODE FAIL] {$cameraKey}", [
-        //         'error' => $encode->getErrorOutput(),
-        //     ]);
-        //     return null;
-        // }
-
-        // foreach ([$listFile, $concatFile, ...$rawFiles] as $f) {
-        //     if (is_file($f)) @unlink($f);
-        // }
-        // @rmdir($tmpDir);
-
-        // Log::channel('camera-record')->info("[DOWNLOAD OK] {$cameraKey}", [
-        //     'file' => basename($finalFile)
-        // ]);
-
-        // return $finalFile;
     }
 
     // =========================================================
@@ -432,5 +394,18 @@ XML;
             'user' => $camera['user'] ?? $this->user,
             'pass' => $camera['pass'] ?? $this->pass,
         ];
+    }
+
+    // =========================================================
+    // EXTRACT TIME URI HELPERS
+    // =========================================================
+    protected function extractStartTimeFromUri(string $uri): int
+    {
+        preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $matches);
+        if (isset($matches[1])) {
+            $dt = \DateTime::createFromFormat('Ymd\THis', $matches[1], new \DateTimeZone('UTC'));
+            return $dt ? $dt->getTimestamp() : 0;
+        }
+        return 0;
     }
 }
