@@ -19,7 +19,7 @@
     <div class="rounded-xl p-3 bg-white w-full max-w-4xl h-auto inline-block shadow-sm border border-white-edgar">
      <div class="flex lg:flex-row flex-col justify-between items-start w-full p-2 gap-2">
       <!-- Live Preview :begin -->
-      <div class="h-auto w-full space-y-2">
+      <div class="w-full space-y-2">
        <!-- Video -->
        <video id="preview_cam" autoplay playsinline muted class="rounded-2xl bg-after-midnight block w-full"></video>
 
@@ -64,9 +64,10 @@
       <!-- Live Preview :end -->
 
       <!-- Tool Panel :begin -->
-      <div class="h-auto w-full max-w-fit space-y-2">
+      <div class="w-full space-y-2">
        <!-- Timer Panel :begin -->
-       <div class="flex items-center justify-between bg-orochimaru/70 p-4 rounded-2xl w-full space-x-4">
+       <div
+        class="flex items-center justify-between bg-base-200/50 border border-white-edgar p-4 rounded-2xl w-full space-x-4">
         <!-- Timer Section :begin -->
         <div class="flex flex-col">
          <div class="flex items-center gap-2 text-sm text-carbon">

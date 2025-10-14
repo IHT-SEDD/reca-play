@@ -46,7 +46,7 @@
   </select>
  </div>
 
- <div class="mt-2" id="select_venue_owner">
+ <div class="mt-2" id="select_venue_user">
   <x-input-label for="venue_id" :value="__('Venue')" />
   <select id="select-venue" placeholder="Select venue..." autocomplete="off" name="venue_id" class="my-2">
   </select>

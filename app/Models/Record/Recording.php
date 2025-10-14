@@ -4,6 +4,7 @@ namespace App\Models\Record;
 
 use App\Models\Master\Camera;
 use App\Models\Master\Field;
+use App\Models\Session\SessionCode;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -40,6 +41,11 @@ class Recording extends Model
     public function recordedVideo()
     {
         return $this->hasMany(RecordedVideo::class);
+    }
+
+    public function sessionCode()
+    {
+        return $this->belongsTo(SessionCode::class);
     }
 
     public function getDurationAttribute()

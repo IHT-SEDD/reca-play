@@ -85,8 +85,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasRole('superadmin');
     }
 
-    public function isOwner(): bool
+    public function isVenueManagement(): bool
     {
-        return $this->hasRole('owner');
+        return $this->hasAnyRole(['owner', 'cashier']);
     }
 }

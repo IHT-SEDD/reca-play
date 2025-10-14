@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Models\Session\QrSession;
 use App\Models\Session\RecordSession;
+use App\Models\Session\SessionCode;
+use App\Models\Session\SessionLog;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -38,14 +40,32 @@ class AuthenticatedSessionController extends Controller
                     'last_active_at' => now(),
                 ]);
 
-            session()->forget('qr_session_token');
+            SessionCode::where('session_token', $sessionToken)
+                ->update(['user_id' => Auth::user()->id]);
+
+            SessionLog::where('session_token', $sessionToken)
+                ->update(['user_id' => Auth::user()->id,]);
+
+            // session()->forget('qr_session_token');
         }
 
         $userId = Auth::id();
-        $qrSession = QrSession::where('user_id', $userId)->latest()->first();
-        $recordSession = RecordSession::where('user_id', $userId)->latest()->first();
+        $qrSession = QrSession::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->first();
 
-        if ($recordSession && $qrSession) {
+        $recordSession = RecordSession::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->first();
+
+        $codeSession = SessionCode::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->first();
+
+        if ($recordSession && $qrSession && $codeSession) {
             return redirect()->route('creator.redirect');
         }
 
@@ -61,10 +81,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // $userId = Auth::id();
+        // $sessionToken = session('qr_session_token');
+
+        // QrSession::where('user_id', $userId)
+        //     ->where('session_token', $sessionToken)
+        //     ->latest()
+        //     ->delete();
+
+        // RecordSession::where('user_id', $userId)
+        //     ->where('session_token', $sessionToken)
+        //     ->latest()
+        //     ->delete();
+
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

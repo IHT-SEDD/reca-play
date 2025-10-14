@@ -36,7 +36,7 @@
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <!-- Dark Mode toggle -->
-                <button @click="darkMode = !darkMode"
+                {{-- <button @click="darkMode = !darkMode"
                     class="p-1.5 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 dark:border-base-200/40 me-4">
                     <!-- Sun (Light mode) -->
                     <div :class="darkMode ? 'bg-transparent text-white' : 'bg-base-200 text-hot-shot'"
@@ -48,17 +48,17 @@
                         class="p-2 rounded-full transition">
                         <i data-lucide="moon" class="w-4 h-auto"></i>
                     </div>
-                </button>
+                </button> --}}
 
                 <!-- User dropdown -->
                 <x-dropdown.dropdown-flowbite :trigger="Auth::user()->name ?? 'Welcome, Guest'" iconTrigger="user">
                     <li class="w-full">
                         @auth
-                        <a href="{{ url('/profile/edit') }}"
+                        {{-- <a href="{{ url('/profile/edit') }}"
                             class="rounded-lg px-4 py-2 hover:bg-white-owl dark:hover:bg-orochimaru hover:text-hot-shot dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
                             <i data-lucide="user-round-pen" class="w-4 h-auto me-2"></i>
                             Profile
-                        </a>
+                        </a> --}}
                         <form method="POST" action="{{ url('/logout') }}" class="w-full">
                             @csrf
                             <a href="{{ url('/logout') }}"
@@ -88,7 +88,7 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="darkMode = !darkMode"
+                {{-- <button @click="darkMode = !darkMode"
                     class="p-1 rounded-full inline-flex gap-2 items-center justify-center bg-transparent border border-base-200 dark:border-base-200/40 me-4">
                     <!-- Sun (Light mode) -->
                     <div :class="darkMode ? 'bg-transparent text-white' : 'bg-base-200 text-hot-shot'"
@@ -100,7 +100,7 @@
                         class="p-1 rounded-full transition">
                         <i data-lucide="moon" class="w-3 h-auto"></i>
                     </div>
-                </button>
+                </button> --}}
 
                 <button @click="open = ! open"
                     class="inline-flex items-center justify-center p-2 rounded-md text-after-midnight dark:text-white hover:text-hot-shot dark:hover:text-hot-shot transition duration-150 ease-in-out">
@@ -161,9 +161,9 @@
             <div class="mt-3 space-y-1">
                 <!-- Options in auth mode only :begin -->
                 @auth
-                <x-responsive-nav-link :href="url('/profile/edit')" :active="request()->routeIs('profile.*')">
+                {{-- <x-responsive-nav-link :href="url('/profile/edit')" :active="request()->routeIs('profile.*')">
                     {{ __('Profile') }}
-                </x-responsive-nav-link>
+                </x-responsive-nav-link> --}}
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ url('/logout') }}">
