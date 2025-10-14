@@ -51,11 +51,11 @@
          </button>
 
          <!-- Share Button -->
-         <button id="shareButton"
+         {{-- <button id="shareButton"
           class="flex items-center justify-center rounded-full p-3 bg-secondary text-white-edgar hover:bg-secondary/80 transition-colors duration-100 tooltip tooltip-bottom"
           data-tip="Share">
           <i data-lucide="share-2" class="w-4 h-4"></i>
-         </button>
+         </button> --}}
         </div>
         <!-- Button Section :end -->
        </div>
@@ -82,7 +82,7 @@
         <button id="stop_record"
          class="flex items-center justify-center rounded-full p-3 bg-hot-shot text-white hover:bg-hot-shot/80 transition tooltip tooltip-bottom"
          data-tip="Stop recording">
-         <i data-lucide="circle-stop" class="w-5 h-5"></i>
+         <i data-lucide="square" class="w-4 h-4"></i>
         </button>
        </div>
        <!-- Timer Panel :end -->

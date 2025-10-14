@@ -262,11 +262,11 @@ class RecordController extends Controller
             ->value('id');
     }
 
-    private function errorResponse(string $message, ?string $redirect = null, int $code = 400)
+    private function errorResponse(string $message, ?string $redirect = null)
     {
         $response = ['status' => 'error', 'message' => $message];
         if ($redirect) $response['redirect'] = $redirect;
-        return response()->json($response, $code);
+        return response()->json($response);
     }
 
     private function livePreview(int $fieldId)
