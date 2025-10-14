@@ -103,6 +103,11 @@ class RecordedSearchService
                     ->toArray();
 
                 if ($uris) {
+                    $uris = collect($uris)
+                        ->sortBy(fn($uri) => $this->extractStartTimeFromUri($uri))
+                        ->values()
+                        ->toArray();
+
                     $allUris["camera_{$channel}"] = $uris;
                     Log::channel('camera-record')->info("[SEARCH OK] Found URIs", [
                         'channel' => $channel,
@@ -155,11 +160,6 @@ class RecordedSearchService
             'auth' => [$this->user, $this->pass, 'digest'],
             'timeout' => 0,
         ]);
-
-        $uris = collect($uris)
-            ->sortBy(fn($uri) => $this->extractStartTimeFromUri($uri))
-            ->values()
-            ->toArray();
 
         $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
         @mkdir($tmpDir, 0777, true);
@@ -259,11 +259,11 @@ class RecordedSearchService
     // =========================================================
     // STEP 3: TRIM FINAL VIDEO
     // =========================================================
-    public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile): bool
+    public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile, bool $forceEncode = false): bool
     {
         if (!file_exists($inputFile) || filesize($inputFile) < 1024) return false;
 
-        $process = new \Symfony\Component\Process\Process([
+        $cmd = [
             'ffmpeg',
             '-y',
             '-ss',
@@ -271,33 +271,35 @@ class RecordedSearchService
             '-i',
             $inputFile,
             '-t',
-            (string)$duration,
-            '-c:v',
-            'libx264',
-            '-preset',
-            'fast',
-            '-crf',
-            '23',
-            '-c:a',
-            'aac',
-            '-b:a',
-            '128k',
-            '-movflags',
-            '+faststart',
-            $outputFile
-        ]);
-        $process->setTimeout(0)->run();
+            (string)$duration
+        ];
 
-        if (!$process->isSuccessful() || !file_exists($outputFile) || filesize($outputFile) === 0) {
-            Log::channel('camera-record')->error("[TRIM FAIL]", [
-                'input' => $inputFile,
-                'output' => $outputFile,
-                'error' => $process->getErrorOutput()
+        if (!$forceEncode) {
+            $cmd[] = '-c';
+            $cmd[] = 'copy';
+        } else {
+            $cmd = array_merge($cmd, [
+                '-c:v',
+                'libx264',
+                '-preset',
+                'fast',
+                '-crf',
+                '23',
+                '-c:a',
+                'aac',
+                '-b:a',
+                '128k',
+                '-movflags',
+                '+faststart'
             ]);
-            return false;
         }
 
-        return true;
+        $cmd[] = $outputFile;
+
+        $process = new Process($cmd);
+        $process->setTimeout(0)->run();
+
+        return $process->isSuccessful() && file_exists($outputFile) && filesize($outputFile) > 0;
     }
 
     // =========================================================
@@ -399,7 +401,7 @@ XML;
     // =========================================================
     // EXTRACT TIME URI HELPERS
     // =========================================================
-    protected function extractStartTimeFromUri(string $uri): int
+    public function extractStartTimeFromUri(string $uri): int
     {
         preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $matches);
         if (isset($matches[1])) {

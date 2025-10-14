@@ -26,7 +26,7 @@ class GetPlaybackUrisJob implements ShouldQueue
     /**
      * Job timeout (seconds)
      */
-    public $timeout = 600; // 10 minutes
+    public $timeout = 900;
     public $tries = 3;
 
     /**
@@ -72,6 +72,11 @@ class GetPlaybackUrisJob implements ShouldQueue
 
             foreach ($uris as $cameraKey => $cameraUris) {
                 $cameraInfo = $recordedSearch->getCameraConnection($cameraKey);
+
+                $cameraUris = collect($cameraUris)
+                    ->sortBy(fn($uri) => $recordedSearch->extractStartTimeFromUri($uri))
+                    ->values()
+                    ->toArray();
 
                 Log::channel('camera-job')->info("[DEBUG] Dispatching DownloadVideoJob", [
                     'camera_key' => $cameraKey,
