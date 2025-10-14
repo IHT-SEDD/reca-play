@@ -386,6 +386,14 @@ class RecordController extends Controller
         $sessionToken = session('qr_session_token');
         if (!$userId || !$sessionToken) return null;
 
+        Log::channel('camera-record')->debug('[PREPARE RECORDING] Checking record session', [
+            'user_id' => $userId,
+            'session_token' => $sessionToken,
+            'found' => RecordSession::where('user_id', $userId)
+                ->where('session_token', $sessionToken)
+                ->exists(),
+        ]);
+
         $recordingId = SessionCode::where('user_id', $userId)
             ->where('status', '=', 'in use')
             ->whereNotNull('recording_id')

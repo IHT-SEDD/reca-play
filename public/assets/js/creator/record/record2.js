@@ -143,7 +143,7 @@ getDataRecord = () => {
             }
         },
         error: function (xhr, status, error) {
-            console.error("AJAX error:", error);
+            console.error("AJAX error:", error, xhr.responseText);
         },
     });
 };
