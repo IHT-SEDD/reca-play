@@ -79,9 +79,9 @@ class RecordedSearchService
                 ]);
 
                 if (!$response->successful()) {
-                    Log::channel('camera-record')->warning("[SEARCH FAIL] Non-success HTTP", [
+                    Log::channel('camera-record')->warning('[SEARCH FAIL] Non-success HTTP', [
                         'channel' => $channel,
-                        'status' => $response->status(),
+                        'status'  => $response->status(),
                     ]);
                     continue;
                 }
@@ -133,9 +133,9 @@ class RecordedSearchService
         $this->startTime = $startTime;
         $this->endTime = $endTime;
 
-        $date = now()->format('dmy');
+        // $date = now()->format('dmy');
         $cameraKey = array_key_first($allUris);
-        $uris = $allUris[$cameraKey];
+        $uris = $allUris[$cameraKey] ?? [];
 
         if (empty($uris)) {
             Log::channel('camera-record')->warning("[DOWNLOAD] No URIs for {$cameraKey}");
@@ -230,48 +230,60 @@ class RecordedSearchService
             return null;
         }
 
-        $finalDir = storage_path("app/public/recordings");
-        @mkdir($finalDir, 0777, true);
-
-        $finalFile = "{$finalDir}/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4";
-        $encode = new Process([
-            'ffmpeg',
-            '-y',
-            '-i',
-            $concatFile,
-            '-c:v',
-            'libx264',
-            '-preset',
-            'fast',
-            '-crf',
-            '23',
-            '-c:a',
-            'aac',
-            '-b:a',
-            '128k',
-            '-movflags',
-            '+faststart',
-            $finalFile
-        ]);
-        $encode->setTimeout(0)->run();
-
-        if (!$encode->isSuccessful()) {
-            Log::channel('camera-record')->error("[FFMPEG ENCODE FAIL] {$cameraKey}", [
-                'error' => $encode->getErrorOutput(),
-            ]);
-            return null;
+        foreach ([$listFile, ...$rawFiles] as $f) {
+            if (is_file($f)) {
+                @unlink($f);
+            }
         }
 
-        foreach ([$listFile, $concatFile, ...$rawFiles] as $f) {
-            if (is_file($f)) @unlink($f);
-        }
-        @rmdir($tmpDir);
-
-        Log::channel('camera-record')->info("[DOWNLOAD OK] {$cameraKey}", [
-            'file' => basename($finalFile)
+        Log::channel('camera-record')->info('[DOWNLOAD OK] ' . $cameraKey, [
+            'file' => basename($concatFile),
         ]);
 
-        return $finalFile;
+        return $concatFile;
+
+        // $finalDir = storage_path("app/public/recordings");
+        // @mkdir($finalDir, 0777, true);
+
+        // $finalFile = "{$finalDir}/{$cameraKey}_{$videoName}_{$date}_{$fieldId}{$userId}.mp4";
+        // $encode = new Process([
+        //     'ffmpeg',
+        //     '-y',
+        //     '-i',
+        //     $concatFile,
+        //     '-c:v',
+        //     'libx264',
+        //     '-preset',
+        //     'fast',
+        //     '-crf',
+        //     '23',
+        //     '-c:a',
+        //     'aac',
+        //     '-b:a',
+        //     '128k',
+        //     '-movflags',
+        //     '+faststart',
+        //     $finalFile
+        // ]);
+        // $encode->setTimeout(0)->run();
+
+        // if (!$encode->isSuccessful()) {
+        //     Log::channel('camera-record')->error("[FFMPEG ENCODE FAIL] {$cameraKey}", [
+        //         'error' => $encode->getErrorOutput(),
+        //     ]);
+        //     return null;
+        // }
+
+        // foreach ([$listFile, $concatFile, ...$rawFiles] as $f) {
+        //     if (is_file($f)) @unlink($f);
+        // }
+        // @rmdir($tmpDir);
+
+        // Log::channel('camera-record')->info("[DOWNLOAD OK] {$cameraKey}", [
+        //     'file' => basename($finalFile)
+        // ]);
+
+        // return $finalFile;
     }
 
     // =========================================================
@@ -279,7 +291,7 @@ class RecordedSearchService
     // =========================================================
     public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile): bool
     {
-        if (!file_exists($inputFile) || filesize($inputFile) === 0) return false;
+        if (!file_exists($inputFile) || filesize($inputFile) < 1024) return false;
 
         $process = new \Symfony\Component\Process\Process([
             'ffmpeg',
@@ -325,14 +337,19 @@ class RecordedSearchService
     {
         @mkdir(dirname($thumbnailPath), 0777, true);
 
-        $process = new \Symfony\Component\Process\Process([
+        if (!file_exists($videoPath) || filesize($videoPath) < 100) {
+            Log::channel('camera-record')->error("[THUMB FAIL] Video tidak valid: {$videoPath}");
+            return;
+        }
+
+        $process = new Process([
             'ffmpeg',
             '-y',
-            '-ss',
-            '2',
             '-i',
             $videoPath,
-            '-vframes',
+            '-vf',
+            'thumbnail,scale=320:-1',
+            '-frames:v',
             '1',
             $thumbnailPath
         ]);
