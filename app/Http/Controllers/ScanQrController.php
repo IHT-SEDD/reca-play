@@ -16,12 +16,15 @@ class ScanQrController extends Controller
     public function index($token)
     {
         session(['qr_token' => $token]);
-        
+
         $result = $this->scanQrService->scan($token);
         if ($result['success']) {
             return redirect()->route('creator.qr-success');
         }
 
-        return redirect()->route('home.index')->with('error', $result['message']);
+        return view('scan-error', [
+            'message' => $result['message'],
+            'title' => $result['title']
+        ]);
     }
 }

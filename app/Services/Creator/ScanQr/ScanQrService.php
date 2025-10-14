@@ -33,6 +33,7 @@ class ScanQrService
     if (!$qrCode) {
       return [
         'success' => false,
+        'title' => 'QR code not found',
         'message' => 'QR code not found or invalid token.',
       ];
     }
@@ -41,6 +42,7 @@ class ScanQrService
     if ($qrCode->is_active == 0) {
       return [
         'success' => false,
+        'title' => 'QR code inactive',
         'message' => 'QR code not active, please contact the administrator',
       ];
     }
@@ -53,6 +55,7 @@ class ScanQrService
     if ($existingSession) {
       return [
         'success' => false,
+        'title' => 'Field in use',
         'message' => 'This field is currently in use. Please wait until the previous session is finished.',
       ];
     }

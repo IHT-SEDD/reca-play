@@ -57,11 +57,11 @@ class InsertRecordedVideoJob implements ShouldQueue
 
         RecordedVideo::create([
             'recording_id' => $this->recordingId,
-            'video_path' => $this->videoPath,
+            'video_path' => 'recordings/' . $this->videoFilename,
             'video_filename' => $this->videoFilename,
-            'thumbnail_path' => $this->thumbnailPath,
+            'thumbnail_path' => 'thumbnails/' . $this->thumbnailFilename,
             'thumbnail_filename' => $this->thumbnailFilename,
-            'video_size' => $videoSize,
+            'video_size' => filesize($this->videoPath),
         ]);
 
         Log::channel('camera-record')->info("[JOB] InsertRecordedVideoJob finished", [
