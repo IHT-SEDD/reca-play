@@ -46,7 +46,7 @@ class ScanQrService
     }
 
     $existingSession = QrSession::whereNotNull('user_id')
-      ->where('qr_code', $qrCode->code)
+      ->where('qr_code_id', $qrCode->id)
       ->whereNotNull('session_token')
       ->where('user_id', '!=', Auth::id())
       ->first();
@@ -62,7 +62,7 @@ class ScanQrService
     $user = Auth::user();
 
     $userSession = QrSession::where('user_id', $user->id)
-      ->where('qr_code', $qrCode->code)
+      ->where('qr_code_id', $qrCode->id)
       ->whereNotNull('session_token')
       ->first();
 
