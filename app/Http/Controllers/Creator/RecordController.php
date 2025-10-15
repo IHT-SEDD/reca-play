@@ -56,10 +56,13 @@ class RecordController extends Controller
         ]);
 
         try {
-            $scannedQrData = $this->getQrSession();
-            $recordSession = $this->getRecordSession();
+            $session = $this->checkSession();
+            $scannedQrData = $session['qrSession'];
+            $recordSession = $session['recordSession'];
+            $sessionCodeId = $session['sessionCodeId'];
+            $fieldId = $session['fieldId'];
+            $sessionToken = $session['sessionToken'];
 
-            $fieldId = $scannedQrData?->qrCode?->field_id;
             $recordingId = $recordSession?->recording_id;
 
             if (!$recordingId) {
@@ -72,7 +75,10 @@ class RecordController extends Controller
                 return $this->errorResponse("Model for {$type} not found", null, 500);
             }
 
-            $data = $modelClass::find($recordingId);
+            $data = $modelClass::find($recordingId)
+                ->where('user_id', $userId)
+                ->where('field_id', $fieldId)
+                ->where('session_code_id', $sessionCodeId);
             if (!$data) {
                 return $this->errorResponse('Data not found', null, 404);
             }
@@ -137,12 +143,14 @@ class RecordController extends Controller
         ]);
 
         try {
-            $recordSession = $this->getRecordSession();
-            $scannedQrData = $this->getQrSession();
-            $sessionCodeId = $this->getSessionCodeId($userId, $sessionToken);
+            $session = $this->checkSession();
+            $scannedQrData = $session['qrSession'];
+            $recordSession = $session['recordSession'];
+            $sessionCodeId = $session['sessionCodeId'];
+            $fieldId = $session['fieldId'];
+            $sessionToken = $session['sessionToken'];
 
             $recordingId = $recordSession?->recording_id;
-            $fieldId = $this->extractFieldId($scannedQrData);
 
             if (!$recordingId) {
                 return $this->errorResponse('No record data found in session');
@@ -237,22 +245,6 @@ class RecordController extends Controller
             ]);
     }
 
-    private function extractFieldId($scannedQrData): ?int
-    {
-        $qrData = $scannedQrData?->qr_data ?? [];
-        if (is_string($qrData)) $qrData = json_decode($qrData, true);
-        return $qrData['field_id'] ?? null;
-    }
-
-    private function getSessionCodeId($userId, $sessionToken)
-    {
-        return SessionCode::where('user_id', $userId)
-            ->where('session_token', $sessionToken)
-            ->where('status', '!=', 'expired')
-            ->latest()
-            ->value('id');
-    }
-
     private function errorResponse(string $message, ?string $redirect = null)
     {
         $response = ['status' => 'error', 'message' => $message];
@@ -296,29 +288,42 @@ class RecordController extends Controller
         return null;
     }
 
-    private function getQrSession(): ?QrSession
-    {
-        $userId = Auth::id();
-        return QrSession::with(['qrCode.field.venue'])
-            ->where('user_id', $userId)
-            ->latest('last_active_at')
-            ->first();
-    }
-
-    private function getRecordSession(): ?RecordSession
+    private function checkSession(): array
     {
         $userId = Auth::id();
         $sessionToken = session('qr_session_token');
-        if (!$userId) return null;
 
-        $recordingId = SessionCode::where('user_id', $userId)
-            ->where('status', 'in use')
-            ->value('recording_id');
+        $qrSession = QrSession::with(['qrCode.field.venue'])
+            ->where('user_id', $userId)
+            ->latest('last_active_at')
+            ->first();
 
-        $query = RecordSession::where('user_id', $userId);
-        if ($recordingId) {
-            $query->where('recording_id', $recordingId);
+        $fieldId = null;
+        if ($qrSession) {
+            $qrData = $qrSession->qr_data;
+            if (is_string($qrData)) $qrData = json_decode($qrData, true);
+            $fieldId = $qrData['field_id'] ?? null;
         }
-        return $query->latest('created_at')->first();
+
+        $recordSessionQuery = RecordSession::where('user_id', $userId);
+        if ($fieldId) {
+            $recordSessionQuery->where('field_id', $fieldId);
+        }
+        $recordSession = $recordSessionQuery->latest('created_at')->first();
+
+        $sessionCodeId = SessionCode::where('user_id', $userId)
+            ->where('field_id', $fieldId)
+            ->where('status', '!=', 'expired')
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->value('id');
+
+        return [
+            'qrSession' => $qrSession,
+            'recordSession' => $recordSession,
+            'sessionCodeId' => $sessionCodeId,
+            'fieldId' => $fieldId,
+            'sessionToken' => $sessionToken,
+        ];
     }
 }
