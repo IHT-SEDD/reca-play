@@ -19,10 +19,11 @@
               <p class="text-md tracking-wide" id="date_created"></p>
             </div>
             <di class="flex justify-center items-end gap-2">
-              <a href="#"
-                class="rounded-full p-2 bg-hot-shot/30 hover:bg-hot-shot text-hot-shot hover:text-white transition">
-                <i data-lucide="share-2" class="w-5 h-auto"></i>
-              </a>
+              <button
+                class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
+                data-tip="share">
+                <i data-lucide="forward" class="w-4 h-4"></i>
+              </button>
           </div>
         </div>
       </div>

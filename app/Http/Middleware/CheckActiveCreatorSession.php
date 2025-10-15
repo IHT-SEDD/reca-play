@@ -26,9 +26,24 @@ class CheckActiveCreatorSession
         $path = $request->path();
         $sessionToken = session('qr_session_token');
 
+        if (empty($sessionToken)) {
+            $latestQrSession = QrSession::where('user_id', $userId)
+                ->whereNotNull('session_token')
+                ->latest('last_active_at')
+                ->first();
+
+            if ($latestQrSession) {
+                $sessionToken = $latestQrSession->session_token;
+                session(['qr_session_token' => $sessionToken]);
+                if ($latestQrSession->qr_token) {
+                    session(['qr_token' => $latestQrSession->qr_token]);
+                }
+            }
+        }
+
         // Base query by user_id
-        $qrSessionQuery = QrSession::where('user_id', $userId);
-        $recordSessionQuery = RecordSession::where('user_id', $userId);
+        $qrSessionQuery = QrSession::where('user_id', $userId)->whereNotNull('session_token');
+        $recordSessionQuery = RecordSession::where('user_id', $userId)->whereNotNull('session_token');
 
         // Add session_token filter if available
         if (!empty($sessionToken)) {
@@ -46,6 +61,10 @@ class CheckActiveCreatorSession
             ->latest('created_at')
             ->orderByDesc('id')
             ->first();
+
+        if ($qrSession) {
+            $qrSession->touch('last_active_at');
+        }
 
         // Excluded routes
         $excludedRecordRoutes = [

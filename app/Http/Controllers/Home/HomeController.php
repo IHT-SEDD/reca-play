@@ -39,9 +39,7 @@ class HomeController extends Controller
             ], 404);
         }
 
-        $encodedId = Hashids::connection('video')->encode($video->id);
-
-        $shareUrl = URL::to('/video/watch/' . $encodedId);
+        $shareUrl = URL::to('/video/watch/' . $video->hashed_id);
 
         return response()->json([
             'success' => true,
