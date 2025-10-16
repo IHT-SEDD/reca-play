@@ -13,19 +13,11 @@ class StoreRecordRequest extends FormRequest
     protected function prepareForValidation()
     {
         $userId = Auth::id();
-        // $scannedQrData = session('scanned_qr');
-        // $fieldId = $scannedQrData['field_id'] ?? null;
         $scannedQr = QrSession::with(['qrCode.field.venue'])
             ->where('user_id', $userId)
             ->latest()
             ->first();
-        $qrData = $scannedQr->qr_data ?? [];
-
-        if (is_string($qrData)) {
-            $qrData = json_decode($qrData, true);
-        }
-
-        $fieldId = $qrData['field_id'] ?? null;
+        $fieldId = $scannedQr?->qrCode?->field_id ?? null;
 
         $cameraId = null;
         if ($fieldId) {
@@ -33,7 +25,7 @@ class StoreRecordRequest extends FormRequest
         }
 
         $sessionCodeId = SessionCode::where('generated_code', $this->session_code)
-            // ->where('user_id', $userId)
+            ->where('field_id', $fieldId)
             ->value('id');
 
         $sessionToken = session('qr_session_token');
