@@ -86,7 +86,9 @@ renderList = () => {
             `
             <div class="w-full">
                 <!-- Thumbnail -->
-                <a href="/my-recording/watch/${item.id}" target="_blank"
+                <a href="/video/watch/${
+                    item.hashed_id
+                }" target="_blank" rel="noopener noreferrer" 
                    class="block bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative"
                    style="background-image: url('/storage/${
                        item.thumbnail_path

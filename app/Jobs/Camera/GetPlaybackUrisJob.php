@@ -26,8 +26,8 @@ class GetPlaybackUrisJob implements ShouldQueue
     /**
      * Job timeout (seconds)
      */
-    public $timeout = 900;
-    public $tries = 3;
+    public $timeout = 0;
+    public $tries = 1;
 
     /**
      * Create a new job instance.
