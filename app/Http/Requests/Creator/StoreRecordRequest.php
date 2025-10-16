@@ -7,6 +7,7 @@ use App\Models\Session\QrSession;
 use App\Models\Session\SessionCode;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class StoreRecordRequest extends FormRequest
 {
@@ -30,6 +31,13 @@ class StoreRecordRequest extends FormRequest
             ->value('id');
 
         $sessionToken = session('qr_session_token');
+
+        Log::info('StoreRecordRequest prepareForValidation', [
+            'session_code' => $this->session_code,
+            'user_id' => $userId,
+            'field_id' => $fieldId,
+            'session_code_id' => $sessionCodeId,
+        ]);
 
         $this->merge([
             'user_id' => $userId,
