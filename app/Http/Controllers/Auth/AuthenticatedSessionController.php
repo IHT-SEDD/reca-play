@@ -12,6 +12,7 @@ use App\Models\Session\QrSession;
 use App\Models\Session\RecordSession;
 use App\Models\Session\SessionCode;
 use App\Models\Session\SessionLog;
+use Illuminate\Http\JsonResponse;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -26,7 +27,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): RedirectResponse|JsonResponse
     {
         $request->authenticate();
         $request->session()->regenerate();
@@ -63,15 +64,22 @@ class AuthenticatedSessionController extends Controller
             ->latest()
             ->first();
 
+        $redirectUrl = route('home.index', absolute: false);
         if ($recordSession && $qrSession && $codeSession) {
-            return redirect()->route('creator.redirect');
+            $redirectUrl = route('creator.redirect');
+        } elseif ($qrSession && !$recordSession) {
+            $redirectUrl = route('creator.qr-success');
         }
 
-        if ($qrSession && !$recordSession) {
-            return redirect()->route('creator.qr-success');
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Login successful!',
+                'redirect' => $redirectUrl
+            ]);
         }
 
-        return redirect()->intended(route('home.index', absolute: false));
+        return redirect()->to($redirectUrl);
     }
 
     /**

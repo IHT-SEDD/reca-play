@@ -113,11 +113,11 @@ formRequestInit = () => {
                         "X-CSRF-TOKEN": $form
                             .find('input[name="_token"]')
                             .val(),
+                        Accept: "application/json",
                     },
                     success: function (result) {
                         if (result.status === "success") {
                             notyf.success(result.message);
-
                             resetForm($form);
 
                             if (
