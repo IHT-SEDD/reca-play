@@ -3,7 +3,8 @@
  <div>
   <div class="flex justify-between items-center">
    <x-input-label for="session_code" :value="__('Code Access')" />
-   <button class="p-1 rounded-full text-after-midnight font-medium tooltip tooltip-info" type="button" data-tip="Get the access code from cashier.">
+   <button class="p-1 rounded-full text-after-midnight font-medium tooltip tooltip-info" type="button"
+    data-tip="Get the access code from cashier.">
     <i data-lucide="info" class="w-4 h-4 md:w-5 md:h-5"></i>
    </button>
   </div>

@@ -9,8 +9,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 
-class TrimVideoJob implements ShouldQueue
+class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -24,6 +25,12 @@ class TrimVideoJob implements ShouldQueue
     public $tries = 2;
     public $timeout = 0;
     public $backoff = [60, 120];
+
+    public $uniqueFor = 900;
+    public function uniqueId(): string
+    {
+        return $this->cameraKey . '_' . $this->recordingId;
+    }
 
     /**
      * Create a new job instance.
@@ -167,6 +174,12 @@ class TrimVideoJob implements ShouldQueue
                     basename($thumbnailFile)
                 )->onQueue('camera-record-video-insert');
             }
+
+            Log::channel('camera-job')->info('[JOB] TrimVideoJob finished (completed)', [
+                'camera_key' => $this->cameraKey,
+                'recording_id' => $this->recordingId,
+            ]);
+            return;
         } catch (\Throwable $e) {
             Log::channel('camera-job')->error('[JOB ERROR] TrimVideoJob failed', [
                 'error' => $e->getMessage(),

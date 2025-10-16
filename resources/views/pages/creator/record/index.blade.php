@@ -49,13 +49,6 @@
           data-tip="Full screen preview">
           <i data-lucide="maximize-2" class="w-4 h-4"></i>
          </button>
-
-         <!-- Share Button -->
-         {{-- <button id="shareButton"
-          class="flex items-center justify-center rounded-full p-3 bg-secondary text-white-edgar hover:bg-secondary/80 transition-colors duration-100 tooltip tooltip-bottom"
-          data-tip="Share">
-          <i data-lucide="share-2" class="w-4 h-4"></i>
-         </button> --}}
         </div>
         <!-- Button Section :end -->
        </div>
