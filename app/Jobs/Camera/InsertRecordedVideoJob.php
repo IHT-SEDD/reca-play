@@ -3,6 +3,7 @@
 namespace App\Jobs\Camera;
 
 use App\Models\Record\RecordedVideo;
+use App\Models\Record\Recording;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -67,6 +68,15 @@ class InsertRecordedVideoJob implements ShouldQueue
             'thumbnail_filename' => $this->thumbnailFilename,
             'video_size' => filesize($this->videoPath),
         ]);
+
+        $recording = Recording::find($this->recordingId);
+        if ($recording && $recording->status !== 'done') {
+            $recording->update(['status' => 'done']);
+            Log::channel('camera-record')->info("[JOB] Recording marked as done", [
+                'recording_id' => $this->recordingId,
+                'status' => 'done'
+            ]);
+        }
 
         Log::channel('camera-record')->info("[JOB] InsertRecordedVideoJob finished", [
             'recording_id' => $this->recordingId,
