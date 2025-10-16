@@ -34,14 +34,14 @@ class StoreRecordRequest extends FormRequest
             'session_code' => $this->session_code,
             'user_id' => $userId,
             'field_id' => $fieldId,
-            'session_code_id' => $sessionCodeId,
+            'session_code_id' => $sessionCodeId->id,
         ]);
 
         $this->merge([
             'user_id' => $userId,
             'field_id' => $fieldId,
             'camera_id' => $cameraId,
-            'session_code_id' => $sessionCodeId,
+            'session_code_id' => $sessionCodeId->id,
             'session_token' => $sessionToken,
         ]);
     }
