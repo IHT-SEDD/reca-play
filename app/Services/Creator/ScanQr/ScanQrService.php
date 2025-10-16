@@ -60,11 +60,14 @@ class ScanQrService
     }
 
     $user = Auth::user();
+    $userId = $user?->id;
 
-    $userSession = QrSession::where('user_id', $user->id)
+    $userSession = $userId
+      ? QrSession::where('user_id', $userId)
       ->where('qr_code_id', $qrCode->id)
       ->whereNotNull('session_token')
-      ->first();
+      ->first()
+      : null;
 
     if ($userSession) {
       $userSession->update([
@@ -77,7 +80,7 @@ class ScanQrService
       $sessionToken = Str::uuid()->toString();
 
       QrSession::create([
-        'user_id' => $user->id,
+        'user_id' => $user->id ?? null,
         'session_token' => $sessionToken,
         'qr_token' => $token,
         'qr_code_id' => $qrCode->id,
