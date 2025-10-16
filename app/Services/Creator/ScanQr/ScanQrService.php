@@ -59,35 +59,19 @@ class ScanQrService
       ];
     }
 
-    // $user = Auth::user();
-    // $userId = $user?->id;
+    $user = Auth::user();
+    $userId = $user?->id;
 
-    // $userSession = $userId
-    //   ? QrSession::where('user_id', $userId)
-    //   ->where('qr_code_id', $qrCode->id)
-    //   ->whereNotNull('session_token')
-    //   ->first()
-    //   : null;
-
-    // if ($userSession) {
-    //   $userSession->update([
-    //     'qr_token' => $token,
-    //     'last_active_at' => now(),
-    //   ]);
-
-    //   $sessionToken = $userSession->session_token;
-    // } else {
     $sessionToken = Str::uuid()->toString();
 
     QrSession::create([
-      'user_id' => $user->id ?? null,
+      'user_id' => $userId,
       'session_token' => $sessionToken,
-      'qr_token' => $qrCode->qr_token,
+      'qr_token' => $token,
       'qr_code_id' => $qrCode->id,
       'type' => $qrCode->type,
       'last_active_at' => now(),
     ]);
-    // }
 
     session([
       'qr_token' => $token,
