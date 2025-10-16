@@ -301,11 +301,7 @@ class RecordController extends Controller
             ->first();
 
         $fieldId = $qrSession?->qrCode?->field_id ?? null;
-
         $recordSessionQuery = RecordSession::where('user_id', $userId);
-        if ($fieldId) {
-            $recordSessionQuery->where('field_id', $fieldId);
-        }
         $recordSession = $recordSessionQuery->latest('created_at')->first();
 
         $sessionCodeId = SessionCode::where('user_id', $userId)
