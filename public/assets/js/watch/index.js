@@ -1,7 +1,7 @@
 const pathParts = window.location.pathname.split("/");
 const videoEncrypt = pathParts[pathParts.length - 1];
 
-console.log("🎬 Inisialisasi Watch Page:", videoEncrypt);
+console.log("Inisialisasi Watch Page:", videoEncrypt);
 
 function videoPlayer() {
     const videoEl = $("#video_player");
@@ -10,17 +10,17 @@ function videoPlayer() {
     const ownerEl = $("#owner_video");
     const dateEl = $("#date_created");
 
-    console.log("🔄 Memuat data video...");
+    console.log("Memuat data video...");
 
     $.ajax({
         url: `/video/watch/data/${videoEncrypt}`,
         method: "GET",
         dataType: "json",
         success: function (data) {
-            console.log("✅ Data video diterima:", data);
+            console.log("Data video diterima:", data);
 
             if (!data.video_path) {
-                console.error("❌ video_path kosong atau tidak ditemukan.");
+                console.error("video_path kosong atau tidak ditemukan.");
                 return;
             }
 
@@ -36,23 +36,33 @@ function videoPlayer() {
                     : "Unknown Date"
             );
 
-            console.log("🎥 Video siap diputar:", videoSrc);
+            console.log("Video siap diputar:", videoSrc);
         },
         error: function (xhr, status, error) {
-            console.error("❌ Gagal mengambil data video:", {
+            console.error("Gagal mengambil data video:", {
                 status: status,
                 error: error,
                 response: xhr.responseText,
             });
         },
     });
-
+    
     videoEl.on("loadeddata", function () {
-        console.log("✅ Video berhasil dimuat dan siap diputar.");
+        console.log("Video berhasil dimuat dan siap diputar.");
     });
 
     videoEl.on("error", function (e) {
-        console.error("❌ Video gagal dimuat:", e);
+        const video = e.target;
+        console.error("Video gagal dimuat:", {
+            src: video.currentSrc || video.src,
+            networkState: video.networkState,
+            error: video.error
+                ? {
+                      code: video.error.code,
+                      message: video.error.message || "Unknown media error",
+                  }
+                : "No media error info",
+        });
     });
 }
 
