@@ -29,7 +29,7 @@ class DownloadVideoJob implements ShouldQueue
     // public ?string $queue = 'camera-record-video-download';
     public $tries = 3;
     public $timeout = 0;
-    public $backoff = [60, 180, 300];
+    public $backoff = [60, 120, 300];
 
     /**
      * Create a new job instance.
@@ -66,7 +66,7 @@ class DownloadVideoJob implements ShouldQueue
     public function handle(RecordedSearchService $recordedSearch): void
     {
         try {
-            Log::channel('camera-record')->info('[JOB] DownloadVideoJob started', [
+            Log::channel('camera-job')->info('[JOB] DownloadVideoJob started', [
                 'recording_id' => $this->recordingId,
                 'camera_key' => $this->cameraKey,
             ]);
@@ -83,7 +83,7 @@ class DownloadVideoJob implements ShouldQueue
                 $this->endTime
             );
 
-            Log::channel('camera-record')->info('[DEBUG] DownloadVideoJob output file', [
+            Log::channel('camera-job')->info('[DEBUG] DownloadVideoJob output file', [
                 'file' => $file,
                 'exists' => $file ? file_exists($file) : false,
                 'size' => $file && file_exists($file) ? filesize($file) : 0
@@ -99,12 +99,12 @@ class DownloadVideoJob implements ShouldQueue
                     $this->recordingId
                 )->onQueue('camera-record-video-trim');
             } else {
-                Log::channel('camera-record')->warning('[JOB] DownloadVideoJob produced no valid file', [
+                Log::channel('camera-job')->warning('[JOB] DownloadVideoJob produced no valid file', [
                     'camera_key' => $this->cameraKey,
                 ]);
             }
         } catch (\Throwable $e) {
-            Log::channel('camera-record')->error('[JOB ERROR] DownloadVideoJob failed', [
+            Log::channel('camera-job')->error('[JOB ERROR] DownloadVideoJob failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

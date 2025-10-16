@@ -22,8 +22,8 @@ class InsertRecordedVideoJob implements ShouldQueue
     protected string $thumbnailPath;
     protected string $thumbnailFilename;
 
-    public $tries = 3;
-    public $timeout = 120;
+    public $tries = 1;
+    public $timeout = 0;
 
     /**
      * Create a new job instance.
@@ -47,14 +47,14 @@ class InsertRecordedVideoJob implements ShouldQueue
      */
     public function handle()
     {
-        Log::channel('camera-record')->info("[JOB] InsertRecordedVideoJob started", [
+        Log::channel('camera-job')->info("[JOB] InsertRecordedVideoJob started", [
             'recording_id' => $this->recordingId,
             'videoPath' => $this->videoPath,
             'thumbnailPath' => $this->thumbnailPath
         ]);
 
         if (!file_exists($this->videoPath)) {
-            Log::channel('camera-record')->warning("[INSERT FAIL] Video tidak ditemukan", [
+            Log::channel('camera-job')->warning("[INSERT FAIL] Video tidak ditemukan", [
                 'videoPath' => $this->videoPath
             ]);
             return;
@@ -72,13 +72,13 @@ class InsertRecordedVideoJob implements ShouldQueue
         $recording = Recording::find($this->recordingId);
         if ($recording && $recording->status !== 'done') {
             $recording->update(['status' => 'done']);
-            Log::channel('camera-record')->info("[JOB] Recording marked as done", [
+            Log::channel('camera-job')->info("[JOB] Recording marked as done", [
                 'recording_id' => $this->recordingId,
                 'status' => 'done'
             ]);
         }
 
-        Log::channel('camera-record')->info("[JOB] InsertRecordedVideoJob finished", [
+        Log::channel('camera-job')->info("[JOB] InsertRecordedVideoJob finished", [
             'recording_id' => $this->recordingId,
             'video_filename' => $this->videoFilename
         ]);

@@ -21,8 +21,9 @@ class TrimVideoJob implements ShouldQueue
     protected string $videoName;
     protected int $recordingId;
 
-    public $tries = 3;
+    public $tries = 2;
     public $timeout = 0;
+    public $backoff = [60, 120];
 
     /**
      * Create a new job instance.
@@ -49,14 +50,14 @@ class TrimVideoJob implements ShouldQueue
     public function handle(RecordedSearchService $recordedSearch): void
     {
         if (!file_exists($this->inputFile)) {
-            Log::channel('camera-record')->warning("[TRIM FAIL] Input file tidak ditemukan", [
+            Log::channel('camera-job')->warning("[TRIM FAIL] Input file tidak ditemukan", [
                 'inputFile' => $this->inputFile
             ]);
             return;
         }
 
         try {
-            Log::channel('camera-record')->info("[JOB] TrimVideoJob started", [
+            Log::channel('camera-job')->info("[JOB] TrimVideoJob started", [
                 'camera_key' => $this->cameraKey,
                 'recording_id' => $this->recordingId,
                 'inputFileSize' => filesize($this->inputFile)
@@ -66,14 +67,14 @@ class TrimVideoJob implements ShouldQueue
             $endDT    = new \DateTime($this->endTime);
             $duration = $endDT->getTimestamp() - $startDT->getTimestamp();
 
-            Log::channel('camera-record')->info("[TRIM DEBUG] Calculated duration", [
+            Log::channel('camera-job')->info("[TRIM DEBUG] Calculated duration", [
                 'start' => $this->startTime,
                 'end' => $this->endTime,
                 'duration' => $duration
             ]);
 
             if ($duration <= 0) {
-                Log::channel('camera-record')->warning("[TRIM WARN] Invalid duration, skipping trim", [
+                Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration, skipping trim", [
                     'start' => $this->startTime,
                     'end' => $this->endTime
                 ]);
@@ -89,14 +90,14 @@ class TrimVideoJob implements ShouldQueue
 
             $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
             if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
-                Log::channel('camera-record')->warning('[TRIM WARN] Trim gagal atau output kosong', [
+                Log::channel('camera-job')->warning('[TRIM WARN] Trim gagal atau output kosong', [
                     'camera_key' => $this->cameraKey,
                     'outputFile' => $outputFile
                 ]);
                 return;
             }
 
-            Log::channel('camera-record')->info('[JOB] TrimVideoJob finished successfully', [
+            Log::channel('camera-job')->info('[JOB] TrimVideoJob finished successfully', [
                 'output' => basename($outputFile),
                 'size' => filesize($outputFile)
             ]);
@@ -109,7 +110,7 @@ class TrimVideoJob implements ShouldQueue
                 ThumbnailVideoJob::dispatch($outputFile, $thumbnailFile)
                     ->onQueue('camera-record-video-thumb');
             } else {
-                Log::channel('camera-record')->warning("[TRIM WARN] File mp4 tidak valid, skip thumbnail", [
+                Log::channel('camera-job')->warning("[TRIM WARN] File mp4 tidak valid, skip thumbnail", [
                     'file' => $outputFile
                 ]);
             }
@@ -127,7 +128,7 @@ class TrimVideoJob implements ShouldQueue
                 )->onQueue('camera-record-video-insert');
             }
         } catch (\Throwable $e) {
-            Log::channel('camera-record')->error('[JOB ERROR] TrimVideoJob failed', [
+            Log::channel('camera-job')->error('[JOB ERROR] TrimVideoJob failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
