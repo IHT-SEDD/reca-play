@@ -47,6 +47,7 @@ function startFakeProgress() {
     }, 400);
     return interval;
 }
+
 function finishProgress(interval, success = true) {
     clearInterval(interval);
     loadingProgress.css("width", "100%");
@@ -310,13 +311,46 @@ populateDataPanel = (scannedQrData, recordData) => {
 
 // ======== Fullscreen function ========
 fullScreenVideo = () => {
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    function simulateFullscreen(video) {
+        video.classList.add(
+            "fixed",
+            "top-0",
+            "left-0",
+            "w-screen",
+            "h-screen",
+            "z-50"
+        );
+        video.play();
+    }
+
+    function exitSimulatedFullscreen(video) {
+        video.classList.remove(
+            "fixed",
+            "top-0",
+            "left-0",
+            "w-screen",
+            "h-screen",
+            "z-50"
+        );
+    }
+
     fullScreenBtn.on("click", () => {
-        if (previewCam.requestFullscreen) {
-            previewCam.requestFullscreen();
-        } else if (previewCam.webkitRequestFullscreen) {
-            previewCam.webkitRequestFullscreen();
-        } else if (previewCam.msRequestFullscreen) {
-            previewCam.msRequestFullscreen();
+        try {
+            if (isIOS && previewCam.webkitEnterFullscreen) {
+                previewCam.webkitEnterFullscreen();
+            } else if (isIOS) {
+                simulateFullscreen(previewCam);
+            } else if (previewCam.requestFullscreen) {
+                previewCam.requestFullscreen();
+            } else if (previewCam.webkitRequestFullscreen) {
+                previewCam.webkitRequestFullscreen();
+            } else {
+                alert("Fullscreen not supported on this device.");
+            }
+        } catch (err) {
+            console.error("Fullscreen error:", err);
         }
     });
 };

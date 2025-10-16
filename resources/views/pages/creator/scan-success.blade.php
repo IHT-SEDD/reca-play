@@ -1,58 +1,55 @@
 <x-app-layout :pageTitle="'New Recording'">
- <div class="py-8 flex justify-center items-center">
-  <div class="w-full max-w-5xl mx-auto md:px-8 px-5">
-   <div class="flex justify-center items-center flex-col gap-4">
+ <div class="min-h-screen flex justify-center items-center py-10 px-4 sm:px-6 md:px-8">
+  <div class="w-full max-w-5xl mx-auto">
+   <div class="flex flex-col items-center gap-8">
     <!-- Title -->
-    <div class="flex flex-col justify-center items-center gap-1 mb-4">
-     <h1 class="md:text-4xl text-2xl text-center font-bold text-black">
+    <div class="text-center space-y-2">
+     <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-black leading-tight">
       Lights, Camera, Action!
      </h1>
-     <h3 class="md:text-2xl text-xl text-center font-bold text-hot-shot">
+     <h3 class="text-lg sm:text-xl md:text-2xl font-semibold text-hot-shot">
       Pick Your Mode
      </h3>
     </div>
 
     <!-- Record or streaming panel -->
-    <div class="rounded-xl p-3 bg-white w-full max-w-lg h-auto inline-block shadow-sm border border-white-edgar">
+    <div class="bg-white rounded-2xl shadow-sm border border-white-edgar w-full max-w-md sm:max-w-lg p-4 sm:p-6">
      <!-- Record or streaming -->
-     <div class="rounded-xl flex justify-between items-center w-full p-2 gap-2">
+     <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
       <!-- Record button -->
       <button id="recordBtn"
-       class="p-2.5 rounded-full bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition justify-center items-center gap-2 flex w-full disabled:cursor-not-allowed">
-       <i data-lucide="video" class="w-4 h-4"></i>
-       <p class="text-xs md:text-sm font-semibold">I'm Recording</p>
+       class="flex items-center justify-center gap-2 w-full p-3 sm:p-4 rounded-xl bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition-all duration-200 disabled:cursor-not-allowed">
+       <i data-lucide="video" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+       <p class="text-sm sm:text-base font-semibold">I'm Recording</p>
       </button>
+
       <!-- Streaming button -->
       <button id="streamingBtn"
-       class="p-2.5 rounded-full bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition justify-center items-center gap-2 flex w-full disabled:cursor-not-allowed">
-       <i data-lucide="airplay" class="w-4 h-4"></i>
-       <p class="text-xs md:text-sm font-semibold">I'm Streaming</p>
+       class="flex items-center justify-center gap-2 w-full p-3 sm:p-4 rounded-xl bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition-all duration-200 disabled:cursor-not-allowed">
+       <i data-lucide="airplay" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+       <p class="text-sm sm:text-base font-semibold">I'm Streaming</p>
       </button>
      </div>
     </div>
 
     <!-- Form panel -->
-    <div class="rounded-xl p-4 bg-white w-full max-w-lg h-auto shadow-sm border border-white-edgar hidden"
-     id="formPanel">
+    <div id="formPanel"
+     class="hidden bg-white rounded-2xl p-5 sm:p-6 w-full max-w-md sm:max-w-lg shadow-sm border border-white-edgar transition-all duration-300">
      <!-- Mode choosed text & information -->
-     <div class="flex flex-col justify-center items-center gap-2 mb-2" id="choosedModePanel">
+     <div id="choosedModePanel" class="flex flex-col justify-center items-center gap-3 mb-4 text-center">
       <!-- Choosed mode text -->
-      <div class="flex lg:flex-row flex-col justify-center items-center gap-2">
-       <h1 class="md:text-xl text-md text-center font-bold text-black">
-        Great choice!
-       </h1>
-       <h3 class="md:text-lg text-sm text-center font-bold text-hot-shot" id="choosedMode"></h3>
+      <div class="flex flex-col lg:flex-row justify-center items-center gap-2">
+       <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-black">Great choice!</h1>
+       <h3 id="choosedMode" class="text-sm sm:text-lg md:text-xl font-bold text-hot-shot"></h3>
       </div>
-
-      <!-- Choosed mode description text -->
-      <p class="text-center text-md text-after-midnight font-mono" id="descriptionChoosedMode"></p>
+      <p id="descriptionChoosedMode" class="text-sm sm:text-base md:text-md text-after-midnight font-mono"></p>
      </div>
 
      <!-- Form Section -->
-     <div id="formStreaming" class="hidden p-4">
+     <div id="formStreaming" class="hidden p-4 sm:p-5">
       @include('pages.creator.partials.form-streaming')
      </div>
-     <div id="formRecording" class="hidden p-4">
+     <div id="formRecording" class="hidden p-4 sm:p-5">
       @include('pages.creator.partials.form-recording')
      </div>
     </div>

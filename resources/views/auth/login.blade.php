@@ -3,16 +3,14 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" class="ajax-form" novalidate>
         @csrf
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />
             <x-inputs.text-input id="email" class="block mt-2 w-full" type="email" name="email" :value="old('email')"
                 required autofocus placeholder="your.email@example.com" />
-            <x-input-error id="input-email-error">
-                {{ $errors->first('email') }}
-            </x-input-error>
+            <x-input-error id="input-email-error"></x-input-error>
         </div>
 
         <!-- Password -->
@@ -20,9 +18,7 @@
             <x-input-label for="password" :value="__('Password')" />
             <x-inputs.text-input id="password" class="block mt-2 w-full" type="password" name="password" required
                 autocomplete="current-password" placeholder="xxxxxxxx" />
-            <x-input-error id="input-password-error">
-                {{ $errors->first('password') }}
-            </x-input-error>
+            <x-input-error id="input-password-error"></x-input-error>
         </div>
 
         <!-- Remember Me -->
@@ -69,4 +65,10 @@
             </a>
         </div>
     </form>
+
+    @push('scripts')
+    <script src="{{ asset('vendors/form-request/form.js') }}"></script>
+    <script src="{{ asset('vendors/form-request/formValidation.js') }}"></script>
+    <script src="{{ asset('assets/js/auth/login.js') }}"></script>
+    @endpush
 </x-guest-layout>

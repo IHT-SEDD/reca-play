@@ -145,13 +145,16 @@ class RecordedSearchService
         $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
         @mkdir($tmpDir, 0777, true);
 
-        $rawFiles = $this->downloadSegments($cameraKey, $uris, $tmpDir);
-        if (empty($rawFiles)) return null;
+        // $rawFiles = $this->downloadSegments($cameraKey, $uris, $tmpDir);
+        // if (empty($rawFiles)) return null;
+        $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $uris, $tmpDir);
+        if (empty($encodedSegments)) return null;
 
-        $concatFile = $this->concatSegments($cameraKey, $rawFiles, $tmpDir);
-        if (!$concatFile) return null;
+        // $concatFile = $this->concatSegments($cameraKey, $rawFiles, $tmpDir);
+        // if (!$concatFile) return null;
 
-        return $this->remuxOrEncode($cameraKey, $concatFile, $tmpDir);
+        // return $this->encode($cameraKey, $concatFile, $tmpDir);
+        return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
     }
 
     // =========================================================
@@ -301,7 +304,7 @@ XML;
     // =========================================================
     // DOWNLOAD SEGMENTS HELPERS
     // =========================================================
-    private function downloadSegments(string $cameraKey, array $uris, string $tmpDir): array
+    private function downloadAndEncodeSegments(string $cameraKey, array $uris, string $tmpDir): array
     {
         $client = new \GuzzleHttp\Client([
             'verify' => false,
@@ -310,11 +313,13 @@ XML;
         ]);
 
         $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
-        $rawFiles = [];
+        // $rawFiles = [];
+        $encodedFiles = [];
         $seq = 1;
 
         foreach ($uris as $uri) {
             $rawTs = "{$tmpDir}/seg_{$seq}.ts";
+            $encodedMp4 = "{$tmpDir}/seg_{$seq}.mp4";
             $xml = $this->buildDownloadXmlPayload($uri, $this->user, $this->pass);
 
             try {
@@ -329,29 +334,74 @@ XML;
                     'sink' => $rawTs,
                 ]);
 
-                if (file_exists($rawTs) && filesize($rawTs) > 1024) {
-                    $rawFiles[] = $rawTs;
-                    Log::channel('camera-record')->info("[DOWNLOAD SEG OK] seg_{$seq}", ['size' => filesize($rawTs)]);
-                } else {
-                    Log::channel('camera-record')->warning("[DOWNLOAD SEG FAIL] seg_{$seq}", ['size' => 0]);
+                if (!file_exists($rawTs) || filesize($rawTs) < 1024) {
+                    Log::channel('camera-record')->warning("[DOWNLOAD SEG FAIL] seg_{$seq}");
+                    continue;
                 }
+
+                $encode = new Process([
+                    'ffmpeg',
+                    '-y',
+                    '-err_detect',
+                    'ignore_err',
+                    '-i',
+                    $rawTs,
+                    '-c:v',
+                    'libx264',
+                    '-preset',
+                    'fast',
+                    '-crf',
+                    '23',
+                    '-c:a',
+                    'aac',
+                    '-b:a',
+                    '128k',
+                    '-movflags',
+                    '+faststart',
+                    $encodedMp4
+                ]);
+                $encode->setTimeout(0)->run();
+
+                // if (file_exists($rawTs) && filesize($rawTs) > 1024) {
+                //     $rawFiles[] = $rawTs;
+                //     Log::channel('camera-record')->info("[DOWNLOAD SEG OK] seg_{$seq}", ['size' => filesize($rawTs)]);
+                // } else {
+                //     Log::channel('camera-record')->warning("[DOWNLOAD SEG FAIL] seg_{$seq}", ['size' => 0]);
+                // }
+
+                if ($encode->isSuccessful() && file_exists($encodedMp4)) {
+                    $encodedFiles[] = $encodedMp4;
+                    Log::channel('camera-record')->info("[SEG ENCODE OK] seg_{$seq}", ['size' => filesize($encodedMp4)]);
+                } else {
+                    Log::channel('camera-record')->error("[SEG ENCODE FAIL] seg_{$seq}", [
+                        'stderr' => $encode->getErrorOutput()
+                    ]);
+                }
+
+                @unlink($rawTs);
             } catch (\Throwable $e) {
                 Log::channel('camera-record')->error("[DOWNLOAD ERROR] seg_{$seq}", ['error' => $e->getMessage()]);
             }
             $seq++;
         }
 
-        return $rawFiles;
+        // return $rawFiles;
+        return $encodedFiles;
     }
 
     // =========================================================
     // CONCAT SEGMENTS HELPERS
     // =========================================================
-    private function concatSegments(string $cameraKey, array $rawFiles, string $tmpDir): ?string
+    private function concatEncodedSegments(string $cameraKey, array $encodedFiles, string $tmpDir): ?string
     {
+        // array $rawFiles;
+        if (empty($encodedFiles)) return null;
+
         $listFile = "{$tmpDir}/list.txt";
-        file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $rawFiles)));
-        $concatFile = "{$tmpDir}/concat_{$cameraKey}.ts";
+        // file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $rawFiles)));
+        // $concatFile = "{$tmpDir}/concat_{$cameraKey}.ts";
+        file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $encodedFiles)));
+        $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
 
         $concat = new Process([
             'ffmpeg',
@@ -364,60 +414,56 @@ XML;
             $listFile,
             '-c',
             'copy',
-            $concatFile
+            // $concatFile
+            '-movflags',
+            '+faststart',
+            $finalFile
         ]);
         $concat->setTimeout(0)->run();
 
-        foreach ([$listFile, ...$rawFiles] as $f) {
+        // foreach ([$listFile, ...$rawFiles] as $f) {
+        //     if (is_file($f)) @unlink($f);
+        // }
+        foreach ($encodedFiles as $f) {
             if (is_file($f)) @unlink($f);
         }
+        @unlink($listFile);
 
-        if (!$concat->isSuccessful() || !file_exists($concatFile) || filesize($concatFile) < 1024) {
+        // if (!$concat->isSuccessful() || !file_exists($concatFile) || filesize($concatFile) < 1024) {
+        //     Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL]", [
+        //         'error' => $concat->getErrorOutput()
+        //     ]);
+        //     return null;
+        // }
+
+        // Log::channel('camera-record')->info('[CONCAT OK]', [
+        //     'file' => basename($concatFile),
+        //     'size' => filesize($concatFile)
+        // ]);
+
+        // return $concatFile;
+
+        if (!$concat->isSuccessful() || !file_exists($finalFile) || filesize($finalFile) < 1024) {
             Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL]", [
-                'error' => $concat->getErrorOutput()
+                'stderr' => $concat->getErrorOutput()
             ]);
             return null;
         }
 
         Log::channel('camera-record')->info('[CONCAT OK]', [
-            'file' => basename($concatFile),
-            'size' => filesize($concatFile)
+            'file' => basename($finalFile),
+            'size' => filesize($finalFile)
         ]);
 
-        return $concatFile;
+        return $finalFile;
     }
 
     // =========================================================
-    // REMUX OR ENCODE SEGMENTS HELPERS
+    // ENCODE SEGMENTS HELPERS
     // =========================================================
-    private function remuxOrEncode(string $cameraKey, string $concatFile, string $tmpDir): ?string
+    private function encode(string $cameraKey, string $concatFile, string $tmpDir): ?string
     {
         $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
-
-        $remux = new Process([
-            'ffmpeg',
-            '-y',
-            '-err_detect',
-            'ignore_err',
-            '-i',
-            $concatFile,
-            '-c',
-            'copy',
-            '-movflags',
-            '+faststart',
-            $finalFile
-        ]);
-        $remux->setTimeout(0)->run();
-
-        if ($remux->isSuccessful() && file_exists($finalFile) && filesize($finalFile) > 1024) {
-            @unlink($concatFile);
-            Log::channel('camera-record')->info('[REMUX OK]', ['file' => basename($finalFile)]);
-            return $finalFile;
-        }
-
-        Log::channel('camera-record')->warning("[REMUX FAIL] fallback encode", [
-            'error' => $remux->getErrorOutput()
-        ]);
 
         $encode = new Process([
             'ffmpeg',

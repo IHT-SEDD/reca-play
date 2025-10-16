@@ -9,8 +9,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 
-class DownloadVideoJob implements ShouldQueue
+class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -29,6 +30,12 @@ class DownloadVideoJob implements ShouldQueue
     public $tries = 3;
     public $timeout = 0;
     public $backoff = [60, 120, 300];
+
+    public $uniqueFor = 1800;
+    public function uniqueId(): string
+    {
+        return $this->cameraKey . '_' . $this->recordingId;
+    }
 
     /**
      * Create a new job instance.
@@ -113,6 +120,12 @@ class DownloadVideoJob implements ShouldQueue
                     ]);
                 }
             }
+
+            Log::channel('camera-job')->info('[JOB] DownloadVideoJob finished', [
+                'camera_key' => $this->cameraKey,
+                'recording_id' => $this->recordingId,
+            ]);
+            return;
         } catch (\Throwable $e) {
             Log::channel('camera-job')->error('[JOB ERROR] DownloadVideoJob failed', [
                 'error' => $e->getMessage(),
