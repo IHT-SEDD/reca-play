@@ -26,7 +26,6 @@ class DownloadVideoJob implements ShouldQueue
     protected string $endTime;
     protected int $recordingId;
 
-    // public ?string $queue = 'camera-record-video-download';
     public $tries = 3;
     public $timeout = 0;
     public $backoff = [60, 120, 300];
@@ -90,18 +89,29 @@ class DownloadVideoJob implements ShouldQueue
             ]);
 
             if ($file && file_exists($file) && filesize($file) > 0) {
-                TrimVideoJob::dispatch(
-                    $file,
-                    $this->startTime,
-                    $this->endTime,
-                    $this->cameraKey,
-                    $this->videoName,
-                    $this->recordingId
-                )->onQueue('camera-record-video-trim');
-            } else {
-                Log::channel('camera-job')->warning('[JOB] DownloadVideoJob produced no valid file', [
-                    'camera_key' => $this->cameraKey,
-                ]);
+                $flagPath = storage_path("app/tmp_recordings/{$this->cameraKey}_{$this->recordingId}_trim.lock");
+
+                if (!file_exists($flagPath)) {
+                    file_put_contents($flagPath, now()->toDateTimeString());
+                    TrimVideoJob::dispatch(
+                        $file,
+                        $this->startTime,
+                        $this->endTime,
+                        $this->cameraKey,
+                        $this->videoName,
+                        $this->recordingId
+                    )->onQueue('camera-record-video-trim');
+
+                    Log::channel('camera-job')->info('[JOB] TrimVideoJob dispatched (first time)', [
+                        'camera_key' => $this->cameraKey,
+                        'flag' => basename($flagPath)
+                    ]);
+                } else {
+                    Log::channel('camera-job')->warning('[JOB] TrimVideoJob skipped (already dispatched)', [
+                        'camera_key' => $this->cameraKey,
+                        'flag' => basename($flagPath)
+                    ]);
+                }
             }
         } catch (\Throwable $e) {
             Log::channel('camera-job')->error('[JOB ERROR] DownloadVideoJob failed', [
