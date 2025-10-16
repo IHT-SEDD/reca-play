@@ -45,8 +45,6 @@ class AuthenticatedSessionController extends Controller
 
             SessionLog::where('session_token', $sessionToken)
                 ->update(['user_id' => Auth::user()->id,]);
-
-            // session()->forget('qr_session_token');
         }
 
         $userId = Auth::id();
@@ -81,19 +79,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // $userId = Auth::id();
-        // $sessionToken = session('qr_session_token');
-
-        // QrSession::where('user_id', $userId)
-        //     ->where('session_token', $sessionToken)
-        //     ->latest()
-        //     ->delete();
-
-        // RecordSession::where('user_id', $userId)
-        //     ->where('session_token', $sessionToken)
-        //     ->latest()
-        //     ->delete();
-
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

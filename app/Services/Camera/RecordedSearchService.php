@@ -164,7 +164,6 @@ class RecordedSearchService
         $this->startTime = $startTime;
         $this->endTime = $endTime;
 
-        // $date = now()->format('dmy');
         $cameraKey = array_key_first($allUris);
         $uris = $allUris[$cameraKey] ?? [];
 
@@ -254,24 +253,97 @@ class RecordedSearchService
         ]);
         $concat->setTimeout(0)->run();
 
-        if (!$concat->isSuccessful()) {
+        if (!$concat->isSuccessful() || !file_exists($concatFile) || filesize($concatFile) < 1024) {
             Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL] {$cameraKey}", [
                 'error' => $concat->getErrorOutput(),
             ]);
+
+            foreach ([$listFile, ...$rawFiles] as $f) {
+                if (is_file($f)) @unlink($f);
+            }
             return null;
         }
 
         foreach ([$listFile, ...$rawFiles] as $f) {
-            if (is_file($f)) {
-                @unlink($f);
-            }
+            if (is_file($f)) @unlink($f);
         }
 
         Log::channel('camera-record')->info('[DOWNLOAD OK] ' . $cameraKey, [
             'file' => basename($concatFile),
+            'size' => filesize($concatFile)
         ]);
 
-        return $concatFile;
+        $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
+
+        $remux = new Process([
+            'ffmpeg',
+            '-y',
+            '-err_detect',
+            'ignore_err',
+            '-i',
+            $concatFile,
+            '-c',
+            'copy',
+            '-movflags',
+            '+faststart',
+            $finalFile
+        ]);
+        $remux->setTimeout(0)->run();
+
+        if ($remux->isSuccessful() && file_exists($finalFile) && filesize($finalFile) > 1024) {
+            Log::channel('camera-record')->info('[REMUX OK] ' . $cameraKey, [
+                'file' => basename($finalFile),
+                'size' => filesize($finalFile)
+            ]);
+
+            @unlink($concatFile);
+            return $finalFile;
+        }
+
+        Log::channel('camera-record')->warning("[REMUX FAIL] falling back to encode for {$cameraKey}", [
+            'remux_error' => $remux->getErrorOutput()
+        ]);
+
+        $encode = new Process([
+            'ffmpeg',
+            '-y',
+            '-err_detect',
+            'ignore_err',
+            '-i',
+            $concatFile,
+            '-c:v',
+            'libx264',
+            '-preset',
+            'fast',
+            '-crf',
+            '23',
+            '-c:a',
+            'aac',
+            '-b:a',
+            '128k',
+            '-movflags',
+            '+faststart',
+            $finalFile
+        ]);
+        $encode->setTimeout(0)->run();
+
+        if (!$encode->isSuccessful() || !file_exists($finalFile) || filesize($finalFile) < 1024) {
+            Log::channel('camera-record')->error("[FFMPEG ENCODE FAIL] {$cameraKey}", [
+                'error' => $encode->getErrorOutput(),
+            ]);
+
+            if (file_exists($finalFile)) @unlink($finalFile);
+            return null;
+        }
+
+        @unlink($concatFile);
+
+        Log::channel('camera-record')->info('[ENCODE OK] ' . $cameraKey, [
+            'file' => basename($finalFile),
+            'size' => filesize($finalFile)
+        ]);
+
+        return $finalFile;
     }
 
     // =========================================================
@@ -280,10 +352,11 @@ class RecordedSearchService
     public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile, bool $forceEncode = false): bool
     {
         if (!file_exists($inputFile) || filesize($inputFile) < 1024) return false;
-        $cmd = ['ffmpeg', '-y'];
 
         if ($forceEncode) {
-            $cmd = array_merge($cmd, [
+            $cmd = [
+                'ffmpeg',
+                '-y',
                 '-ss',
                 (string)$startSec,
                 '-i',
@@ -303,9 +376,11 @@ class RecordedSearchService
                 '-movflags',
                 '+faststart',
                 $outputFile
-            ]);
+            ];
         } else {
-            $cmd = array_merge($cmd, [
+            $cmd = [
+                'ffmpeg',
+                '-y',
                 '-i',
                 $inputFile,
                 '-ss',
@@ -314,8 +389,10 @@ class RecordedSearchService
                 (string)$duration,
                 '-c',
                 'copy',
+                '-movflags',
+                '+faststart',
                 $outputFile
-            ]);
+            ];
         }
 
         $process = new Process($cmd);
@@ -323,9 +400,18 @@ class RecordedSearchService
 
         if (!$process->isSuccessful()) {
             Log::channel('camera-record')->error("[TRIM FAIL]", ['error' => $process->getErrorOutput()]);
+            return false;
         }
 
-        return $process->isSuccessful() && file_exists($outputFile) && filesize($outputFile) > 0;
+        if (!file_exists($outputFile) || filesize($outputFile) < 1024) {
+            Log::channel('camera-record')->warning("[TRIM WARN] output missing or too small", [
+                'output' => $outputFile,
+                'size' => file_exists($outputFile) ? filesize($outputFile) : 0
+            ]);
+            return false;
+        }
+
+        return true;
     }
 
     // =========================================================
