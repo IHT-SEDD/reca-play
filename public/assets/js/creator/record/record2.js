@@ -135,8 +135,6 @@ getDataRecord = () => {
             let recordData = res.recordData;
             let scannedQrData = res.scannedQrData;
 
-            console.log(scannedQrData.qr_data.field?.venue?.name);
-
             populateDataPanel(scannedQrData, recordData);
 
             if (recordData?.start_time && recordData?.duration) {
@@ -294,8 +292,8 @@ stopRecordingManual = () => {
 // ======== Populate Data ========
 populateDataPanel = (scannedQrData, recordData) => {
     try {
-        venueName.text(scannedQrData.qr_data.field?.venue?.name || "N/A");
-        fieldName.text(scannedQrData.qr_data.field?.name || "N/A");
+        venueName.text(scannedQrData.qr_code.field?.venue?.name || "N/A");
+        fieldName.text(scannedQrData.qr_code.field?.name || "N/A");
         // venueName.text(scannedQrData.field.venue.name);
         // fieldName.text(scannedQrData.field.name);
         videoName.text(recordData.video_name);
