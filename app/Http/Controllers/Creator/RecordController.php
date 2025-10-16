@@ -163,6 +163,21 @@ class RecordController extends Controller
                 return $this->errorResponse('Recording not found', null, 404);
             }
 
+            if ($recording->status === 'done' || $recording->status === 'processing') {
+                Log::channel('camera-record')->warning("[STOP RECORDING] Recording already processed or in progress", [
+                    'recording_id' => $recording->id,
+                    'current_status' => $recording->status,
+                ]);
+
+                return response()->json([
+                    'status' => 'skipped',
+                    'message' => 'Recording already processed or still being processed.',
+                    'recordData' => $recording,
+                ]);
+            }
+
+            $recording->update(['status' => 'processing']);
+
             $videoName = str_replace(' ', '', $recording->video_name ?? 'recording');
 
             DB::beginTransaction();
@@ -177,8 +192,14 @@ class RecordController extends Controller
             RecordSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
             QrSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
 
-            GetPlaybackUrisJob::dispatch($fieldId, $recording->start_time, $recording->end_time, $userId, $videoName, $recording->id)
-                ->onQueue('camera-record-video-search');
+            GetPlaybackUrisJob::dispatch(
+                $fieldId,
+                $recording->start_time,
+                $recording->end_time,
+                $userId,
+                $videoName,
+                $recording->id
+            )->onQueue('camera-record-video-search');
 
             DB::commit();
 

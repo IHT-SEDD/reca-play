@@ -55,20 +55,10 @@ class RecordedSearchService
     public function getAllPlaybackUris(): array
     {
         $allUris = [];
-        // $start = (new \DateTime($this->startTime, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
-        // $end = (new \DateTime($this->endTime, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
         $startTs = (new \DateTime($this->startTime, new \DateTimeZone('UTC')))->getTimestamp();
         $endTs   = (new \DateTime($this->endTime, new \DateTimeZone('UTC')))->getTimestamp();
 
         foreach ($this->manualChannel as $channel) {
-            // $xmlPayload = $this->buildSearchXmlPayload($channel, $start, $end);
-
-            // Log::channel('camera-record')->info("[DEBUG XML PAYLOAD]", [
-            //     'channel' => $channel,
-            //     'payload' => $xmlPayload,
-            //     'expected_start' => $start,
-            //     'expected_end' => $end
-            // ]);
 
             $xmlPayload = $this->buildSearchXmlPayload($channel, gmdate('Y-m-d\TH:i:s\Z', $startTs), gmdate('Y-m-d\TH:i:s\Z', $endTs));
 
@@ -290,41 +280,9 @@ class RecordedSearchService
     public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile, bool $forceEncode = false): bool
     {
         if (!file_exists($inputFile) || filesize($inputFile) < 1024) return false;
-
-        // $cmd = [
-        //     'ffmpeg',
-        //     '-y',
-        //     '-ss',
-        //     (string)$startSec,
-        //     '-i',
-        //     $inputFile,
-        //     '-t',
-        //     (string)$duration
-        // ];
         $cmd = ['ffmpeg', '-y'];
 
-        // if (!$forceEncode) {
-        //     $cmd[] = '-c';
-        //     $cmd[] = 'copy';
-        // } else {
-        //     $cmd = array_merge($cmd, [
-        //         '-c:v',
-        //         'libx264',
-        //         '-preset',
-        //         'fast',
-        //         '-crf',
-        //         '23',
-        //         '-c:a',
-        //         'aac',
-        //         '-b:a',
-        //         '128k',
-        //         '-movflags',
-        //         '+faststart'
-        //     ]);
-        // }
-
         if ($forceEncode) {
-            // Re-encode untuk akurasi
             $cmd = array_merge($cmd, [
                 '-ss',
                 (string)$startSec,
@@ -347,7 +305,6 @@ class RecordedSearchService
                 $outputFile
             ]);
         } else {
-            // Copy stream → lebih cepat tapi trim akurat hanya di keyframe
             $cmd = array_merge($cmd, [
                 '-i',
                 $inputFile,
@@ -361,12 +318,6 @@ class RecordedSearchService
             ]);
         }
 
-        // $cmd[] = $outputFile;
-
-        // $process = new Process($cmd);
-        // $process->setTimeout(0)->run();
-
-        // return $process->isSuccessful() && file_exists($outputFile) && filesize($outputFile) > 0;
         $process = new Process($cmd);
         $process->setTimeout(0)->run();
 
