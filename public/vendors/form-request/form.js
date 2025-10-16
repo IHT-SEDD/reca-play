@@ -128,6 +128,9 @@ formRequestInit = () => {
                                     .DataTable()
                                     .ajax.reload(null, false);
                             }
+                            if (result.redirect) {
+                                window.location.href = result.redirect;
+                            }
                         } else if (result.status === "error") {
                             if (!handleSessionCodeError(result.message)) {
                                 notyf.error(
