@@ -75,10 +75,12 @@ class RecordController extends Controller
                 return $this->errorResponse("Model for {$type} not found", null, 500);
             }
 
-            $data = $modelClass::find($recordingId)
+            $data = $modelClass::where('id', $recordingId)
                 ->where('user_id', $userId)
                 ->where('field_id', $fieldId)
-                ->where('session_code_id', $sessionCodeId);
+                ->where('session_code_id', $sessionCodeId)
+                ->first();
+
             if (!$data) {
                 return $this->errorResponse('Data not found', null, 404);
             }
@@ -97,11 +99,11 @@ class RecordController extends Controller
             $streamUrl = $this->livePreview($fieldId);
 
             // Start recording if not started
-            if ($type === 'record' && !$data->start_time) {
+            if ($type === 'record' && empty($data->start_time)) {
                 $cameraService = $this->initializeCameraService($fieldId);
 
                 if ($cameraService->startRecording()) {
-                    $this->updateRecordingStart($data, $recordSession->session_token, $userId);
+                    $this->updateRecordingStart($data, $sessionToken, $userId);
                     Log::channel('camera-record')->info('[RECORD] Recording started', [
                         'recording_id' => $data->id,
                         'field_id' => $fieldId,
@@ -298,12 +300,7 @@ class RecordController extends Controller
             ->latest('last_active_at')
             ->first();
 
-        $fieldId = null;
-        if ($qrSession) {
-            $qrData = $qrSession->qr_data;
-            if (is_string($qrData)) $qrData = json_decode($qrData, true);
-            $fieldId = $qrData['field_id'] ?? null;
-        }
+        $fieldId = $qrSession?->qrCode?->field_id ?? null;
 
         $recordSessionQuery = RecordSession::where('user_id', $userId);
         if ($fieldId) {
