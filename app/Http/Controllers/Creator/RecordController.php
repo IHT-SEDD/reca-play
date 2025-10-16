@@ -308,7 +308,7 @@ class RecordController extends Controller
             ->where('field_id', $fieldId)
             ->where('status', '!=', 'expired')
             ->where('session_token', $sessionToken)
-            ->latest()
+            ->latest('created_at')
             ->value('id');
 
         return [
