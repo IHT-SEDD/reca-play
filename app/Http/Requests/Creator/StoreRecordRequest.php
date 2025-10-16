@@ -14,6 +14,8 @@ class StoreRecordRequest extends FormRequest
     protected function prepareForValidation()
     {
         $userId = Auth::id();
+        $sessionToken = session('qr_session_token');
+
         $scannedQr = QrSession::with(['qrCode.field.venue'])
             ->where('user_id', $userId)
             ->latest()
@@ -26,11 +28,7 @@ class StoreRecordRequest extends FormRequest
         }
 
         $sessionCodeId = SessionCode::where('generated_code', $this->session_code)
-            ->where('user_id', $userId)
-            ->where('field_id', $fieldId)
-            ->value('id');
-
-        $sessionToken = session('qr_session_token');
+            ->first();
 
         Log::info('StoreRecordRequest prepareForValidation', [
             'session_code' => $this->session_code,
