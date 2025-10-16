@@ -82,7 +82,7 @@ class ScanQrService
       QrSession::create([
         'user_id' => $user->id ?? null,
         'session_token' => $sessionToken,
-        'qr_token' => $token,
+        'qr_token' => $qrCode->qr_token,
         'qr_code_id' => $qrCode->id,
         'type' => $qrCode->type,
         'last_active_at' => now(),
