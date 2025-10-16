@@ -25,7 +25,7 @@ class ScanQrController extends Controller
             $sessionToken = session('qr_session_token');
             $ipAddress = $request->ip();
 
-            Log::info('Scan Qr Info: ' . $user->id . ' - ' . $token . ' - ' . $sessionToken . ' - ' . $ipAddress);
+            Log::info('Scan Qr Info: ' . $user->id ?? null . ' - ' . $token . ' - ' . $sessionToken . ' - ' . $ipAddress);
             return redirect()->route('creator.qr-success');
         }
 
