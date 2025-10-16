@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use App\Models\Session\RecordSession;
+use Illuminate\Http\JsonResponse;
 
 class RegisteredUserController extends Controller
 {
@@ -31,7 +32,7 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -55,7 +56,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // return redirect()->route('verification.notice');
         $sessionToken = session('qr_session_token');
 
         if ($sessionToken) {
@@ -70,8 +70,6 @@ class RegisteredUserController extends Controller
 
             SessionLog::where('session_token', $sessionToken)
                 ->update(['user_id' => Auth::user()->id,]);
-
-            // session()->forget('qr_session_token');
         }
 
         $userId = Auth::id();
@@ -90,14 +88,21 @@ class RegisteredUserController extends Controller
             ->latest()
             ->first();
 
+        $redirectUrl = route('home.index', absolute: false);
         if ($recordSession && $qrSession && $codeSession) {
-            return redirect()->route('creator.redirect');
+            $redirectUrl = route('creator.redirect');
+        } elseif ($qrSession && !$recordSession) {
+            $redirectUrl = route('creator.qr-success');
         }
 
-        if ($qrSession && !$recordSession) {
-            return redirect()->route('creator.qr-success');
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Register successful!',
+                'redirect' => $redirectUrl
+            ]);
         }
 
-        return redirect()->intended(route('home.index', absolute: false));
+        return redirect()->to($redirectUrl);
     }
 }
