@@ -292,14 +292,19 @@ stopRecordingManual = () => {
 // ======== Populate Data ========
 populateDataPanel = (scannedQrData, recordData) => {
     try {
-        venueName.text(scannedQrData.qr_code.field?.venue?.name || "N/A");
-        fieldName.text(scannedQrData.qr_code.field?.name || "N/A");
-        // venueName.text(scannedQrData.field.venue.name);
-        // fieldName.text(scannedQrData.field.name);
-        videoName.text(recordData.video_name);
-        durationVideo.text(recordData.duration + " Min");
+        const venue = scannedQrData?.qr_code?.field?.venue?.name || "N/A";
+        const field = scannedQrData?.qr_code?.field?.name || "N/A";
+        const video = recordData?.video_name || "N/A";
+        const duration = recordData?.duration
+            ? recordData.duration + " Min"
+            : "N/A";
+
+        venueName.text(venue);
+        fieldName.text(field);
+        videoName.text(video);
+        durationVideo.text(duration);
     } catch (e) {
-        console.warn("populateDataPanel warning:", e);
+        console.error("populateDataPanel error:", e);
     }
 };
 
