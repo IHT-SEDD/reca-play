@@ -13,25 +13,25 @@
     </div>
 
     <!-- Record or streaming panel -->
-    <div class="bg-white rounded-xl shadow-sm border border-white-edgar w-full flex flex-col sm:flex-row p-4 sm:p-6">
+    <div
+     class="bg-white rounded-xl shadow-sm border border-white-edgar w-full flex flex-col sm:flex-row p-4 sm:p-6 gap-4">
      <!-- Record button -->
      <button id="recordBtn"
-      class="flex items-center justify-center gap-2 w-full p-3 sm:p-4 rounded-xl bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition-all duration-200 disabled:cursor-not-allowed">
+      class="flex-1 flex items-center justify-center gap-2 p-3 sm:p-4 rounded-xl bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition-all duration-200 disabled:cursor-not-allowed">
       <i data-lucide="video" class="w-5 h-5 sm:w-6 sm:h-6"></i>
       <p class="text-sm sm:text-base font-semibold">I'm Recording</p>
      </button>
 
      <!-- Streaming button -->
      <button id="streamingBtn"
-      class="flex items-center justify-center gap-2 w-full p-3 sm:p-4 rounded-xl bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition-all duration-200 disabled:cursor-not-allowed">
+      class="flex-1 flex items-center justify-center gap-2 p-3 sm:p-4 rounded-xl bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition-all duration-200 disabled:cursor-not-allowed">
       <i data-lucide="airplay" class="w-5 h-5 sm:w-6 sm:h-6"></i>
       <p class="text-sm sm:text-base font-semibold">I'm Streaming</p>
      </button>
     </div>
 
     <!-- Form panel -->
-    <div id="formPanel"
-     class="hidden bg-white rounded-2xl p-5 w-full shadow-sm border border-white-edgar transition-all duration-300">
+    <div id="formPanel" class="hidden bg-white rounded-2xl p-5 w-full max-w-full overflow-x-hidden">
      <!-- Mode choosed text & information -->
      <div id="choosedModePanel" class="text-center space-y-2 mb-4">
       <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-black">Great choice!</h1>
