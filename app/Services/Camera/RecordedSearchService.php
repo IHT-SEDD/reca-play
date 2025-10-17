@@ -658,6 +658,8 @@ XML;
     private function extractUrisFromXml(\SimpleXMLElement $xml, int $startTs, int $endTs, int $tolerance = 60): array
     {
         $uris = [];
+        $coveredRanges = [];
+
         foreach ($xml->matchList->searchMatchItem as $item) {
             $segStart = strtotime((string)$item->timeSpan->startTime);
             $segEnd = strtotime((string)$item->timeSpan->endTime);
@@ -672,19 +674,58 @@ XML;
             if (isset($s[1], $e[1])) {
                 $uriStart = max(\DateTime::createFromFormat('Ymd\THis', $s[1], new \DateTimeZone('UTC'))->getTimestamp(), $startTs);
                 $uriEnd   = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $endTs);
+
                 $uri = preg_replace('/starttime=\d{8}T\d{6}/', "starttime=" . gmdate('Ymd\THis', $uriStart), $uri);
                 $uri = preg_replace('/endtime=\d{8}T\d{6}/', "endtime=" . gmdate('Ymd\THis', $uriEnd), $uri);
 
                 $directUse = abs($uriStart - $startTs) <= $tolerance && abs($uriEnd - $endTs) <= $tolerance;
+
                 $uris[] = [
                     'uri' => $uri,
+                    'start' => $uriStart,
+                    'end' => $uriEnd,
                     'directUse' => $directUse
                 ];
+
+                $coveredRanges[] = [$uriStart, $uriEnd];
             }
         }
 
-        usort($uris, fn($a, $b) => $this->extractStartTimeFromUri($a['uri']) <=> $this->extractStartTimeFromUri($b['uri']));
+        usort($uris, fn($a, $b) => $a['start'] <=> $b['start']);
+
+        $directUri = collect($uris)->first(fn($u) => $u['directUse']);
+        if ($directUri) {
+            Log::channel('camera-record')->info("[URI SELECT] Direct use URI found", [
+                'uri' => $directUri['uri'],
+                'start' => gmdate('Y-m-d H:i:s', $directUri['start']),
+                'end' => gmdate('Y-m-d H:i:s', $directUri['end'])
+            ]);
+            return [$directUri];
+        }
+
+        $mergedStart = min(array_column($uris, 'start') ?: [$startTs]);
+        $mergedEnd   = max(array_column($uris, 'end') ?: [$endTs]);
+        if ($mergedStart <= $startTs && $mergedEnd >= $endTs) {
+            Log::channel('camera-record')->info("[URI SELECT] Multiple URIs cover the requested range", [
+                'request_start' => gmdate('Y-m-d H:i:s', $startTs),
+                'request_end' => gmdate('Y-m-d H:i:s', $endTs),
+                'covered_start' => gmdate('Y-m-d H:i:s', $mergedStart),
+                'covered_end' => gmdate('Y-m-d H:i:s', $mergedEnd),
+                'uri_count' => count($uris)
+            ]);
+            return $uris;
+        }
+
+        Log::channel('camera-record')->warning("[URI SELECT] No URI exactly covers range, taking all available URIs", [
+            'request_start' => gmdate('Y-m-d H:i:s', $startTs),
+            'request_end' => gmdate('Y-m-d H:i:s', $endTs),
+            'uri_count' => count($uris)
+        ]);
+
         return $uris;
+
+        // usort($uris, fn($a, $b) => $this->extractStartTimeFromUri($a['uri']) <=> $this->extractStartTimeFromUri($b['uri']));
+        // return $uris;
 
         // if ($segEnd <= $startTs || $segStart >= $endTs) continue;
         // $uri = (string)$item->mediaSegmentDescriptor->playbackURI;
