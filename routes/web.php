@@ -64,7 +64,12 @@ Route::middleware(['check.maintenance'])->group(function () {
     Route::middleware(['auth', 'check.creator.session'])->group(function () {
         // Share video (with rate limit)
         Route::middleware('throttle:share-video')->group(function () {
-            Route::post('/share/{videoId}', [HomeController::class, 'shareVideo'])->name('home.share');
+            Route::post('/share/{videoId}', [SupportingController::class, 'shareVideo'])->name('support.share');
+        });
+
+        // Download video (with rate limit)
+        Route::middleware('throttle:download-video')->group(function () {
+            Route::post('/download/{videoId}', [SupportingController::class, 'downloadVideo'])->name('support.download');
         });
 
         // Camera Testing
