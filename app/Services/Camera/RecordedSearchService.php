@@ -142,19 +142,31 @@ class RecordedSearchService
             return null;
         }
 
+        $directSegment = collect($uris)->firstWhere('directUse', true);
+        if ($directSegment) {
+            $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
+            @mkdir($tmpDir, 0777, true);
+            $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, [$directSegment['uri']], $tmpDir);
+            return $encodedSegments[0] ?? null;
+        }
+
         $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
         @mkdir($tmpDir, 0777, true);
 
+        $urisList = array_column($uris, 'uri');
+        $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $urisList, $tmpDir);
+
+        return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
         // $rawFiles = $this->downloadSegments($cameraKey, $uris, $tmpDir);
         // if (empty($rawFiles)) return null;
-        $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $uris, $tmpDir);
-        if (empty($encodedSegments)) return null;
+        // $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $uris, $tmpDir);
+        // if (empty($encodedSegments)) return null;
 
         // $concatFile = $this->concatSegments($cameraKey, $rawFiles, $tmpDir);
         // if (!$concatFile) return null;
 
         // return $this->encode($cameraKey, $concatFile, $tmpDir);
-        return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
+        // return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
     }
 
     // =========================================================
@@ -643,15 +655,18 @@ XML;
     // =========================================================
     // EXTRACT URIS HELPERS
     // =========================================================
-    private function extractUrisFromXml(\SimpleXMLElement $xml, int $startTs, int $endTs): array
+    private function extractUrisFromXml(\SimpleXMLElement $xml, int $startTs, int $endTs, int $tolerance = 60): array
     {
         $uris = [];
         foreach ($xml->matchList->searchMatchItem as $item) {
             $segStart = strtotime((string)$item->timeSpan->startTime);
-            $segEnd   = strtotime((string)$item->timeSpan->endTime);
-            if ($segEnd <= $startTs || $segStart >= $endTs) continue;
+            $segEnd = strtotime((string)$item->timeSpan->endTime);
             $uri = (string)$item->mediaSegmentDescriptor->playbackURI;
-            if (!$uri) continue;
+
+            if (!$uri || $segEnd <= $startTs - $tolerance || $segStart >= $endTs + $tolerance) {
+                continue;
+            }
+
             preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $s);
             preg_match('/endtime=(\d{8}T\d{6})Z?/', $uri, $e);
             if (isset($s[1], $e[1])) {
@@ -659,10 +674,32 @@ XML;
                 $uriEnd   = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $endTs);
                 $uri = preg_replace('/starttime=\d{8}T\d{6}/', "starttime=" . gmdate('Ymd\THis', $uriStart), $uri);
                 $uri = preg_replace('/endtime=\d{8}T\d{6}/', "endtime=" . gmdate('Ymd\THis', $uriEnd), $uri);
+
+                $directUse = abs($uriStart - $startTs) <= $tolerance && abs($uriEnd - $endTs) <= $tolerance;
+                $uris[] = [
+                    'uri' => $uri,
+                    'directUse' => $directUse
+                ];
             }
-            $uris[] = $uri;
         }
-        usort($uris, fn($a, $b) => $this->extractStartTimeFromUri($a) <=> $this->extractStartTimeFromUri($b));
+
+        usort($uris, fn($a, $b) => $this->extractStartTimeFromUri($a['uri']) <=> $this->extractStartTimeFromUri($b['uri']));
         return $uris;
+
+        // if ($segEnd <= $startTs || $segStart >= $endTs) continue;
+        // $uri = (string)$item->mediaSegmentDescriptor->playbackURI;
+        // if (!$uri) continue;
+        // preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $s);
+        // preg_match('/endtime=(\d{8}T\d{6})Z?/', $uri, $e);
+        // if (isset($s[1], $e[1])) {
+        //     $uriStart = max(\DateTime::createFromFormat('Ymd\THis', $s[1], new \DateTimeZone('UTC'))->getTimestamp(), $startTs);
+        //     $uriEnd   = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $endTs);
+        //     $uri = preg_replace('/starttime=\d{8}T\d{6}/', "starttime=" . gmdate('Ymd\THis', $uriStart), $uri);
+        //     $uri = preg_replace('/endtime=\d{8}T\d{6}/', "endtime=" . gmdate('Ymd\THis', $uriEnd), $uri);
+        // }
+        // $uris[] = $uri;
+        // }
+        // usort($uris, fn($a, $b) => $this->extractStartTimeFromUri($a) <=> $this->extractStartTimeFromUri($b));
+        // return $uris;
     }
 }
