@@ -45,7 +45,7 @@
   </div>
  </div>
 
- @include('pages.home.partials.share-modal')
+ @include('pages.partials.share-modal')
 
  @push('styles')
  <link rel="stylesheet" href="{{ asset('assets/css/home/index.css') }}">

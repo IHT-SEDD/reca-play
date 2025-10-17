@@ -50,6 +50,8 @@
   </div>
  </div>
 
+ @include('pages.partials.share-modal')
+
  @push('styles')
  <link rel="stylesheet" href="{{ asset('assets/css/recording/index.css') }}">
  @endpush

@@ -136,6 +136,28 @@ class AppServiceProvider extends ServiceProvider
                         ], 429);
                 });
         });
+
+        // ---------- download video ----------
+        RateLimiter::for('download-video', function ($request) {
+            return Limit::perMinute(config('ratelimiter.download-video'))
+                ->by($this->userOrIp($request))
+                ->response(function () use ($request) {
+                    $message = 'Too many download video requests. Please try again in 1 minute.';
+
+                    if ($request->expectsJson()) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $message,
+                        ], 429);
+                    }
+
+                    return response()
+                        ->view('errors.429', [
+                            'title' => 'Rate Limit Exceeded',
+                            'message' => $message
+                        ], 429);
+                });
+        });
     }
 
     // ========== HELPER ==========
