@@ -110,7 +110,6 @@ class RecordedSearchService
             }
         }
 
-        // return $playbackUris;
         return $allUris;
     }
 
@@ -157,16 +156,6 @@ class RecordedSearchService
         $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $urisList, $tmpDir);
 
         return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
-        // $rawFiles = $this->downloadSegments($cameraKey, $uris, $tmpDir);
-        // if (empty($rawFiles)) return null;
-        // $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $uris, $tmpDir);
-        // if (empty($encodedSegments)) return null;
-
-        // $concatFile = $this->concatSegments($cameraKey, $rawFiles, $tmpDir);
-        // if (!$concatFile) return null;
-
-        // return $this->encode($cameraKey, $concatFile, $tmpDir);
-        // return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
     }
 
     // =========================================================
@@ -325,7 +314,6 @@ XML;
         ]);
 
         $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
-        // $rawFiles = [];
         $encodedFiles = [];
         $processes = [];
         $seq = 1;
@@ -415,50 +403,6 @@ XML;
                 Log::channel('camera-record')->error("[DOWNLOAD ERROR] seg_{$seq}", ['error' => $e->getMessage()]);
             }
 
-            //     $encode = new Process([
-            //         'ffmpeg',
-            //         '-y',
-            //         '-err_detect',
-            //         'ignore_err',
-            //         '-i',
-            //         $rawTs,
-            //         '-c:v',
-            //         'libx264',
-            //         '-preset',
-            //         'ultrafast',
-            //         '-crf',
-            //         '23',
-            //         '-c:a',
-            //         'aac',
-            //         '-b:a',
-            //         '128k',
-            //         '-movflags',
-            //         '+faststart',
-            //         $encodedMp4
-            //     ]);
-            //     $encode->setTimeout(0)->run();
-
-            //     // if (file_exists($rawTs) && filesize($rawTs) > 1024) {
-            //     //     $rawFiles[] = $rawTs;
-            //     //     Log::channel('camera-record')->info("[DOWNLOAD SEG OK] seg_{$seq}", ['size' => filesize($rawTs)]);
-            //     // } else {
-            //     //     Log::channel('camera-record')->warning("[DOWNLOAD SEG FAIL] seg_{$seq}", ['size' => 0]);
-            //     // }
-
-            //     if ($encode->isSuccessful() && file_exists($encodedMp4)) {
-            //         $encodedFiles[] = $encodedMp4;
-            //         Log::channel('camera-record')->info("[SEG ENCODE OK] seg_{$seq}", ['size' => filesize($encodedMp4)]);
-            //     } else {
-            //         Log::channel('camera-record')->error("[SEG ENCODE FAIL] seg_{$seq}", [
-            //             'stderr' => $encode->getErrorOutput()
-            //         ]);
-            //     }
-
-            //     @unlink($rawTs);
-            // } catch (\Throwable $e) {
-            //     Log::channel('camera-record')->error("[DOWNLOAD ERROR] seg_{$seq}", ['error' => $e->getMessage()]);
-            // }
-
             while (count($processes) >= $maxParallel) {
                 foreach ($processes as $key => $p) {
                     if (!$p['process']->isRunning()) {
@@ -488,7 +432,6 @@ XML;
             @unlink($p['raw']);
         }
 
-        // return $rawFiles;
         return $encodedFiles;
     }
 
@@ -497,12 +440,9 @@ XML;
     // =========================================================
     private function concatEncodedSegments(string $cameraKey, array $encodedFiles, string $tmpDir): ?string
     {
-        // array $rawFiles;
         if (empty($encodedFiles)) return null;
 
         $listFile = "{$tmpDir}/list.txt";
-        // file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $rawFiles)));
-        // $concatFile = "{$tmpDir}/concat_{$cameraKey}.ts";
         file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $encodedFiles)));
         $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
 
@@ -517,34 +457,16 @@ XML;
             $listFile,
             '-c',
             'copy',
-            // $concatFile
             '-movflags',
             '+faststart',
             $finalFile
         ]);
         $concat->setTimeout(0)->run();
 
-        // foreach ([$listFile, ...$rawFiles] as $f) {
-        //     if (is_file($f)) @unlink($f);
-        // }
         foreach ($encodedFiles as $f) {
             if (is_file($f)) @unlink($f);
         }
         @unlink($listFile);
-
-        // if (!$concat->isSuccessful() || !file_exists($concatFile) || filesize($concatFile) < 1024) {
-        //     Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL]", [
-        //         'error' => $concat->getErrorOutput()
-        //     ]);
-        //     return null;
-        // }
-
-        // Log::channel('camera-record')->info('[CONCAT OK]', [
-        //     'file' => basename($concatFile),
-        //     'size' => filesize($concatFile)
-        // ]);
-
-        // return $concatFile;
 
         if (!$concat->isSuccessful() || !file_exists($finalFile) || filesize($finalFile) < 1024) {
             Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL]", [
@@ -558,51 +480,6 @@ XML;
             'size' => filesize($finalFile)
         ]);
 
-        return $finalFile;
-    }
-
-    // =========================================================
-    // ENCODE SEGMENTS HELPERS
-    // =========================================================
-    private function encode(string $cameraKey, string $concatFile, string $tmpDir): ?string
-    {
-        $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
-
-        $encode = new Process([
-            'ffmpeg',
-            '-y',
-            '-err_detect',
-            'ignore_err',
-            '-i',
-            $concatFile,
-            '-c:v',
-            'libx264',
-            '-preset',
-            'fast',
-            '-crf',
-            '23',
-            '-c:a',
-            'aac',
-            '-b:a',
-            '128k',
-            '-movflags',
-            '+faststart',
-            $finalFile
-        ]);
-        $encode->setTimeout(0)->run();
-
-        if (!$encode->isSuccessful() || !file_exists($finalFile) || filesize($finalFile) < 1024) {
-            Log::channel('camera-record')->error("[FFMPEG ENCODE FAIL]", [
-                'error' => $encode->getErrorOutput()
-            ]);
-            return null;
-        }
-
-        @unlink($concatFile);
-        Log::channel('camera-record')->info('[ENCODE OK]', [
-            'file' => basename($finalFile),
-            'size' => filesize($finalFile)
-        ]);
         return $finalFile;
     }
 
@@ -678,7 +555,15 @@ XML;
                 $uri = preg_replace('/starttime=\d{8}T\d{6}/', "starttime=" . gmdate('Ymd\THis', $uriStart), $uri);
                 $uri = preg_replace('/endtime=\d{8}T\d{6}/', "endtime=" . gmdate('Ymd\THis', $uriEnd), $uri);
 
-                $directUse = abs($uriStart - $startTs) <= $tolerance && abs($uriEnd - $endTs) <= $tolerance;
+                $recordingDuration = $endTs - $startTs;
+                $uriCoverage = $uriEnd - $uriStart;
+                $coverageRatio = $uriCoverage / max($recordingDuration, 1);
+                $startDiff = abs($uriStart - $startTs);
+                $endDiff = abs($uriEnd - $endTs);
+
+                $directUse = (($startDiff <= $tolerance * 3 || $endDiff <= $tolerance * 3) || $coverageRatio >= 0.90);
+
+                // $directUse = abs($uriStart - $startTs) <= $tolerance && abs($uriEnd - $endTs) <= $tolerance;
 
                 $uris[] = [
                     'uri' => $uri,
@@ -688,6 +573,15 @@ XML;
                 ];
 
                 $coveredRanges[] = [$uriStart, $uriEnd];
+
+                Log::channel('camera-record')->debug("[URI RANGE DEBUG]", [
+                    'start' => gmdate('Y-m-d H:i:s', $segStart),
+                    'end' => gmdate('Y-m-d H:i:s', $segEnd),
+                    'uriStart' => gmdate('Y-m-d H:i:s', $uriStart),
+                    'uriEnd' => gmdate('Y-m-d H:i:s', $uriEnd),
+                    'coverageRatio' => round($coverageRatio, 2),
+                    'directUse' => $directUse
+                ]);
             }
         }
 
@@ -703,17 +597,32 @@ XML;
             return [$directUri];
         }
 
-        $mergedStart = min(array_column($uris, 'start') ?: [$startTs]);
-        $mergedEnd   = max(array_column($uris, 'end') ?: [$endTs]);
-        if ($mergedStart <= $startTs && $mergedEnd >= $endTs) {
-            Log::channel('camera-record')->info("[URI SELECT] Multiple URIs cover the requested range", [
-                'request_start' => gmdate('Y-m-d H:i:s', $startTs),
-                'request_end' => gmdate('Y-m-d H:i:s', $endTs),
-                'covered_start' => gmdate('Y-m-d H:i:s', $mergedStart),
-                'covered_end' => gmdate('Y-m-d H:i:s', $mergedEnd),
-                'uri_count' => count($uris)
+        // $mergedStart = min(array_column($uris, 'start') ?: [$startTs]);
+        // $mergedEnd   = max(array_column($uris, 'end') ?: [$endTs]);
+        // if ($mergedStart <= $startTs && $mergedEnd >= $endTs) {
+        //     Log::channel('camera-record')->info("[URI SELECT] Multiple URIs cover the requested range", [
+        //         'request_start' => gmdate('Y-m-d H:i:s', $startTs),
+        //         'request_end' => gmdate('Y-m-d H:i:s', $endTs),
+        //         'covered_start' => gmdate('Y-m-d H:i:s', $mergedStart),
+        //         'covered_end' => gmdate('Y-m-d H:i:s', $mergedEnd),
+        //         'uri_count' => count($uris)
+        //     ]);
+        //     return $uris;
+        // }
+
+        if (!empty($uris)) {
+            usort($uris, fn($a, $b) => ($b['end'] - $b['start']) <=> ($a['end'] - $a['start']));
+            $best = $uris[0];
+            $coverageRatio = round(($best['end'] - $best['start']) / max($endTs - $startTs, 1), 2);
+
+            Log::channel('camera-record')->info("[URI SELECT] Best coverage URI selected", [
+                'uri' => $best['uri'],
+                'start' => gmdate('Y-m-d H:i:s', $best['start']),
+                'end' => gmdate('Y-m-d H:i:s', $best['end']),
+                'coverageRatio' => $coverageRatio
             ]);
-            return $uris;
+
+            return [$best];
         }
 
         Log::channel('camera-record')->warning("[URI SELECT] No URI exactly covers range, taking all available URIs", [
@@ -723,24 +632,5 @@ XML;
         ]);
 
         return $uris;
-
-        // usort($uris, fn($a, $b) => $this->extractStartTimeFromUri($a['uri']) <=> $this->extractStartTimeFromUri($b['uri']));
-        // return $uris;
-
-        // if ($segEnd <= $startTs || $segStart >= $endTs) continue;
-        // $uri = (string)$item->mediaSegmentDescriptor->playbackURI;
-        // if (!$uri) continue;
-        // preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $s);
-        // preg_match('/endtime=(\d{8}T\d{6})Z?/', $uri, $e);
-        // if (isset($s[1], $e[1])) {
-        //     $uriStart = max(\DateTime::createFromFormat('Ymd\THis', $s[1], new \DateTimeZone('UTC'))->getTimestamp(), $startTs);
-        //     $uriEnd   = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $endTs);
-        //     $uri = preg_replace('/starttime=\d{8}T\d{6}/', "starttime=" . gmdate('Ymd\THis', $uriStart), $uri);
-        //     $uri = preg_replace('/endtime=\d{8}T\d{6}/', "endtime=" . gmdate('Ymd\THis', $uriEnd), $uri);
-        // }
-        // $uris[] = $uri;
-        // }
-        // usort($uris, fn($a, $b) => $this->extractStartTimeFromUri($a) <=> $this->extractStartTimeFromUri($b));
-        // return $uris;
     }
 }
