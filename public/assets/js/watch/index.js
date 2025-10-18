@@ -1,7 +1,21 @@
+let shareVideo, showShareModal;
+
 const pathParts = window.location.pathname.split("/");
 const videoEncrypt = pathParts[pathParts.length - 1];
 
 console.log("Inisialisasi Watch Page:", videoEncrypt);
+
+const modal = document.getElementById("shareModal");
+const input = document.getElementById("shareLinkInput");
+const copyBtn = document.getElementById("copyShareLink");
+
+$.ajaxSetup({
+    headers: {
+        "X-CSRF-TOKEN": document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content"),
+    },
+});
 
 function videoPlayer() {
     const videoEl = $("#video_player");
@@ -36,6 +50,8 @@ function videoPlayer() {
                     : "Unknown Date"
             );
 
+            $(".share-btn").attr("data-id", data.id);
+
             console.log("Video siap diputar:", videoSrc);
         },
         error: function (xhr, status, error) {
@@ -46,7 +62,7 @@ function videoPlayer() {
             });
         },
     });
-    
+
     videoEl.on("loadeddata", function () {
         console.log("Video berhasil dimuat dan siap diputar.");
     });
@@ -65,6 +81,64 @@ function videoPlayer() {
         });
     });
 }
+
+// ==== Share Video ==== //
+shareVideo = (videoId) => {
+    $.ajax({
+        url: `/share/${videoId}`,
+        method: "POST",
+        success: (response) => {
+            console.log(response);
+            showShareModal(response.url);
+        },
+        error: (xhr) => {
+            if (xhr.status === 401) {
+                notyf.error(
+                    "You are not logged in. Redirecting to the login page..."
+                );
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 2000);
+            } else {
+                notyf.error("Failed to generate share link.");
+            }
+        },
+    });
+};
+
+// ==== Show Share Modal ==== //
+showShareModal = (shareUrl) => {
+    if (!modal || !input) return;
+
+    input.value = shareUrl;
+
+    modal.showModal();
+    requestAnimationFrame(() => modal.classList.add("show"));
+};
+
+// ==== Modal Events ==== //
+if (modal) {
+    modal.addEventListener("close", () => {
+        modal.classList.remove("show");
+    });
+
+    if (copyBtn) {
+        copyBtn.addEventListener("click", () => {
+            navigator.clipboard
+                .writeText(input.value)
+                .then(() => notyf.success("Link copied to clipboard!"))
+                .catch(() => notyf.error("Failed to copy link."));
+        });
+    }
+}
+
+// ==== Event Delegation ==== //
+document.addEventListener("click", (e) => {
+    if (e.target.closest(".share-btn")) {
+        const videoId = e.target.closest(".share-btn").dataset.id;
+        shareVideo(videoId);
+    }
+});
 
 $(window).on("load", function () {
     videoPlayer();

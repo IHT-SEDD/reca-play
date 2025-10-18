@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Process;
 
 class InsertRecordedVideoJob implements ShouldQueue
 {
@@ -60,6 +61,35 @@ class InsertRecordedVideoJob implements ShouldQueue
             return;
         }
 
+        $durationStr = null;
+
+        try {
+            $process = new Process([
+                'ffprobe',
+                '-v',
+                'error',
+                '-show_entries',
+                'format=duration',
+                '-of',
+                'default=noprint_wrappers=1:nokey=1',
+                $this->videoPath
+            ]);
+            $process->run();
+
+            if ($process->isSuccessful()) {
+                $durationSec = floatval(trim($process->getOutput()));
+                $hours = floor($durationSec / 3600);
+                $minutes = floor(($durationSec % 3600) / 60);
+                $seconds = round($durationSec % 60);
+                $durationStr = sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
+            }
+        } catch (\Throwable $e) {
+            Log::channel('camera-job')->error("[FFPROBE ERROR]", [
+                'videoPath' => $this->videoPath,
+                'error' => $e->getMessage()
+            ]);
+        }
+
         RecordedVideo::create([
             'recording_id' => $this->recordingId,
             'video_path' => str_replace(storage_path('app/public/'), '', $this->videoPath),
@@ -67,6 +97,7 @@ class InsertRecordedVideoJob implements ShouldQueue
             'thumbnail_path' => str_replace(storage_path('app/public/'), '', $this->thumbnailPath),
             'thumbnail_filename' => $this->thumbnailFilename,
             'video_size' => filesize($this->videoPath),
+            'duration' => $durationStr,
         ]);
 
         $recording = Recording::find($this->recordingId);
