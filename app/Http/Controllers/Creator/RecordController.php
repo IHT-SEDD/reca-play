@@ -146,14 +146,12 @@ class RecordController extends Controller
 
         try {
             $session = $this->checkSession();
-            $scannedQrData = $session['qrSession'];
             $recordSession = $session['recordSession'];
             $sessionCodeId = $session['sessionCodeId'];
             $fieldId = $session['fieldId'];
             $sessionToken = $session['sessionToken'];
 
             $recordingId = $recordSession?->recording_id;
-
             if (!$recordingId) {
                 return $this->errorResponse('No record data found in session');
             }
@@ -163,7 +161,7 @@ class RecordController extends Controller
                 return $this->errorResponse('Recording not found', null, 404);
             }
 
-            if ($recording->status === 'done' || $recording->status === 'processing') {
+            if (in_array($recording->status, ['done', 'processing'])) {
                 Log::channel('camera-record')->warning("[STOP RECORDING] Recording already processed or in progress", [
                     'recording_id' => $recording->id,
                     'current_status' => $recording->status,
@@ -176,44 +174,7 @@ class RecordController extends Controller
                 ]);
             }
 
-            $recording->update(['status' => 'processing']);
-
-            $videoName = str_replace(' ', '', $recording->video_name ?? 'recording');
-
-            DB::beginTransaction();
-
-            $cameraService = $this->initializeCameraService($fieldId);
-            $cameraService->stopRecording();
-
-            $recording->update(['end_time' => now()]);
-            $this->updateRecordingStop($recording, $sessionToken, $sessionCodeId);
-
-            // Clean up sessions immediately
-            RecordSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
-            QrSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
-
-            GetPlaybackUrisJob::dispatch(
-                $fieldId,
-                $recording->start_time,
-                $recording->end_time,
-                $userId,
-                $videoName,
-                $recording->id
-            )->onQueue('camera-record-video-search');
-
-            DB::commit();
-
-            Log::channel('camera-record')->info('[STOP RECORDING] Queued GetPlaybackUrisJob', [
-                'recording_id' => $recording->id,
-                'field_id' => $fieldId,
-                'user_id' => $userId
-            ]);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Recording stopped. Video processing started in background.',
-                'recordData' => $recording
-            ]);
+            return $this->finalizeRecording($recording, $fieldId, $userId, $sessionCodeId, $sessionToken, false);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::channel('camera-record')->error('[STOP RECORDING] Exception', [
@@ -294,18 +255,12 @@ class RecordController extends Controller
         if ($data->start_time && $data->duration) {
             $endTime = \Carbon\Carbon::parse($data->start_time)->addMinutes($data->duration);
             if (now()->greaterThanOrEqualTo($endTime)) {
-                $cameraService = $this->initializeCameraService($fieldId);
-                $cameraService->stopRecording();
-
-                $data->update(['end_time' => now()]);
-                RecordingLog::where('recording_id', $data->id)
-                    ->update(['status' => 'finished', 'updated_at' => now()]);
-
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Recording has ended automatically.',
-                    'recordData' => $data,
+                Log::channel('camera-record')->info("[AUTO STOP] Duration exceeded, stopping recording", [
+                    'recording_id' => $data->id,
+                    'field_id' => $fieldId,
                 ]);
+
+                return $this->finalizeRecording($data, $fieldId, $data->user_id, $data->session_code_id, session('qr_session_token'), true);
             }
         }
         return null;
@@ -339,5 +294,63 @@ class RecordController extends Controller
             'fieldId' => $fieldId,
             'sessionToken' => $sessionToken,
         ];
+    }
+
+    private function finalizeRecording($recording, $fieldId, $userId, $sessionCodeId, $sessionToken, $isAuto = false)
+    {
+        try {
+            DB::beginTransaction();
+
+            $cameraService = $this->initializeCameraService($fieldId);
+            $cameraService->stopRecording();
+
+            $recording->update([
+                'end_time' => now(),
+                'status' => 'processing',
+            ]);
+
+            $this->updateRecordingStop($recording, $sessionToken, $sessionCodeId);
+            RecordingLog::where('recording_id', $recording->id)
+                ->update(['status' => 'stopped', 'updated_at' => now()]);
+
+            // Bersihkan sesi
+            RecordSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
+            QrSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
+
+            // Queue background job untuk unduh video
+            $videoName = str_replace(' ', '', $recording->video_name ?? 'recording');
+            GetPlaybackUrisJob::dispatch(
+                $fieldId,
+                $recording->start_time,
+                now(),
+                $userId,
+                $videoName,
+                $recording->id
+            )->onQueue('camera-record-video-search');
+
+            DB::commit();
+
+            Log::channel('camera-record')->info(($isAuto ? '[AUTO STOP]' : '[STOP RECORDING]') . ' Finalized recording', [
+                'recording_id' => $recording->id,
+                'field_id' => $fieldId,
+                'user_id' => $userId,
+                'mode' => $isAuto ? 'auto' : 'manual'
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => $isAuto
+                    ? 'Recording stopped automatically (duration reached).'
+                    : 'Recording stopped manually. Video processing started in background.',
+                'recordData' => $recording
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::channel('camera-record')->error('[FINALIZE RECORDING] Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse($e->getMessage(), null, 500);
+        }
     }
 }

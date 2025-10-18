@@ -25,7 +25,7 @@ class RecordingController extends Controller
 
         $recordings = Recording::with(['field.venue', 'recordedVideo', 'user'])
             ->where('user_id', Auth::id())
-            // ->whereBetween('created_at', [$startOfDay, $endOfDay])
+            ->whereBetween('created_at', [$startOfDay, $endOfDay])
             ->get();
 
         return response()->json($recordings);
