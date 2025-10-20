@@ -34,7 +34,7 @@ function initCustomDatatable({
         lengthChange: false,
         ordering: false,
         info: false,
-        responsive : true,
+        responsive: true,
         pageLength: 10,
         dom: "t",
 
@@ -46,35 +46,43 @@ function initCustomDatatable({
                 data: null,
                 orderable: false,
                 searchable: false,
-                className: 'text-end whitespace-nowrap',
-                width: '1%',
-               render: function (data, type, row) {
-                    return `
-                        <div class="relative inline-block text-right">
-                            <button
-                                onclick="toggleDropdown(this)"
-                                class="px-3 py-2 rounded-md font-medium text-white bg-hot-shot"
-                            >
-                             <i data-lucide="ellipsis-vertical" class="w-4 h-auto"></i>
-                            </button>
+                className: "text-end whitespace-nowrap",
+                width: "1%",
+                render: function (data, type, row) {
+                    return `<div x-data="{ open: false }" class="relative inline-block text-left">
+                                <!-- Trigger -->
+                                <button 
+                                    @click="open = !open" 
+                                    :class="[
+                                        'focus:ring-0 focus:outline-none font-medium rounded-xl text-xs md:text-sm p-3 text-center inline-flex items-center transition-colors',
+                                        open 
+                                            ? 'bg-hot-shot text-white-owl dark:text-eerie-black' 
+                                            : 'bg-white-owl hover:text-hot-shot text-after-midnight dark:text-white-owl dark:hover:text-hot-shot'
+                                    ]" 
+                                    type="button">
+                                    <i data-lucide="ellipsis-vertical" class="w-4 h-4"></i>
+                                </button>
 
-                            <!-- Dropdown -->
-                            <ul class="hidden absolute right-0 z-50 w-40 p-2 bg-white rounded-lg shadow-md border border-gray-200">
-                                <li>
-                                    <button onclick="editData(${row.id})" class="block w-full text-left px-3 py-2 rounded-md hover:bg-orange-100 text-gray-700">
-                                        Edit
-                                    </button>
-                                </li>
-                                <li>
-                                    <button onclick="deleteData(${row.id})" class="block w-full text-left px-3 py-2 rounded-md hover:bg-orange-100 text-gray-700">
-                                        Delete
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    `;
-                }
-            }
+                                <!-- Dropdown menu -->
+                                <div x-show="open" x-cloak @click.outside="open = false" x-transition
+                                    class="absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-full min-w-fit bg-white shadow-sm divide-y divide-eerie-black border border-base-200">
+                                    <ul class="flex flex-col justify-center items-start text-[13px] text-eerie-black font-medium p-2">
+                                        <li>
+                                            <button @click.stop="setTimeout(() => open = false, 200);editData(${row.id});" class="block w-full text-left text-sm font-medium px-3 py-2 rounded-md hover:text-hot-shot text-after-midnight">
+                                                Edit
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button @click.stop="setTimeout(() => open = false, 200);editData(${row.id});" class="block w-full text-left text-sm font-medium px-3 py-2 rounded-md hover:text-hot-shot text-after-midnight">
+                                                Delete
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div> 
+                        `;
+                },
+            },
         ],
 
         language: {
@@ -97,10 +105,8 @@ function initCustomDatatable({
         $notFound.addClass("hidden");
 
         if (info.recordsTotal === 0) {
-            // Tidak ada data sama sekali
             $empty.removeClass("hidden");
         } else if (info.recordsDisplay === 0 && info.recordsTotal > 0) {
-            // Ada data, tapi tidak sesuai filter/search
             $notFound.removeClass("hidden");
         }
 
@@ -120,6 +126,10 @@ function initCustomDatatable({
             .find("tbody td")
             .addClass("py-3.5 break-words text-xs border border-transparent");
 
+        if (window.Alpine) {
+            Alpine.flushAndStopDeferringMutations();
+            Alpine.initTree(document.body);
+        }
         window.lucide.createIcons({ icons: window.lucide.icons });
     });
 
@@ -139,10 +149,10 @@ function initCustomDatatable({
     return table;
 }
 
-   // ============================
-    // Dropdown handler
-    // ============================
-const  toggleDropdown = (button) => {
+// ============================
+// Dropdown handler
+// ============================
+const toggleDropdown = (button) => {
     if (!button._dropdownMenu) {
         const menu = button.nextElementSibling;
         if (!menu) return;
@@ -155,13 +165,13 @@ const  toggleDropdown = (button) => {
     const menu = button._dropdownMenu;
 
     // Tutup dropdown lain
-    document.querySelectorAll('.dropdown-menu').forEach(m => {
-        if (m !== menu) m.classList.add('hidden');
+    document.querySelectorAll(".dropdown-menu").forEach((m) => {
+        if (m !== menu) m.classList.add("hidden");
     });
 
     // Toggle dropdown
-    menu.classList.toggle('hidden');
-    if (menu.classList.contains('hidden')) return;
+    menu.classList.toggle("hidden");
+    if (menu.classList.contains("hidden")) return;
 
     // Sinkronkan lebar dropdown dengan tombol
     const rect = button.getBoundingClientRect();
@@ -188,81 +198,78 @@ const  toggleDropdown = (button) => {
     // Klik di luar → tutup
     const closeHandler = (e) => {
         if (!menu.contains(e.target) && e.target !== button) {
-            menu.classList.add('hidden');
-            document.removeEventListener('click', closeHandler);
+            menu.classList.add("hidden");
+            document.removeEventListener("click", closeHandler);
         }
     };
-    setTimeout(() => document.addEventListener('click', closeHandler), 0);
-}
+    setTimeout(() => document.addEventListener("click", closeHandler), 0);
+};
 
+// ============================
+// Custom session code message handler
+// ============================
+function handleSessionCodeError(message) {
+    if (!message) return false;
 
-   // ============================
-    // Custom session code message handler
-    // ============================
-    function handleSessionCodeError(message) {
-        if (!message) return false;
+    const lowerMsg = message.toLowerCase();
 
-        const lowerMsg = message.toLowerCase();
-
-        if (lowerMsg.includes("session code not found")) {
-            notyf.error(
-                "Access code not found! Please go to cashier and ask for the access code."
-            );
-            return true;
-        }
-
-        if (lowerMsg.includes("session code has expired")) {
-            notyf.error(
-                "This access code has expired. Please ask cashier for a new code."
-            );
-            return true;
-        }
-
-        if (lowerMsg.includes("session code is already in use")) {
-            notyf.error(
-                "This access code is already being used by another user."
-            );
-            return true;
-        }
-
-        return false;
+    if (lowerMsg.includes("session code not found")) {
+        notyf.error(
+            "Access code not found! Please go to cashier and ask for the access code."
+        );
+        return true;
     }
 
-const editData = (id) => {
+    if (lowerMsg.includes("session code has expired")) {
+        notyf.error(
+            "This access code has expired. Please ask cashier for a new code."
+        );
+        return true;
+    }
 
-        const path = window.location.pathname;
-        const segments = path.split('/').filter(Boolean);
-        const master = segments[1];
+    if (lowerMsg.includes("session code is already in use")) {
+        notyf.error("This access code is already being used by another user.");
+        return true;
+    }
 
-        $.ajax({
-            type: "GET",
-            url: "/master/" + master + "/" + id + "/edit",
-            success: function (response) {
-
-                formEdit(response);
-
-            },
-             error: function (xhr) {
-                if (xhr.status === 422) {
-                    showValidationErrors(
-                        $form,
-                        xhr.responseJSON.errors
-                    );
-                    notyf.error("Please check the form for errors.");
-                } else {
-                    const response = xhr.responseJSON;
-                    if (!handleSessionCodeError(response?.message)) {
-                        notyf.error(
-                            response?.message ||
-                                "An error occurred. Please try again."
-                        );
-                    }
-                    console.error(xhr);
-                }
-            }
-        }
-
-    );
+    return false;
 }
 
+const editData = (id) => {
+    const path = window.location.pathname;
+    const segments = path.split("/").filter(Boolean);
+    const master = segments[1];
 
+    $.ajax({
+        type: "GET",
+        url: "/master/" + master + "/" + id + "/edit",
+        success: function (response) {
+            formEdit(response);
+            if (
+                window.modal_master &&
+                typeof modal_master.showModal === "function"
+            ) {
+                modal_master.showModal();
+            } else {
+                console.warn(
+                    "modal_master is not defined or showModal is not a function."
+                );
+            }
+        },
+        error: function (xhr) {
+            if (xhr.status === 422) {
+                showValidationErrors($form, xhr.responseJSON.errors);
+                notyf.error("Please check the form for errors.");
+            } else {
+                const response = xhr.responseJSON;
+                if (!handleSessionCodeError(response?.message)) {
+                    notyf.error(
+                        response?.message ||
+                            "An error occurred. Please try again."
+                    );
+                }
+                console.error(xhr);
+            }
+        },
+    });
+};

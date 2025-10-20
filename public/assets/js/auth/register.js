@@ -1,3 +1,11 @@
+$.ajaxSetup({
+    headers: {
+        "X-CSRF-TOKEN": document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content"),
+    },
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     FormValidation.init({
         rules: {
