@@ -29,7 +29,7 @@ class HomeController extends Controller
         $videos = Recording::with(['field.venue', 'recordedVideo', 'user'])
             ->whereBetween('created_at', [$fromDate, $toDate])
             ->latest('created_at')
-            ->limit(5)
+            ->limit(10)
             ->get();
 
         return response()->json($videos);

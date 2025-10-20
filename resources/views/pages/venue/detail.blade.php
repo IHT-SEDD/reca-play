@@ -10,21 +10,16 @@
     </div>
     <!-- Back to venue list button :end -->
 
-    <!-- Venue Logo -->
-    <div class="mb-3 w-full bg-base-200 rounded-xl h-12 p-2">
-
-    </div>
-
     <!-- Text Header 1 -->
-    <div class="mb-4 w-full flex lg:flex-row flex-col justify-between lg:items-center md:items-center items-start">
-      <h1 class="lg:text-4xl md:text-3xl text-2xl font-bold text-hot-shot" id="venue_name"></h1>
-      <h1 class="lg:text-3xl md:text-2xl text-xl font-bold text-carbon" id="venue_address"></h1>
+    <div class="mb-4 grid lg:grid-cols-2 grid-cols-1 gap-2 w-full">
+      <h1 class="lg:text-4xl md:text-3xl text-2xl font-bold text-hot-shot text-start" id="venue_name"></h1>
+      <h1 class="lg:text-2xl md:text-xl text-lg font-bold text-carbon lg:text-end text-start" id="venue_address"></h1>
     </div>
 
     <!-- Venue description -->
     <div class="mb-4 w-full flex flex-col justify-center items-start gap-1">
       <h1 class="lg:text-2xl md:text-xl text-lg font-bold text-after-midnight" id="venue_type"></h1>
-      <div class="flex items-center justify-start gap-4 w-full">
+      <div class="flex items-center justify-start gap-2 w-full">
         <h1 class="lg:text-lg md:text-md text-sm font-bold text-after-midnight">TOTAL COURT</h1>
         <div class="lg:text-lg md:text-md text-sm font-semibold text-hot-shot" id="total_court"></div>
       </div>
