@@ -178,7 +178,7 @@ formRequestInit = () => {
 
             $.ajax({
                 url: actionUrl,
-                method: "POST", // tetap POST, Laravel akan baca _method
+                method: "POST",
                 data: formData,
                 processData: false,
                 contentType: false,
@@ -188,6 +188,8 @@ formRequestInit = () => {
                 success: function (result) {
                     if (result.status === "success") {
                         notyf.success(result.message);
+
+                          resetForm($form);
 
                         // Tutup modal edit (opsional)
                       window.dispatchEvent(new CustomEvent('close-modal', { detail: 'edit-master-modal' }));

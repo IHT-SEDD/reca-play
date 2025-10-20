@@ -52,7 +52,7 @@ venueTypeTable = () => {
 };
 
 formEdit = (data) => {
-    console.log(data);
+
        $('#edit-form input[name="id"]').val(data.id);
        $('#edit-form input[name="name"]').val(data.name);
        $('#edit-form input[name="description"]').val(data.description);

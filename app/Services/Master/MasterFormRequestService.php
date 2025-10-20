@@ -25,7 +25,7 @@ class MasterFormRequestService
     ],
   'venue-type' => [
     'store' => \App\Http\Requests\Master\Venue\StoreVenueTypeRequest::class,
-    'update' => ''
+    'update' => \App\Http\Requests\Master\Venue\UpdateVenueTypeRequest::class
    ],
   'camera' => [
     'store' => \App\Http\Requests\Master\Camera\StoreCameraRequest::class,

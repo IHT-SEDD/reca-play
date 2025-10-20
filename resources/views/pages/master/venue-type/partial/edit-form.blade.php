@@ -27,15 +27,24 @@
  </div>
 
  <div class="mt-2">
-  <x-input-label for="is_active" :value="__('Active?')" />
+  <x-input-label for="is_active" :value="__('Active')" />
   <x-inputs.toggle-input id="is_active" name="is_active" />
   <x-input-error id="input-is_active-error"></x-input-error>
  </div>
 
- <!-- Submit btn -->
- <x-primary-button class="w-full mt-6">
-  {{ __('Submit') }}
- </x-primary-button>
+ <hr class="mt-2">
+
+<div class="grid grid-cols-2 gap-2 mt-5">
+    <!-- Close btn -->
+    <x-close-button :modal="'edit-master-modal'" class="w-full">
+       {{ __('Close') }}
+    </x-close-button>
+
+    <!-- Submit btn -->
+    <x-primary-button class="w-full">
+        {{ __('Update') }}
+    </x-primary-button>
+</div>
 </form>
 
 </div>
