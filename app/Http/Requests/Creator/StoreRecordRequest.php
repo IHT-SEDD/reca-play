@@ -7,25 +7,20 @@ use App\Models\Session\QrSession;
 use App\Models\Session\SessionCode;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class StoreRecordRequest extends FormRequest
 {
     protected function prepareForValidation()
     {
         $userId = Auth::id();
-        // $scannedQrData = session('scanned_qr');
-        // $fieldId = $scannedQrData['field_id'] ?? null;
+        $sessionToken = session('qr_session_token');
+
         $scannedQr = QrSession::with(['qrCode.field.venue'])
             ->where('user_id', $userId)
             ->latest()
             ->first();
-        $qrData = $scannedQr->qr_data ?? [];
-
-        if (is_string($qrData)) {
-            $qrData = json_decode($qrData, true);
-        }
-
-        $fieldId = $qrData['field_id'] ?? null;
+        $fieldId = $scannedQr?->qrCode?->field_id ?? null;
 
         $cameraId = null;
         if ($fieldId) {
@@ -33,16 +28,20 @@ class StoreRecordRequest extends FormRequest
         }
 
         $sessionCodeId = SessionCode::where('generated_code', $this->session_code)
-            // ->where('user_id', $userId)
-            ->value('id');
+            ->first();
 
-        $sessionToken = session('qr_session_token');
+        Log::info('StoreRecordRequest prepareForValidation', [
+            'session_code' => $this->session_code,
+            'user_id' => $userId,
+            'field_id' => $fieldId,
+            'session_code_id' => $sessionCodeId?->id,
+        ]);
 
         $this->merge([
             'user_id' => $userId,
             'field_id' => $fieldId,
             'camera_id' => $cameraId,
-            'session_code_id' => $sessionCodeId,
+            'session_code_id' => $sessionCodeId?->id,
             'session_token' => $sessionToken,
         ]);
     }

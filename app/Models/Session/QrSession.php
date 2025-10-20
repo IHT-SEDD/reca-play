@@ -10,18 +10,9 @@ class QrSession extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'qr_code_id',
-        'qr_code',
-        'type',
-        'qr_data',
-        'session_token',
-        'last_active_at',
-    ];
+    protected $guarded = ['id'];
 
     protected $casts = [
-        'qr_data' => 'array',
         'last_active_at' => 'datetime',
     ];
 

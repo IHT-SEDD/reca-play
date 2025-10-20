@@ -7,6 +7,7 @@ use App\Models\Session\QrSession;
 use App\Models\Session\SessionCode;
 use App\Models\Session\SessionLog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ScanQrService
@@ -19,7 +20,6 @@ class ScanQrService
    */
   public function scan(string $token): array
   {
-    // Find QR code by token
     $qrCode = QrCode::select(['id', 'field_id', 'venue_id', 'code', 'name', 'type', 'qr_token', 'is_active'])
       ->with([
         'venue:id,name',
@@ -29,55 +29,67 @@ class ScanQrService
       ->where('qr_token', $token)
       ->first();
 
-    // Return error if token QR not found
     if (!$qrCode) {
       return [
         'success' => false,
+        'title' => 'QR code not found',
         'message' => 'QR code not found or invalid token.',
       ];
     }
 
-    // Return error if QR status is not acitve
     if ($qrCode->is_active == 0) {
       return [
         'success' => false,
+        'title' => 'QR code inactive',
         'message' => 'QR code not active, please contact the administrator',
       ];
     }
 
     $existingSession = QrSession::whereNotNull('user_id')
-      ->where('qr_code', $qrCode->code)
+      ->where('qr_code_id', $qrCode->id)
       ->whereNotNull('session_token')
+      ->where('user_id', '!=', Auth::id())
       ->first();
 
     if ($existingSession) {
       return [
         'success' => false,
+        'title' => 'Field in use',
         'message' => 'This field is currently in use. Please wait until the previous session is finished.',
       ];
     }
 
     $user = Auth::user();
+    $userId = $user?->id;
 
-    // session(['scanned_qr' => $qrCode]);
     $sessionToken = Str::uuid()->toString();
 
     QrSession::create([
-      'user_id' => $user->id ?? null,
+      'user_id' => $userId,
       'session_token' => $sessionToken,
+      'qr_token' => $token,
       'qr_code_id' => $qrCode->id,
-      'qr_code' => $qrCode->code,
       'type' => $qrCode->type,
-      'qr_data' => $qrCode->toArray(),
       'last_active_at' => now(),
     ]);
 
-    session(['qr_session_token' => $sessionToken]);
+    session([
+      'qr_token' => $token,
+      'qr_session_token' => $sessionToken
+    ]);
 
     return [
       'success' => true,
       'message' => 'QR code valid.',
       'data' => $qrCode,
     ];
+  }
+
+  public function getUserActiveSession(int $userId): ?QrSession
+  {
+    return QrSession::where('user_id', $userId)
+      ->whereNotNull('session_token')
+      ->latest('last_active_at')
+      ->first();
   }
 }

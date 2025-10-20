@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Creator;
 use App\Http\Controllers\Controller;
 use App\Models\Record\RecordingLog;
 use App\Models\Session\QrSession;
+use App\Models\Session\RecordSession;
 use App\Models\Session\SessionCode;
 use App\Models\Session\SessionLog;
 use App\Services\Camera\LivePreviewService;
@@ -56,16 +57,24 @@ class CreatorController extends Controller
     }
 
     // ====== Process the scanned QR ======
-    public function scanQrProcess(Request $request)
+    public function scanQrProcess(Request $request, $token)
     {
-        $request->validate(['token' => 'required|string']);
-        $result = $this->scanQrService->scan($request->token);
+        session(['qr_token' => $token]);
+        $result = $this->scanQrService->scan($token);
 
-        return response()->json([
-            'status' => $result['success'] ? 'success' : 'error',
+        if ($result['success']) {
+            $user = Auth::user();
+            $sessionToken = session('qr_session_token');
+            $ipAddress = $request->ip();
+
+            Log::info('Scan Qr Info: ' . ($user?->id ?? 'guest') . ' - ' . $token . ' - ' . $sessionToken . ' - ' . $ipAddress);
+            return redirect()->route('creator.qr-success');
+        }
+
+        return view('scan-error', [
             'message' => $result['message'],
-            'data' => $result['data'] ?? null
-        ], $result['success'] ? 200 : 400);
+            'title' => $result['title']
+        ]);
     }
 
     // ====== Check scanned QR ======

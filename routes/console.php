@@ -18,3 +18,25 @@ Schedule::command('app:expire-session-codes')
     ->onFailure(function () {
         Log::error('[Scheduler] ExpireSessionCodes failed at ' . now());
     });
+
+Artisan::command('logs:clear-camera', function () {
+    $logFiles = [
+        'storage/logs/camera/control.log',
+        'storage/logs/camera/record.log',
+        'storage/logs/camera/job.log',
+        'storage/logs/worker.log',
+        'storage/logs/laravel.log',
+        'storage/logs/creator/creator.log',
+    ];
+
+    foreach ($logFiles as $file) {
+        if (file_exists(base_path($file))) {
+            file_put_contents(base_path($file), '');
+            $this->info("Cleared: {$file}");
+        } else {
+            $this->warn("File not found: {$file}");
+        }
+    }
+
+    $this->info('All specified log files have been cleared.');
+})->describe('Clear specific camera and system log files');

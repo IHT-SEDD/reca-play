@@ -1,14 +1,12 @@
 <x-guest-layout :pageTitle="'Register'" :title="'SIGN UP YOUR ACCOUNT'">
-    <form method="POST" action="{{ route('register') }}">
+    <form method="POST" action="{{ route('register') }}" class="ajax-form" novalidate>
         @csrf
         <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />
             <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')"
                 required autofocus placeholder="your full name" />
-            <x-input-error id="input-name-error">
-                {{ $errors->first('name') }}
-            </x-input-error>
+            <x-input-error id="input-name-error"></x-input-error>
         </div>
 
         <!-- Username -->
@@ -16,9 +14,7 @@
             <x-input-label for="username" :value="__('Username')" />
             <x-inputs.text-input id="username" class="block mt-2 w-full" type="text" name="username"
                 :value="old('username')" required autofocus placeholder="your username" />
-            <x-input-error id="input-username-error">
-                {{ $errors->first('username') }}
-            </x-input-error>
+            <x-input-error id="input-username-error"></x-input-error>
         </div>
 
         <!-- Email Address -->
@@ -26,9 +22,7 @@
             <x-input-label for="email" :value="__('Email')" />
             <x-inputs.text-input id="email" class="block mt-2 w-full" type="email" name="email" :value="old('email')"
                 required placeholder="your.email@example.com" />
-            <x-input-error id="input-email-error">
-                {{ $errors->first('email') }}
-            </x-input-error>
+            <x-input-error id="input-email-error"></x-input-error>
         </div>
 
         <!-- Password -->
@@ -37,9 +31,7 @@
 
             <x-inputs.text-input id="password" class="block mt-2 w-full" type="password" name="password" required
                 autocomplete="new-password" placeholder="xxxxxxxx" />
-            <x-input-error id="input-password-error">
-                {{ $errors->first('password') }}
-            </x-input-error>
+            <x-input-error id="input-password-error"></x-input-error>
             <x-indicator-password id="strengthMeter"></x-indicator-password>
         </div>
 
@@ -49,9 +41,7 @@
 
             <x-inputs.text-input id="password_confirmation" class="block mt-2 w-full" type="password"
                 name="password_confirmation" required autocomplete="new-password" placeholder="xxxxxxxx" />
-            <x-input-error id="input-password-confirmation-error">
-                {{ $errors->first('password-confirmation') }}
-            </x-input-error>
+            <x-input-error id="input-password_confirmation-error"></x-input-error>
         </div>
 
         <!-- Actions button -->
@@ -77,4 +67,10 @@
             </a>
         </div>
     </form>
+
+    @push('scripts')
+    <script src="{{ asset('vendors/form-request/form.js') }}"></script>
+    <script src="{{ asset('vendors/form-request/formValidation.js') }}"></script>
+    <script src="{{ asset('assets/js/auth/register.js') }}"></script>
+    @endpush
 </x-guest-layout>

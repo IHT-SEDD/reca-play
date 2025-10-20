@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Home;
 use App\Http\Controllers\Controller;
 use App\Models\Record\RecordedVideo;
 use App\Models\Record\Recording;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 use Vinkla\Hashids\Facades\Hashids;
 
@@ -19,46 +21,17 @@ class HomeController extends Controller
     // ==== Get latest videos for homepage ==== //
     public function getVideos()
     {
+        $userTimezone = Auth::user()->timezone ?? config('app.timezone');
+
+        $fromDate = Carbon::now($userTimezone)->subDays(2)->startOfDay();
+        $toDate = Carbon::now($userTimezone)->endOfDay();
+
         $videos = Recording::with(['field.venue', 'recordedVideo', 'user'])
-            ->latest()
-            ->take(10)
+            ->whereBetween('created_at', [$fromDate, $toDate])
+            ->latest('created_at')
+            ->limit(5)
             ->get();
 
         return response()->json($videos);
-    }
-
-    // ==== Generate share link ==== //
-    public function shareVideo($videoId)
-    {
-        $video = RecordedVideo::find($videoId);
-
-        if (! $video) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Video not found.'
-            ], 404);
-        }
-
-        $encodedId = Hashids::connection('video')->encode($video->id);
-
-        $shareUrl = URL::to('/video/watch/' . $encodedId);
-
-        return response()->json([
-            'success' => true,
-            'url' => $shareUrl
-        ]);
-    }
-
-    // ==== Watch shared video ==== //
-    public function watchVideo($videoEncrypt)
-    {
-        try {
-            $videoId = decrypt($videoEncrypt);
-            $video = RecordedVideo::with('recording.field.venue', 'recording.user')->findOrFail($videoId);
-
-            return view('pages.home.watch', compact('video'));
-        } catch (\Exception $e) {
-            abort(404, 'Invalid or expired video link.');
-        }
     }
 }
