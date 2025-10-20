@@ -41,7 +41,7 @@
     <!-- Scripts CSS :end -->
 </head>
 
-<body class="font-sans antialiased">
+<body class="font-sans text-gray-900 antialiased">
     <div data-simplebar style="height: 100vh;">
         <div class="min-h-screen flex flex-col bg-white-chalk dark:bg-reversed-grey">
             @include('layouts.navigation')
@@ -57,7 +57,7 @@
             @endif
 
             <!-- Page Content -->
-            <main class="flex-grow">
+            <main class="p-6 w-full mx-auto ">
                 {{ $slot }}
             </main>
 

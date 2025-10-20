@@ -202,7 +202,7 @@ class VenueManagementController extends Controller
         $fieldInitial = $this->getInitial($fieldName);
         $randomNumber = str_pad(random_int(0, 99999), 5, '0', STR_PAD_LEFT);
 
-        return "{$venueInitial}-{$fieldInitial}{$randomNumber}";
+        return "{$venueInitial}{$fieldInitial}{$randomNumber}";
     }
 
     private function getInitial(string $name): string

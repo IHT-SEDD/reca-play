@@ -40,6 +40,25 @@ Route::middleware(['check.maintenance'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | Venue Routes (Public)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('venue')->group(function () {
+        Route::get('/', [VenueController::class, 'index'])->name('venue.index');
+        Route::get('/data', [VenueController::class, 'data'])->name('venue.data');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Event Routes (Public)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('event')->group(function () {
+        Route::get('/', [EventController::class, 'index'])->name('event.index');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
     | Guest Routes
     |--------------------------------------------------------------------------
     */
@@ -64,7 +83,12 @@ Route::middleware(['check.maintenance'])->group(function () {
     Route::middleware(['auth', 'check.creator.session'])->group(function () {
         // Share video (with rate limit)
         Route::middleware('throttle:share-video')->group(function () {
-            Route::post('/share/{videoId}', [HomeController::class, 'shareVideo'])->name('home.share');
+            Route::post('/share/{videoId}', [SupportingController::class, 'shareVideo'])->name('support.share');
+        });
+
+        // Download video (with rate limit)
+        Route::middleware('throttle:download-video')->group(function () {
+            Route::post('/download/{videoId}', [SupportingController::class, 'downloadVideo'])->name('support.download');
         });
 
         // Camera Testing
@@ -78,20 +102,9 @@ Route::middleware(['check.maintenance'])->group(function () {
         |--------------------------------------------------------------------------
         */
         Route::prefix('venue')->group(function () {
-            Route::get('/', [VenueController::class, 'index'])->name('venue.index');
-            Route::get('/data', [VenueController::class, 'data'])->name('venue.data');
             Route::get('/detail/{hashedId}', [VenueController::class, 'detail'])->name('venue.detail');
             Route::get('/detail/data/{hashedId}', [VenueController::class, 'dataDetailPage'])->name('venue.detail-data');
             Route::get('/detail/field/{hashedId}', [VenueController::class, 'dataField'])->name('venue.field-data');
-        });
-
-        /*
-        |--------------------------------------------------------------------------
-        | Event Routes
-        |--------------------------------------------------------------------------
-        */
-        Route::prefix('event')->group(function () {
-            Route::get('/', [EventController::class, 'index'])->name('event.index');
         });
 
         /*

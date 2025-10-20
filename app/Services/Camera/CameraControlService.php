@@ -55,6 +55,8 @@ class CameraControlService
 
             try {
                 $res = Http::withDigestAuth($this->user, $this->pass)
+                    ->timeout(0)
+                    ->retry(3, 1000)
                     ->withoutVerifying()
                     ->put($url);
 
@@ -85,6 +87,8 @@ class CameraControlService
 
             try {
                 $res = Http::withDigestAuth($this->user, $this->pass)
+                    ->timeout(0)
+                    ->retry(3, 1000)
                     ->withoutVerifying()
                     ->put($url);
 

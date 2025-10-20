@@ -59,7 +59,7 @@ renderList = (videos) => {
                             video.thumbnail_path
                         }'); background-size: cover; background-position: center;">
                             <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black text-white p-2 rounded-xl">
-                                ${videoItem.duration_formatted ?? "-"}
+                                ${video.duration ?? "-"}
                             </div>
                         </div>
                      </a>

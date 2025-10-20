@@ -4,7 +4,9 @@ let renderList,
     goToPage,
     fetchRecordings,
     formatDate,
-    flattenVideos;
+    flattenVideos,
+    shareVideo,
+    showShareModal;
 
 const perPage = 10;
 let currentPage = 1;
@@ -18,6 +20,9 @@ const showingInfo = document.querySelector("#showing-info");
 const pageNumbers = document.querySelector("#pageNumbers");
 const prevBtn = document.querySelector("#prevPage");
 const nextBtn = document.querySelector("#nextPage");
+const modal = document.getElementById("shareModal");
+const input = document.getElementById("shareLinkInput");
+const copyBtn = document.getElementById("copyShareLink");
 
 // ==== Utils: Format Date ==== //
 formatDate = (dateString) => {
@@ -39,6 +44,14 @@ flattenVideos = () => {
     );
 };
 
+$.ajaxSetup({
+    headers: {
+        "X-CSRF-TOKEN": document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content"),
+    },
+});
+
 // ==== Fetch Recordings ==== //
 fetchRecordings = () => {
     return $.ajax({
@@ -46,6 +59,7 @@ fetchRecordings = () => {
         method: "GET",
         dataType: "json",
         success: (response) => {
+            console.log(response);
             recordings = response ?? [];
 
             total = recordings.reduce(
@@ -81,12 +95,15 @@ renderList = () => {
 
     data.forEach((item) => {
         const rec = item.recording;
+
         listContainer.insertAdjacentHTML(
             "beforeend",
             `
             <div class="w-full">
                 <!-- Thumbnail -->
-                <a href="/my-recording/watch/${item.id}" target="_blank"
+                <a href="/video/watch/${
+                    item.hashed_id
+                }" target="_blank" rel="noopener noreferrer" 
                    class="block bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative"
                    style="background-image: url('/storage/${
                        item.thumbnail_path
@@ -94,7 +111,7 @@ renderList = () => {
                           background-size: cover;
                           background-position: center;">
                     <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black text-white p-2 rounded-xl">
-                        ${rec.duration_formatted ?? "-"}
+                        ${item.duration_formatted ?? item.duration ?? "-"}
                     </div>
                 </a>
                 
@@ -114,10 +131,17 @@ renderList = () => {
                 </div>
                 
                 <!-- Share button -->
-                <div class="mt-2">
-                    <button class="flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition tooltip tooltip-bottom"
+                <div class="mt-2 flex items-center gap-2">
+                    <button class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
+                    data-id="${item.id}"
                             data-tip="share">
                         <i data-lucide="forward" class="w-4 h-4"></i>
+                    </button>
+
+                    <button class="download-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
+                    data-id="${item.id}"
+                            data-tip="download">
+                        <i data-lucide="download" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
@@ -170,9 +194,99 @@ goToPage = (page) => {
     renderPagination();
 };
 
+// ==== Share Video ==== //
+shareVideo = (videoId) => {
+    $.ajax({
+        url: `/share/${videoId}`,
+        method: "POST",
+        success: (response) => {
+            console.log(response);
+            showShareModal(response.url);
+        },
+        error: (xhr) => {
+            if (xhr.status === 401) {
+                notyf.error(
+                    "You are not logged in. Redirecting to the login page..."
+                );
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 2000);
+            } else {
+                notyf.error("Failed to generate share link.");
+            }
+        },
+    });
+};
+
+// ==== Download Video ==== //
+downloadVideo = (videoId) => {
+    notyf.success("Preparing video download...");
+
+    $.ajax({
+        url: `/download/${videoId}`,
+        method: "POST",
+        success: (response) => {
+            if (response.success && response.url) {
+                const a = document.createElement("a");
+                a.href = response.url;
+                a.download = "";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                notyf.error("Failed to generate download link.");
+            }
+        },
+        error: (xhr) => {
+            if (xhr.status === 401) {
+                notyf.error("You are not logged in. Redirecting to login...");
+                setTimeout(() => (window.location.href = "/login"), 2000);
+            } else {
+                notyf.error("Failed to download video.");
+            }
+        },
+    });
+};
+
+// ==== Show Share Modal ==== //
+showShareModal = (shareUrl) => {
+    if (!modal || !input) return;
+
+    input.value = shareUrl;
+
+    modal.showModal();
+    requestAnimationFrame(() => modal.classList.add("show"));
+};
+
+// ==== Modal Events ==== //
+if (modal) {
+    modal.addEventListener("close", () => {
+        modal.classList.remove("show");
+    });
+
+    if (copyBtn) {
+        copyBtn.addEventListener("click", () => {
+            navigator.clipboard
+                .writeText(input.value)
+                .then(() => notyf.success("Link copied to clipboard!"))
+                .catch(() => notyf.error("Failed to copy link."));
+        });
+    }
+}
+
 // ==== Event Listeners ==== //
 prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
 nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+document.addEventListener("click", (e) => {
+    if (e.target.closest(".share-btn")) {
+        const videoId = e.target.closest(".share-btn").dataset.id;
+        shareVideo(videoId);
+    }
+    if (e.target.closest(".download-btn")) {
+        const videoId = e.target.closest(".download-btn").dataset.id;
+        downloadVideo(videoId);
+    }
+});
 
 // ==== Init ==== //
 document.addEventListener("DOMContentLoaded", () => {

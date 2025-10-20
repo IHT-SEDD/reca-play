@@ -5,4 +5,5 @@ return [
  'add-data-creator' => env('RATE_LIMIT_ADD_CREATOR', 100),
  'stop-record' => env('RATE_LIMIT_STOP_RECORD', 50),
  'share-video' => env('RATE_LIMIT_SHARE_VIDEO', 10),
+ 'download-video' => env('RATE_LIMIT_DOWNLOAD_VIDEO', 10),
 ];

@@ -30,17 +30,6 @@
   <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
     <!-- Responsive Navigation Menu -->
     <div class="pt-2 pb-3 space-y-1">
-      <!-- Masters -->
-      <div x-data="{ open: false }" class="sm:hidden">
-        <!-- Toggle button -->
-        <button @click="open = !open"
-          class="flex items-center justify-between w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start tracking-wide capitalize text-after-midnight dark:text-white font-medium hover:text-hot-shot dark:hover:text-hot-shot hover:border-hot-shot transition duration-150 ease-in-out text-sm">
-          Masters
-          <!-- Chevron -->
-          <i data-lucide="chevron-down" :class="{ 'rotate-180': open }"
-            class="w-[15px] h-[15px] transition-transform duration-300"></i>
-        </button>
-      </div>
       <!-- User Management -->
       <x-responsive-nav-link class="text-sm" :href="url('/venue-management')"
         :active="request()->routeIs('venue-management.*')">
