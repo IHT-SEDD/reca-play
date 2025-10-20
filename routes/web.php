@@ -91,11 +91,6 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::post('/download/{videoId}', [SupportingController::class, 'downloadVideo'])->name('support.download');
         });
 
-        // Camera Testing
-        Route::get('/camera/live', [TestingController::class, 'livePreview'])->name('camera.live');
-        Route::post('/api/camera/start-recording', [TestingController::class, 'start']);
-        Route::post('/api/camera/stop-recording', [TestingController::class, 'stop']);
-
         /*
         |--------------------------------------------------------------------------
         | Venue Routes

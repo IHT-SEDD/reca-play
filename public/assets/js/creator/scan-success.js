@@ -73,6 +73,8 @@ checkScannedQr = () => {
             "X-Requested-With": "XMLHttpRequest",
         },
         success: function (data, textStatus, xhr) {
+            console.log(data);
+            
             if (data?.status === "error") {
                 notyf.error(data.message);
             } else {
@@ -81,6 +83,10 @@ checkScannedQr = () => {
         },
         error: function (xhr, status, error) {
             console.error("AJAX error:", error);
+
+            setTimeout(() => {
+                window.location.href = "/my-recording/";
+            }, 2500);
         },
     });
 };
