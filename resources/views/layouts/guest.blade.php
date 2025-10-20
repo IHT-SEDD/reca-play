@@ -46,16 +46,15 @@
     <div data-simplebar style="height: 100vh;">
         <div
             class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-white-chalk dark:bg-reversed-grey">
-            <div class="flex flex-col items-center justify-center mb-8 gap-6 w-full">
+            <div class="flex flex-col items-center justify-center mb-6 gap-6 w-full">
                 <a href="/">
                     <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA"
                         class="w-14 h-14 md:w-20 md:h-20">
                 </a>
-
-                <h1 class="md:text-3xl text-xl font-bold">{{ $title }}</h1>
             </div>
-
-            <div class="w-full sm:max-w-md px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            
+            <div class="w-full sm:max-w-md p-6 bg-white shadow-md overflow-hidden sm:rounded-lg">
+                <h1 class="text-lg font-bold text-start mb-6">{{ $title }}</h1>
                 {{ $slot }}
             </div>
         </div>
