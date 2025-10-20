@@ -57,7 +57,7 @@
             @endif
 
             <!-- Page Content -->
-            <main class="flex-grow">
+            <main class="p-6 w-full mx-auto ">
                 {{ $slot }}
             </main>
 
