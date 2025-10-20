@@ -58,7 +58,7 @@ formEdit = (data) => {
        $('#edit-form input[name="description"]').val(data.description);
        // toggle-input component renders a hidden input (value=0) and a checkbox (value=1)
        // set the checkbox checked state according to data.is_active
-       const isActive = data.is_active === true || data.is_active === 1 || data.is_active === '1';
+       const isActive = data.is_active == true;
        const $checkbox = $('#edit-form input[type="checkbox"][name="is_active"]');
        const $hidden = $('#edit-form input[type="hidden"][name="is_active"]');
        if ($checkbox.length) {
