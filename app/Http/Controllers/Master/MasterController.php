@@ -7,6 +7,7 @@ use App\Services\CustomDatatable\CustomDatatableService;
 use App\Services\Master\MasterDatatableService;
 use App\Services\Master\MasterFormRequestService;
 use App\Services\Master\MasterViewService;
+use App\Services\Master\MasterDetailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,15 +18,18 @@ class MasterController extends Controller
     protected MasterViewService $masterViewService;
     protected MasterDatatableService $masterDatatableService;
     protected MasterFormRequestService $masterFormRequestService;
+    protected MasterDetailService $masterDetailService;
 
     public function __construct(
         MasterViewService $masterViewService,
         MasterDatatableService $masterDatatableService,
-        MasterFormRequestService $masterFormRequestService
+        MasterFormRequestService $masterFormRequestService,
+        MasterDetailService $masterDetailService
     ) {
         $this->masterViewService = $masterViewService;
         $this->masterDatatableService = $masterDatatableService;
         $this->masterFormRequestService = $masterFormRequestService;
+        $this->masterDetailService = $masterDetailService;
     }
 
     // View of master
@@ -76,7 +80,7 @@ class MasterController extends Controller
     // Insert new data to database
     public function newData(Request $request, $type)
     {
-        $validated = $this->masterFormRequestService->getValidatedData($type, $request);
+        $validated = $this->masterFormRequestService->getValidatedData($type, $request, 'store');
         $userId = Auth::id();
 
         // dd($request->all(), $validated);
@@ -133,17 +137,67 @@ class MasterController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $type, string $id)
     {
-        //
+
+        $data = $this->masterDetailService->getData($type, $id);
+
+        if(!$data) throw new \Exception('Data not found');
+
+        return response()->json($data);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateData(Request $request, string $type)
     {
-        //
+
+        $validated = $this->masterFormRequestService->getValidatedData($type, $request, 'update');
+        $userId = Auth::id();
+        $id = $request->id;
+
+        // dd($request->all(), $validated);
+        try {
+            DB::beginTransaction();
+
+            $modelClass = $this->masterDatatableService->getData($type);
+            if (!$modelClass || !class_exists($modelClass)) {
+                throw new \Exception("Model for {$type} not found");
+            }
+
+            $modelClass::whereId($id)->update($validated);
+
+            DB::commit();
+
+            Log::channel('master_update_data')->info("Data {$type} saved successfully", [
+                'type' => $type,
+                'data' => $validated,
+                'user_id' => $userId,
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => "Data {$type} updated successfully"
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            Log::channel('master_add_data')->error("Failed to update data {$type}", [
+                'type' => $type,
+                'data' => $validated,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $userId,
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

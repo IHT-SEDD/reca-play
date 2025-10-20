@@ -6,6 +6,7 @@
     display: none !important;
 }
 
+/* --- Scrollbar Simplebar --- */
 [data-simplebar] .simplebar-scrollbar::before {
     background: #9e9ea9 !important; /* warna thumb */
     border-radius: 9999px;
@@ -22,3 +23,15 @@
     .simplebar-scrollbar::before {
     height: 6px !important; /* tebal horizontal */
 }
+
+/* --- custom DataTable --- */
+
+.dataTables_wrapper {
+    overflow: visible !important;
+}
+
+.table-container,
+.table-responsive {
+    overflow: visible !important;
+}
+

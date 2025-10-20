@@ -1,5 +1,5 @@
-let venueTable, selectVenueType;
-
+let venueTable, selectVenueType, buttonActionIndex, EditSelectVenueType;
+buttonActionIndex = 9;
 venueTable = () => {
     initCustomDatatable({
         tableId: "venue-table",
@@ -20,6 +20,16 @@ venueTable = () => {
                 name: "address",
                 searchable: false,
                 orderable: false,
+            },
+           {
+                data: "logo_filename",
+                name: "logo_filename",
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    if (!data) return '<span class="text-gray-400">No Image</span>';
+                    return `<img src="/${row.logo_path}" alt="${data}" width="250" height="250" class="rounded">`;
+                }
             },
             {
                 data: "created_at",
@@ -68,7 +78,46 @@ selectVenueType = () => {
             });
         },
     });
+
+ EditSelectVenueType =  new TomSelect("#edit-venue-type", {
+                    valueField: "id",
+                    labelField: "text",
+                    searchField: "text",
+                    preload: true,
+                    create: false,
+                    sortField: {
+                        field: "text",
+                        direction: "asc",
+                    },
+                    load: function (query, callback) {
+                        $.ajax({
+                            url: "/select/venue-type",
+                            data: { q: query },
+                            dataType: "json",
+                            success: function (res) {
+                                callback(res);
+                            },
+                            error: function () {
+                                callback();
+                            },
+                        });
+                    },
+                });
 };
+
+formEdit = (data) => {
+       $('#edit-form input[name="id"]').val(data.id);
+       $('#edit-form input[name="name"]').val(data.name);
+       $('#edit-form textarea[name="description"]').val(data.description);
+       $('#edit-form textarea[name="address"]').val(data.address);
+       $('#edit-form #edit-logoLabel').text(data.logo_filename ?? 'No file chosen');
+       EditSelectVenueType.addOption({
+            id: data.venue_type.id,
+            text: data.venue_type.name,
+        });
+        EditSelectVenueType.setValue(data.venue_type.id);
+       window.dispatchEvent(new CustomEvent('open-modal', { detail: 'edit-master-modal' }));
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     venueTable();
