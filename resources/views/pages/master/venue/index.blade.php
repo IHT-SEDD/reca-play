@@ -12,6 +12,10 @@
   </div>
  </div>
 
+<x-modal id="edit-modal" :name="'edit-master-modal'" :title="'Edit Venue'" :maxWidth="'lg'">
+    @include('pages.master.venue.partial.edit-form')
+</x-modal>
+
  @push('styles')
  <link rel="stylesheet" href="{{ asset('vendors/tom-select/tom-select.css') }}">
  @endpush

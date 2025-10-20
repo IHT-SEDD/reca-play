@@ -187,7 +187,9 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::prefix('master')->group(function () {
                 Route::get('/{type}', [MasterController::class, 'index'])->name('master.index');
                 Route::get('/{type}/data', [MasterController::class, 'datatable'])->name('master.data');
+                Route::get('/{type}/{id}/edit', [MasterController::class, 'edit'])->name('master.edit');
                 Route::post('/{type}/add-data', [MasterController::class, 'newData'])->name('master.add-data');
+                Route::put('/{type}/update-data', [MasterController::class, 'updateData'])->name('master.update-data');
 
                 // QR Code Download
                 Route::prefix('qr_code')->group(function () {
