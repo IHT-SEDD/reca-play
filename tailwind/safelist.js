@@ -26,6 +26,8 @@ const colorNames = [
     "vivaldi-red",
 
     // Shades of orange
+    "temple-orange",
+    "fuego",
     "hot-shot",
     "miami",
     "kin-gold",
