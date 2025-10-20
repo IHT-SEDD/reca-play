@@ -111,7 +111,7 @@ renderList = () => {
                           background-size: cover;
                           background-position: center;">
                     <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black text-white p-2 rounded-xl">
-                        ${rec.duration_formatted ?? "-"}
+                        ${item.duration_formatted ?? item.duration ?? "-"}
                     </div>
                 </a>
                 
@@ -133,13 +133,13 @@ renderList = () => {
                 <!-- Share button -->
                 <div class="mt-2 flex items-center gap-2">
                     <button class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
-                    data-id="${rec.recorded_video?.[0]?.id}"
+                    data-id="${item.id}"
                             data-tip="share">
                         <i data-lucide="forward" class="w-4 h-4"></i>
                     </button>
 
                     <button class="download-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
-                    data-id="${rec.recorded_video?.[0]?.id}"
+                    data-id="${item.id}"
                             data-tip="download">
                         <i data-lucide="download" class="w-4 h-4"></i>
                     </button>
