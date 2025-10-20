@@ -1,22 +1,26 @@
-<div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
+@extends('pages.master.partial.modal-edit-layout')
 
-@section('content')
-<form method="PUT" action="{{ url('/master/venue-type/update-data') }}" id="edit-form" class="ajax-edit-form" data-datatable="#venue-type-table"
- novalidate>
- @csrf
-   @method('PUT')
+@section('edit-title')
+<h1 class=" md:text-xl text-md font-bold text-hot-shot w-full">Edit venue type</h1>
+@endsection
 
- <div>
-  <x-inputs.text-input id="id" class="block mt-2 w-full" type="hidden" name="id" />
- </div>
+@section('edit-content')
+<form method="PUT" action="{{ url('/master/venue-type/update-data') }}" id="edit-form" class="ajax-edit-form"
+  data-datatable="#venue-type-table" novalidate>
+  @csrf
+  @method('PUT')
 
- <!-- Name -->
- <div>
-  <x-input-label for="name" :value="__('Name')" />
-  <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
-   placeholder="New venue type name" autocomplete="off" />
-  <x-input-error id="input-name-error"></x-input-error>
- </div>
+  <div>
+    <x-inputs.text-input id="id" class="block mt-2 w-full" type="hidden" name="id" />
+  </div>
+
+  <!-- Name -->
+  <div>
+    <x-input-label for="name" :value="__('Name')" />
+    <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
+      placeholder="New venue type name" autocomplete="off" />
+    <x-input-error id="input-name-error"></x-input-error>
+  </div>
 
  <div class="mt-2">
   <x-input-label for="description" :value="__('Description')" />

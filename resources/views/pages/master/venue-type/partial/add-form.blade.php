@@ -5,8 +5,8 @@
 @endsection
 
 @section('content')
-<form method="POST" action="{{ url('/master/venue-type/add-data') }}" class="ajax-form" data-datatable="#venue-type-table"
- novalidate>
+<form method="POST" action="{{ url('/master/venue-type/add-data') }}" class="ajax-form"
+ data-datatable="#venue-type-table" novalidate>
  @csrf
  <!-- Name -->
  <div>

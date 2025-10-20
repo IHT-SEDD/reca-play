@@ -167,14 +167,14 @@ formRequestInit = () => {
     }
 
     function formEdit() {
-    $("form.ajax-edit-form").each(function () {
-        $(this).on("submit", function (e) {
-            e.preventDefault();
+        $("form.ajax-edit-form").each(function () {
+            $(this).on("submit", function (e) {
+                e.preventDefault();
 
-            let $form = $(this);
-            let actionUrl = $form.attr("action");
-            let formData = new FormData(this);
-            let targetTable = $form.data("datatable");
+                let $form = $(this);
+                let actionUrl = $form.attr("action");
+                let formData = new FormData(this);
+                let targetTable = $form.data("datatable");
 
             $.ajax({
                 url: actionUrl,
@@ -191,53 +191,56 @@ formRequestInit = () => {
 
                           resetForm($form);
 
-                        // Tutup modal edit (opsional)
-                      window.dispatchEvent(new CustomEvent('close-modal', { detail: 'edit-master-modal' }));
+                            // Tutup modal edit (opsional)
+                            window.dispatchEvent(
+                                new CustomEvent("close-modal", {
+                                    detail: "edit-master-modal",
+                                })
+                            );
 
-                        // Refresh DataTable
-                        if (
-                            targetTable &&
-                            $.fn.DataTable.isDataTable(targetTable)
-                        ) {
-                            $(targetTable)
-                                .DataTable()
-                                .ajax.reload(null, false);
+                            // Refresh DataTable
+                            if (
+                                targetTable &&
+                                $.fn.DataTable.isDataTable(targetTable)
+                            ) {
+                                $(targetTable)
+                                    .DataTable()
+                                    .ajax.reload(null, false);
+                            }
+                        } else if (result.status === "error") {
+                            if (!handleSessionCodeError(result.message)) {
+                                notyf.error(
+                                    result.message ||
+                                        "An error occurred. Please try again."
+                                );
+                            }
+                        } else {
+                            console.error(result.message);
+                            notyf.error("An error occurred. Please try again.");
                         }
-                    } else if (result.status === "error") {
-                        if (!handleSessionCodeError(result.message)) {
-                            notyf.error(
-                                result.message ||
-                                    "An error occurred. Please try again."
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 422) {
+                            showValidationErrors(
+                                $form,
+                                xhr.responseJSON.errors
                             );
+                            notyf.error("Please check the form for errors.");
+                        } else {
+                            const response = xhr.responseJSON;
+                            if (!handleSessionCodeError(response?.message)) {
+                                notyf.error(
+                                    response?.message ||
+                                        "An error occurred. Please try again."
+                                );
+                            }
+                            console.error(xhr);
                         }
-                    } else {
-                        console.error(result.message);
-                        notyf.error("An error occurred. Please try again.");
-                    }
-                },
-                error: function (xhr) {
-                    if (xhr.status === 422) {
-                        showValidationErrors(
-                            $form,
-                            xhr.responseJSON.errors
-                        );
-                        notyf.error("Please check the form for errors.");
-                    } else {
-                        const response = xhr.responseJSON;
-                        if (!handleSessionCodeError(response?.message)) {
-                            notyf.error(
-                                response?.message ||
-                                    "An error occurred. Please try again."
-                            );
-                        }
-                        console.error(xhr);
-                    }
-                },
+                    },
+                });
             });
         });
-    });
-}
-
+    }
 
     return { formAdd, formEdit };
 };

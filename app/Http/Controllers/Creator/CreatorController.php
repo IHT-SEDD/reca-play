@@ -83,7 +83,7 @@ class CreatorController extends Controller
         $scannedQr = $this->getActiveQrSession();
 
         if (!$scannedQr) {
-            return $this->errorResponse('No QR data found, please scan again.', 400);
+            return $this->errorResponse('No QR data found, please scan again.', null);
         }
 
         return response()->json([
@@ -102,7 +102,7 @@ class CreatorController extends Controller
         $scannedQrData = $this->getActiveQrSession();
 
         if (!$scannedQrData) {
-            return $this->errorResponse('No active QR session found. Please scan a QR code first.', 400);
+            return $this->errorResponse('No active QR session found. Please scan a QR code first.', null);
         }
 
         $sessionToken = session('qr_session_token');
@@ -236,11 +236,15 @@ class CreatorController extends Controller
         return $query->first();
     }
 
-    private function errorResponse(string $message, int $code = 400)
+    private function errorResponse(string $message, ?int $code = 400)
     {
-        return response()->json([
+        $response = [
             'status' => 'error',
-            'message' => $message
-        ], $code);
+            'message' => $message,
+        ];
+
+        return is_null($code)
+            ? response()->json($response)
+            : response()->json($response, $code);
     }
 }

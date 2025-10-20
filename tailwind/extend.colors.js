@@ -25,6 +25,8 @@ export default {
     "vivaldi-red": "#EA3A3A",
 
     // Shades of orange
+    "temple-orange": "#f07856",
+    "fuego": "#ed5931",
     "hot-shot": "#EC5228",
     miami: "#f6921e",
     "kin-gold": "#f59300",
