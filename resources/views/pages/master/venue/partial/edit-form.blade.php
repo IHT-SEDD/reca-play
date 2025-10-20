@@ -51,7 +51,7 @@
 <div class="grid grid-cols-2 gap-2 mt-5">
     <!-- Close btn -->
     <x-close-button :modal="'edit-master-modal'" class="w-full">
-        {{ __('Close') }}
+       {{ __('Close') }}
     </x-close-button>
 
     <!-- Submit btn -->
