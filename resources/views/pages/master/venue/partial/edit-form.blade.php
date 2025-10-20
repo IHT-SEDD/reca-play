@@ -1,13 +1,13 @@
-@extends('pages.master.partial.add-form-layout')
-
-@section('title')
-<h1 class=" md:text-xl text-md font-bold text-hot-shot w-full">Add new venue</h1>
-@endsection
-
-@section('content')
-<form method="POST" action="{{ url('/master/venue/add-data') }}" class="ajax-form" data-datatable="#venue-table"
+<div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
+<form method="PUT" action="{{ url('/master/venue/update-data') }}" id="edit-form" class="ajax-edit-form" data-datatable="#venue-table"
  novalidate>
  @csrf
+  @method('PUT')
+
+  <div>
+  <x-inputs.text-input id="id" class="block mt-2 w-full" type="hidden" name="id" />
+ </div>
+
  <!-- Name -->
  <div>
   <x-input-label for="name" :value="__('Name')" />
@@ -33,22 +33,34 @@
  </div>
 
  <div class="mt-2">
-  <x-input-label for="logo" :value="__('Logo')" />
-  <x-inputs.file-input id="logo" name="logo">
+  <x-input-label for="edit-logo" :value="__('Logo')" />
+  <x-inputs.file-input id="edit-logo" name="logo">
    PNG, JPG, or JPEG
   </x-inputs.file-input>
  </div>
 
  <div class="mt-2">
-  <x-input-label for="select-venue-type" :value="__('Venue Type')" />
-  <select id="select-venue-type" placeholder="Select venue type..." autocomplete="off" name="venue_type_id"
+  <x-input-label for="edit-venue-type" :value="__('Venue Type')" />
+  <select id="edit-venue-type" placeholder="Select venue type..." autocomplete="off" name="venue_type_id"
    class="my-2">
   </select>
  </div>
 
- <!-- Submit btn -->
- <x-primary-button class="w-full mt-6">
-  {{ __('Submit') }}
- </x-primary-button>
+ <hr>
+
+<div class="grid grid-cols-2 gap-2 mt-5">
+    <!-- Close btn -->
+    <x-close-button :modal="'edit-master-modal'" class="w-full">
+        {{ __('Close') }}
+    </x-close-button>
+
+    <!-- Submit btn -->
+    <x-primary-button class="w-full">
+        {{ __('Update') }}
+    </x-primary-button>
+</div>
+
+
 </form>
-@endsection
+
+</div>
