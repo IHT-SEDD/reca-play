@@ -37,6 +37,7 @@ fieldTable = () => {
                 },
             },
         ],
+        hasAction: false,
     });
 };
 

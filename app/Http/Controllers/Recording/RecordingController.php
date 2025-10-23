@@ -20,7 +20,7 @@ class RecordingController extends Controller
     {
         $userTimezone = Auth::user()->timezone ?? config('app.timezone');
 
-        $startOfDay = Carbon::now($userTimezone)->startOfDay();
+        $startOfDay = Carbon::now($userTimezone)->subDays(5)->startOfDay();
         $endOfDay = Carbon::now($userTimezone)->endOfDay();
 
         $recordings = Recording::with(['field.venue', 'recordedVideo', 'user'])

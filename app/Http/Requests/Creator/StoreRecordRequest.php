@@ -27,22 +27,26 @@ class StoreRecordRequest extends FormRequest
             $cameraId = Camera::where('field_id', $fieldId)->value('id');
         }
 
-        $sessionCodeId = SessionCode::where('generated_code', $this->session_code)
+        $sessionCode = SessionCode::where('generated_code', $this->session_code)
             ->first();
+        $sessionCodeId = $sessionCode?->id;
+        $duration = $sessionCode?->duration;
 
         Log::info('StoreRecordRequest prepareForValidation', [
             'session_code' => $this->session_code,
             'user_id' => $userId,
             'field_id' => $fieldId,
-            'session_code_id' => $sessionCodeId?->id,
+            'session_code_id' => $sessionCodeId,
+            'duration' => $duration,
         ]);
 
         $this->merge([
             'user_id' => $userId,
             'field_id' => $fieldId,
             'camera_id' => $cameraId,
-            'session_code_id' => $sessionCodeId?->id,
+            'session_code_id' => $sessionCodeId,
             'session_token' => $sessionToken,
+            'duration' => $duration,
         ]);
     }
 
