@@ -174,9 +174,17 @@ class VenueManagementController extends Controller
                 return response()->json(['error' => 'Invalid duration value'], 422);
             }
 
-            $durationInMinutes = (int)$duration * 60;
+            $maxAttempts = 5;
+            $attempt = 0;
+            $generatedCode = null;
 
-            $generatedCode = $this->generateCode($venue->name ?? '', $field->name ?? '', $durationInMinutes);
+            do {
+                if ($attempt++ > $maxAttempts) {
+                    throw new \Exception('Failed to generate unique access code after several attempts.');
+                }
+
+                $generatedCode = $this->generateCode($venue->name ?? '', $field->name ?? '', $duration);
+            } while (SessionCode::where('generated_code', $generatedCode)->exists());
 
             $sessionCode = SessionCode::create([
                 'field_id' => $fieldId,
@@ -184,7 +192,7 @@ class VenueManagementController extends Controller
                 'generate_by_user_id' => Auth::id(),
                 'status' => 'active',
                 'generated_code' => $generatedCode,
-                'duration' => $durationInMinutes,
+                'duration' => $duration,
                 'expired_at' => Carbon::now()->addDay(),
             ]);
 
@@ -197,6 +205,12 @@ class VenueManagementController extends Controller
             ]);
         } catch (\Throwable $th) {
             DB::rollback();
+
+            if (str_contains($th->getMessage(), 'Duplicate entry')) {
+                return response()->json([
+                    'error' => 'Duplicate code detected. Please try again.',
+                ], 409);
+            }
             return response()->json([
                 'error' => 'Failed to generate access code',
                 'message' => $th->getMessage()
@@ -204,14 +218,23 @@ class VenueManagementController extends Controller
         }
     }
 
-    private function generateCode(string $venueName, string $fieldName, string $durationInMinutes): string
+    private function generateCode(string $venueName, string $fieldName, string $duration): string
     {
         $venueInitial = $this->getInitial($venueName);
         $fieldInitial = $this->getInitial($fieldName);
-        $durationPart = str_pad($durationInMinutes, 3, '0', STR_PAD_LEFT);
-        $randomNumber = str_pad(random_int(1, 99999), 4, '0', STR_PAD_LEFT);
 
-        return "{$venueInitial}{$fieldInitial}{$randomNumber}";
+        $letters = '';
+        for ($i = 0; $i < 2; $i++) {
+            $letters .= chr(random_int(65, 90));
+        }
+
+        $number = random_int(0, 9);
+
+        $mixed = str_shuffle($letters . $number);
+
+        $durationPart = str_pad($duration, 2, '0', STR_PAD_LEFT);
+
+        return "{$venueInitial}{$fieldInitial}{$durationPart}{$mixed}";
     }
 
     private function getInitial(string $name): string
