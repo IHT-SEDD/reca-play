@@ -80,7 +80,7 @@
    <div class="modal-action">
     <div>
      <x-inputs.text-input id="duration" class="block w-full" type="text" name="duration" :value="old('duration')"
-      required placeholder="Input duration (hours)" autocomplete="off" />
+      required placeholder="Input duration (minutes)" autocomplete="off" />
      <x-input-error id="input-duration-error"></x-input-error>
     </div>
     <button id="generate_code_btn" class="btn btn-accent btn-md">Generate</button>
