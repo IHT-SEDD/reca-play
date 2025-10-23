@@ -145,10 +145,18 @@ lastActivityTable = (hashedId) => {
 };
 
 generateCode = () => {
+    const duration = $("#duration").val().trim();
+
+    if (!duration || isNaN(duration)) {
+        notyf.error("Please enter a valid duration (numbers only).");
+        return;
+    }
+
     $.ajax({
         url: `/venue-management/detail/code-access/generate/${hashedId}`,
         method: "POST",
         dataType: "json",
+        data: { duration: duration },
         success: function (res) {
             if (res.success) {
                 notyf.success(
@@ -173,6 +181,13 @@ generateCode = () => {
     });
 };
 
+openModalGenerateCode = () => {
+    const modal = document.getElementById("access_code_modal");
+    if (modal) {
+        modal.showModal();
+    }
+};
+
 $(document).on("click", "#copy_code_btn", function () {
     const code = $("#access_code").text().trim();
     navigator.clipboard.writeText(code);
@@ -182,10 +197,18 @@ $(document).on("click", "#copy_code_btn", function () {
 document.addEventListener("DOMContentLoaded", function () {
     fetchData(hashedId);
     lastActivityTable(hashedId);
+
     $("#toggle_button").on("click", function () {
         toggleState();
     });
-    $("#generate_code_button").on("click", function () {
+    $("#generate_code_btn").on("click", function () {
         generateCode();
+    });
+    $("#code_access_btn").on("click", function () {
+        openModalGenerateCode();
+    });
+
+    $("#duration").on("input", function () {
+        this.value = this.value.replace(/[^0-9]/g, "");
     });
 });

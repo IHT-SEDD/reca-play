@@ -20,7 +20,7 @@
    <x-input-error id="input-video_name-error"></x-input-error>
   </div>
 
-  <div class="mt-2">
+  {{-- <div class="mt-2">
    <x-input-label for="duration" :value="__('Duration Recording')" :required="true" />
    <div class="flex lg:flex-row flex-col justify-between lg:items-center items-start w-full mt-2">
     <x-inputs.radio-input id="duration" name="duration" value="30">30 Min</x-inputs.radio-input>
@@ -29,7 +29,7 @@
     <x-inputs.radio-input id="duration" name="duration" value="240">240 Min</x-inputs.radio-input>
     <x-inputs.radio-input id="duration" name="duration" value="300">300 Min</x-inputs.radio-input>
    </div>
-  </div>
+  </div> --}}
 
   <!-- Submit btn -->
   <x-primary-button class="w-full mt-6" id="start_recording">

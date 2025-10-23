@@ -169,7 +169,14 @@ class VenueManagementController extends Controller
             $field = Field::select('id', 'venue_id', 'name')->findOrFail($fieldId);
             $venue = $field->venue()->select('id', 'name')->first();
 
-            $generatedCode = $this->generateCode($venue->name ?? '', $field->name ?? '');
+            $duration = request()->input('duration');
+            if (!$duration || !is_numeric($duration)) {
+                return response()->json(['error' => 'Invalid duration value'], 422);
+            }
+
+            $durationInMinutes = (int)$duration * 60;
+
+            $generatedCode = $this->generateCode($venue->name ?? '', $field->name ?? '', $durationInMinutes);
 
             $sessionCode = SessionCode::create([
                 'field_id' => $fieldId,
@@ -177,6 +184,7 @@ class VenueManagementController extends Controller
                 'generate_by_user_id' => Auth::id(),
                 'status' => 'active',
                 'generated_code' => $generatedCode,
+                'duration' => $durationInMinutes,
                 'expired_at' => Carbon::now()->addDay(),
             ]);
 
@@ -196,11 +204,12 @@ class VenueManagementController extends Controller
         }
     }
 
-    private function generateCode(string $venueName, string $fieldName): string
+    private function generateCode(string $venueName, string $fieldName, string $durationInMinutes): string
     {
         $venueInitial = $this->getInitial($venueName);
         $fieldInitial = $this->getInitial($fieldName);
-        $randomNumber = str_pad(random_int(0, 99999), 5, '0', STR_PAD_LEFT);
+        $durationPart = str_pad($durationInMinutes, 3, '0', STR_PAD_LEFT);
+        $randomNumber = str_pad(random_int(1, 99999), 4, '0', STR_PAD_LEFT);
 
         return "{$venueInitial}{$fieldInitial}{$randomNumber}";
     }

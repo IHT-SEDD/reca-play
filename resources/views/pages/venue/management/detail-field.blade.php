@@ -14,13 +14,13 @@
   <div class="mb-4 w-full flex lg:flex-row flex-col justify-between lg:items-center md:items-center items-start">
    <h1 class="lg:text-3xl md:text-2xl text-xl font-bold text-hot-shot" id="field_name"></h1>
 
-   <div class="flex items-center gap-3 justify-center">
+   <div class="flex md:flex-row flex-col md:items-center gap-3 justify-center items-start">
     <!-- Generate code -->
     <div class="flex items-center gap-3 justify-center">
      <h1 class="lg:text-lg md:text-md text-md font-bold text-after-midnight">Generate code</h1>
-     <button id="generate_code_button"
+     <button id="code_access_btn"
       class="p-2 rounded-xl inline-flex gap-2 items-center justify-center hover:bg-hot-shot hover:text-white bg-white border border-base-200 me-4">
-      <i data-lucide="key-round" class="lg:w-4 md:w-3 w-2 h-auto"></i>
+      <i data-lucide="key-round" class="lg:w-5 w-4 h-auto"></i>
      </button>
     </div>
     <!-- Toggle active -->
@@ -30,11 +30,11 @@
       class="p-1 rounded-full inline-flex gap-2 items-center justify-center bg-white border border-base-200 me-4">
       <!-- Active -->
       <div id="toggle_active" class="lg:p-1 p-0.5 rounded-full transition">
-       <i data-lucide="check" class="lg:w-4 md:w-3 w-2 h-auto"></i>
+       <i data-lucide="check" class="lg:w-5 w-4 h-auto"></i>
       </div>
       <!-- Non Active -->
       <div id="toggle_inactive" class="lg:p-1 p-0.5 rounded-full transition">
-       <i data-lucide="x" class="lg:w-4 md:w-3 w-2 h-auto"></i>
+       <i data-lucide="x" class="lg:w-5 w-4 h-auto"></i>
       </div>
      </button>
     </div>
@@ -51,7 +51,6 @@
    <i data-lucide="chart-no-axes-column-increasing" class="lg:w-7 md:w-6 w-5 h-auto text-hot-shot"></i>
   </div>
   <!-- Text sub header :end -->
-
   @include('pages.venue.management.partial.field-statistic')
   @endrole
 
@@ -68,16 +67,23 @@
 
  <dialog id="access_code_modal" class="modal modal-bottom sm:modal-middle">
   <div class="modal-box">
-   <h3 class="text-lg font-bold">Here's your access code!</h3>
-   <div class="py-4 flex items-center gap-3">
-    <p id="access_code" class="text-xl font-semibold tracking-wide text-hot-shot"></p>
-    <button id="copy_code_btn" class="btn btn-sm">Copy</button>
-   </div>
-   <p class="py-2 text-sm text-gray-500">Press ESC or click the button below to close</p>
-   <div class="modal-action">
+   <div class="mb-6 flex items-center justify-between">
+    <h3 class="text-lg font-bold">Generate access code!</h3>
     <form method="dialog">
-     <button class="btn">Close</button>
+     <button class="text-after-midnight hover:text-hot-shot"><i data-lucide="x" class="w-5 h-5"></i></button>
     </form>
+   </div>
+   <div class="py-4 flex justify-between items-center gap-4">
+    <p id="access_code" class="text-xl font-semibold tracking-wide text-hot-shot">Your code will appear here!</p>
+    <button id="copy_code_btn" class="btn btn-md">Copy</button>
+   </div>
+   <div class="modal-action">
+    <div>
+     <x-inputs.text-input id="duration" class="block w-full" type="text" name="duration" :value="old('duration')"
+      required placeholder="Input duration (hours)" autocomplete="off" />
+     <x-input-error id="input-duration-error"></x-input-error>
+    </div>
+    <button id="generate_code_btn" class="btn btn-accent btn-md">Generate</button>
    </div>
   </div>
  </dialog>
