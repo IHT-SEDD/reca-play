@@ -39,13 +39,23 @@ scanSuccess = (decodedText, decodedResult) => {
     let parsedToken;
     try {
         const jsonData = JSON.parse(decodedText);
+        if (!jsonData.token) {
+            throw new Error("JSON tidak memiliki token");
+        }
         parsedToken = jsonData.token;
     } catch (e) {
-        console.error("Invalid QR JSON:", e);
-        qrResult.innerText = "Invalid QR code format.";
-        qrResult.style.color = "#EA3A3A";
-        stopScanner();
-        return;
+        const regex = /scan-qr\/([a-f0-9\-]+)/i;
+        const match = decodedText.match(regex);
+
+        if (match && match[1]) {
+            parsedToken = match[1];
+        } else {
+            console.error("QR code invalid format:", decodedText);
+            qrResult.innerText = "Invalid QR code format.";
+            qrResult.style.color = "#EA3A3A";
+            stopScanner();
+            return;
+        }
     }
 
     qrResult.innerText = `Scanning QR...`;

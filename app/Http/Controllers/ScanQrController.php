@@ -17,7 +17,7 @@ class ScanQrController extends Controller
     }
     public function index(Request $request, $token)
     {
-        session(['qr_token' => $token]);
+        // session(['qr_token' => $token]);
 
         $result = $this->scanQrService->scan($token);
         if ($result['success']) {

@@ -9,11 +9,11 @@
     </h1>
 
     <!-- Add new recording -->
-    {{-- <a href="{{ url('creator/scan-qr') }}"
+    <a href="{{ url('creator/scan-qr') }}"
      class="p-2.5 rounded-full bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition flex justify-center items-center gap-1">
      <i data-lucide="plus" class="w-4 h-4"></i>
      <p class="text-sm font-semibold md:block hidden">Start New Recording</p>
-    </a> --}}
+    </a>
    </div>
    <!-- Search Bar -->
    <div class="w-full max-w-xs">

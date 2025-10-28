@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
+use App\Models\Master\QrCode;
 use App\Models\Record\RecordingLog;
 use App\Models\Session\QrSession;
 use App\Models\Session\RecordSession;
@@ -12,8 +13,10 @@ use App\Services\Camera\LivePreviewService;
 use App\Services\Creator\AddData\NewDataFormRequestService;
 use App\Services\Creator\ScanQr\ScanQrService;
 use App\Services\Support\GetModelService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -57,9 +60,9 @@ class CreatorController extends Controller
     }
 
     // ====== Process the scanned QR ======
-    public function scanQrProcess(Request $request, $token)
+    public function scanQrProcess(Request $request)
     {
-        session(['qr_token' => $token]);
+        $token = $request->input('token');
         $result = $this->scanQrService->scan($token);
 
         if ($result['success']) {
@@ -68,12 +71,17 @@ class CreatorController extends Controller
             $ipAddress = $request->ip();
 
             Log::info('Scan Qr Info: ' . ($user?->id ?? 'guest') . ' - ' . $token . ' - ' . $sessionToken . ' - ' . $ipAddress);
-            return redirect()->route('creator.qr-success');
+            return response()->json([
+                'status' => 'success',
+                'message' => $result['message'],
+                'data' => encryptData($result['data']),
+            ]);
         }
 
-        return view('scan-error', [
-            'message' => $result['message'],
-            'title' => $result['title']
+        return response()->json([
+            'status' => 'error',
+            'message' => encryptData($result['message']),
+            'data' => null,
         ]);
     }
 
@@ -86,17 +94,19 @@ class CreatorController extends Controller
             return $this->errorResponse('No QR data found, please scan again.', null);
         }
 
+        $dataToSend = $scannedQr;
+
         return response()->json([
             'status' => 'success',
             'message' => 'QR data found.',
-            'data' => $scannedQr
+            'data' => encryptData($dataToSend),
         ]);
     }
 
     // ====== Add new data ======
     public function addNewData(Request $request, $type)
     {
-        $validated = $this->newDataFormRequestService->getValidatedData($type, $request);
+        // $validated = $this->newDataFormRequestService->getValidatedData($type, $request);
         $userId = Auth::id();
         $ip = $request->ip();
         $scannedQrData = $this->getActiveQrSession();
@@ -106,19 +116,44 @@ class CreatorController extends Controller
         }
 
         $sessionToken = session('qr_session_token');
+        $sessionQrToken = session('qr_token');
+        $accessCode = $request->session_code;
 
         try {
             DB::beginTransaction();
+
+            $qrCodeData = QrCode::where('qr_token', $sessionQrToken)
+                ->where('is_active', 1)
+                ->first();
+
+            $sessionCodeQuery = SessionCode::where('generated_code', $accessCode)
+                ->where('status', 'active')
+                ->where('field_id', $qrCodeData->field_id);
+
+            $sessionCode = $sessionCodeQuery->first();
+
+            if (!$sessionCode) {
+                DB::rollBack();
+                return $this->errorResponse('Access code not found or inactive.', 404);
+            }
 
             $modelClass = $this->getModelService->getData($type);
             if (!$modelClass || !class_exists($modelClass)) {
                 throw new \Exception("Model for {$type} not found");
             }
 
-            $data = $modelClass::create($validated);
+            $dataQuery = $modelClass::where('session_code_id', $sessionCode->id)
+                ->where('field_id', $sessionCode->field_id);
+
+            $data = $dataQuery->first();
+
+            if (!$data) {
+                DB::rollBack();
+                return $this->errorResponse("Data {$type} for this session code not found.", 404);
+            }
 
             if ($type === 'record') {
-                $this->handleRecordData($request, $data, $scannedQrData, $sessionToken, $userId, $ip);
+                $this->handleRecordData($request, $accessCode, $data, $scannedQrData, $sessionToken, $userId, $ip);
             } else {
                 session(['stream_data_user' => $data->id]);
             }
@@ -127,7 +162,7 @@ class CreatorController extends Controller
 
             Log::channel('creator')->info("Data {$type} saved successfully", [
                 'mode' => $type,
-                'data' => $validated,
+                'data' => $data,
                 'user_id' => $userId,
                 'ip' => $ip,
             ]);
@@ -140,7 +175,7 @@ class CreatorController extends Controller
             DB::rollBack();
             Log::channel('creator')->error("Failed to save data {$type}", [
                 'mode' => $type,
-                'data' => $validated,
+                'data' => $data,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $userId,
@@ -151,27 +186,24 @@ class CreatorController extends Controller
         }
     }
 
-    private function handleRecordData($request, $data, $scannedQrData, $sessionToken, $userId, $ip)
+    private function handleRecordData($request, $accessCode, $data, $scannedQrData, $sessionToken, $userId, $ip)
     {
-        $inputCode = $request->input('session_code');
-        if (!$inputCode) throw new \Exception('Session code is required.');
+        if (!$accessCode) throw new \Exception('Access code is required.');
 
-        $sessionCode = $this->getValidSessionCode($inputCode, $userId, $scannedQrData->qr_code_id);
+        $sessionCode = $this->getValidSessionCode($accessCode, $userId, $scannedQrData->qr_code_id, $data);
 
-        RecordingLog::create([
-            'recording_id' => $data->id,
-            'qr_code' => $scannedQrData?->qrCode?->code,
-            'status' => 'prepare',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        RecordingLog::where('recording_id', $data->id)
+            ->update([
+                'qr_code' => $scannedQrData?->qrCode?->code,
+                'updated_at' => Carbon::now(),
+            ]);
 
         RecordSession::create([
             'user_id' => $userId,
             'session_token' => $sessionToken,
             'recording_id' => $data->id,
             'qr_code' => $scannedQrData?->qrCode?->code,
-            'status' => 'prepare',
+            'status' => 'ongoing',
             'ip_address' => $ip,
         ]);
 
@@ -180,7 +212,6 @@ class CreatorController extends Controller
             'qr_code_id' => $scannedQrData->qr_code_id,
             'recording_id' => $data->id,
             'session_token' => $sessionToken,
-            'type' => 'record',
             'status' => 'in use',
             'used_at' => now(),
         ]);
@@ -192,14 +223,17 @@ class CreatorController extends Controller
             'recording_id' => $data->id,
             'type' => 'record',
             'session_token' => $sessionToken,
+            'start_time' => $data->start_time,
+            'end_time' => $data->end_time,
             'active_at' => now(),
+            'inactive_at' => $data->end_time,
             'status' => 'ongoing',
         ]);
     }
 
-    private function getValidSessionCode($inputCode, $userId, $qrCodeId)
+    private function getValidSessionCode($accessCode, $userId, $qrCodeId, $data)
     {
-        $sessionCode = SessionCode::where('generated_code', $inputCode)
+        $sessionCode = SessionCode::where('generated_code', $accessCode)
             ->where('status', '!=', 'expired')
             ->first();
 
@@ -221,16 +255,19 @@ class CreatorController extends Controller
     {
         $userId = Auth::id();
         $sessionToken = session('qr_session_token');
+        $sessionQrToken = session('qr_token');
 
         if (!$userId || !$sessionToken) return null;
 
         $query = QrSession::with(['qrCode.field.venue'])
             ->where('user_id', $userId)
             ->where('session_token', $sessionToken)
+            ->where('qr_token', $sessionQrToken)
             ->latest();
 
         if ($requireActiveSession) {
             $query->whereNotNull('session_token');
+            $query->whereNotNull('qr_token');
         }
 
         return $query->first();
