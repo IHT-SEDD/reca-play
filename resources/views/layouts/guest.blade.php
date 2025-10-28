@@ -44,6 +44,7 @@
 
 <body class="font-sans text-gray-900 antialiased">
     <div data-simplebar style="height: 100vh;">
+        <x-indicators.loading></x-indicators.loading>
         <div
             class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-white-chalk dark:bg-reversed-grey">
             <div class="flex flex-col items-center justify-center mb-6 gap-6 w-full">
@@ -64,6 +65,7 @@
     <script src="{{ asset('vendors/jquery/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('vendors/zxcvbn/zxcvbn.js') }}"></script>
     <script src="{{ asset('vendors/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ asset('assets/js/loading.js') }}"></script>
     @stack('scripts')
     <!-- Scripts JS :end -->
 </body>
