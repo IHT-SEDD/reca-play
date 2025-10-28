@@ -1,6 +1,6 @@
 <x-app-layout :pageTitle="'New Recording'">
- <div class="py-8 flex justify-center items-center">
-  <div class="w-full max-w-5xl mx-auto md:px-8 px-5">
+ <div class="flex justify-center items-center">
+  <div class="w-full max-w-5xl mx-auto">
    <div class="flex justify-center items-center flex-col gap-8">
     <!-- Title -->
     <h1 class=" md:text-4xl text-2xl text-center font-bold text-black">

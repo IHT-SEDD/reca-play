@@ -1,0 +1,39 @@
+.flatpickr-time {
+    @apply bg-white text-after-midnight rounded-xl appearance-none border shadow-none outline-none;
+}
+
+.flatpickr-time input {
+    @apply rounded-xl text-black bg-transparent border outline-none shadow-none;
+}
+
+.flatpickr-calendar {
+    @apply bg-white text-after-midnight rounded-xl appearance-none border shadow-none outline-none;
+}
+
+.numInputWrapper {
+    @apply bg-transparent rounded-xl transition-colors duration-200;
+}
+
+.numInputWrapper:hover,
+.numInputWrapper input:hover {
+    @apply bg-hot-shot/20 rounded-lg text-after-midnight;
+}
+
+.numInputWrapper:active,
+.numInputWrapper input:active {
+    @apply bg-hot-shot text-white;
+}
+
+.numInputWrapper input:focus {
+    @apply outline-none bg-transparent border-none shadow-none;
+}
+
+.numInputWrapper span.arrowUp,
+.numInputWrapper span.arrowDown {
+    @apply border-none text-after-midnight cursor-pointer transition-colors duration-200;
+}
+
+.numInputWrapper span.arrowUp:hover,
+.numInputWrapper span.arrowDown:hover {
+    @apply text-black;
+}

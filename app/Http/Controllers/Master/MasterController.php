@@ -127,14 +127,6 @@ class MasterController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $type, string $id)
@@ -142,7 +134,7 @@ class MasterController extends Controller
 
         $data = $this->masterDetailService->getData($type, $id);
 
-        if(!$data) throw new \Exception('Data not found');
+        if (!$data) throw new \Exception('Data not found');
 
         return response()->json($data);
     }

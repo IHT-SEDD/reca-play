@@ -15,14 +15,6 @@
    <h1 class="lg:text-3xl md:text-2xl text-xl font-bold text-hot-shot" id="field_name"></h1>
 
    <div class="flex md:flex-row flex-col md:items-center gap-3 justify-center items-start">
-    <!-- Generate code -->
-    <div class="flex items-center gap-3 justify-center">
-     <h1 class="lg:text-lg md:text-md text-md font-bold text-after-midnight">Generate code</h1>
-     <button id="code_access_btn"
-      class="p-2 rounded-xl inline-flex gap-2 items-center justify-center hover:bg-hot-shot hover:text-white bg-white border border-base-200 me-4">
-      <i data-lucide="key-round" class="lg:w-5 w-4 h-auto"></i>
-     </button>
-    </div>
     <!-- Toggle active -->
     <div class="flex items-center gap-3 justify-center">
      <h1 class="lg:text-lg md:text-md text-md font-bold text-after-midnight" id="label_toggle"></h1>
@@ -56,6 +48,17 @@
 
   <!-- Text sub header :begin -->
   <h3 class="lg:text-xl md:text-lg text-md tracking-wider font-bold text-after-midnight lg:mb-4 md:mb-3 mb-2">
+   Access Code
+  </h3>
+  <!-- Text sub header :end -->
+
+  <div class="w-full grid lg:grid-cols-5 md:grid-cols-4 grid-cols-1 mb-4 gap-2">
+   @include('pages.venue.management.partial.access-code')
+   @include('pages.venue.management.partial.access-code-form')
+  </div>
+
+  <!-- Text sub header :begin -->
+  <h3 class="lg:text-xl md:text-lg text-md tracking-wider font-bold text-after-midnight lg:mb-4 md:mb-3 mb-2">
    Last Activity
   </h3>
   <!-- Text sub header :end -->
@@ -65,35 +68,14 @@
   </div>
  </div>
 
- <dialog id="access_code_modal" class="modal modal-bottom sm:modal-middle">
-  <div class="modal-box">
-   <div class="mb-6 flex items-center justify-between">
-    <h3 class="text-lg font-bold">Generate access code!</h3>
-    <form method="dialog">
-     <button class="text-after-midnight hover:text-hot-shot"><i data-lucide="x" class="w-5 h-5"></i></button>
-    </form>
-   </div>
-   <div class="py-4 flex justify-between items-center gap-4">
-    <p id="access_code" class="text-xl font-semibold tracking-wide text-hot-shot">Your code will appear here!</p>
-    <button id="copy_code_btn" class="btn btn-md">Copy</button>
-   </div>
-   <div class="modal-action">
-    <div>
-     <x-inputs.text-input id="duration" class="block w-full" type="text" name="duration" :value="old('duration')"
-      required placeholder="Input duration (minutes)" autocomplete="off" />
-     <x-input-error id="input-duration-error"></x-input-error>
-    </div>
-    <button id="generate_code_btn" class="btn btn-accent btn-md">Generate</button>
-   </div>
-  </div>
- </dialog>
-
  @push('styles')
  @endpush
 
  @push('scripts')
  <script src="{{ asset('vendors/jquery/jquery.dataTables.min.js') }}"></script>
  <script src="{{ asset('vendors/custom-datatable/index.js') }}"></script>
+ <script src="{{ asset('vendors/form-request/form.js') }}"></script>
+ <script src="{{ asset('vendors/form-request/formValidation.js') }}"></script>
  <script src="{{ asset('assets/js/venue/management/detail.js') }}"></script>
  @endpush
 </x-app-layout>

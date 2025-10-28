@@ -11,8 +11,7 @@
   </div>
 
   <!-- Record or streaming panel -->
-  <div
-   class="bg-white rounded-xl shadow-sm border border-white-edgar w-full flex flex-col sm:flex-row p-4 sm:p-6 gap-4">
+  <div class="bg-white rounded-xl shadow-sm border border-white-edgar w-full flex flex-col sm:flex-row p-4 gap-4">
    <!-- Record button -->
    <button id="recordBtn"
     class="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition-all duration-200 disabled:cursor-not-allowed">
@@ -32,7 +31,6 @@
   <div id="formPanel" class="hidden bg-white rounded-2xl p-5 flex-1">
    <!-- Mode choosed text & information -->
    <div id="choosedModePanel" class="text-center space-y-2 mb-6">
-    <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-black">Great choice!</h1>
     <h3 id="choosedMode" class="text-sm sm:text-lg md:text-xl font-bold text-hot-shot"></h3>
     <p id="descriptionChoosedMode" class="text-sm sm:text-base md:text-md text-after-midnight font-mono"></p>
    </div>

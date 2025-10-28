@@ -1,6 +1,5 @@
-<div class="overflow-x-hidden">
- <form method="POST" action="{{ url('creator/new/add/stream') }}" id="formStreaming" class="ajax-form hidden"
-  novalidate>
+<div class="overflow-x-hidden" id="formStreaming">
+ <form method="POST" action="{{ url('creator/new/add/stream') }}" class="ajax-form" novalidate>
   @csrf
   <div>
    <x-input-label for="session_code" :value="__('Code Access')" :required="true">
