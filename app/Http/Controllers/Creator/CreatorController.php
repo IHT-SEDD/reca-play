@@ -192,6 +192,11 @@ class CreatorController extends Controller
 
         $sessionCode = $this->getValidSessionCode($accessCode, $userId, $scannedQrData->qr_code_id, $data);
 
+        $data->update([
+            'user_id' => $userId,
+            'session_token' => $sessionToken,
+        ]);
+
         RecordingLog::where('recording_id', $data->id)
             ->update([
                 'qr_code' => $scannedQrData?->qrCode?->code,
