@@ -103,65 +103,87 @@ formRequestInit = () => {
                 let formData = new FormData(this);
                 let targetTable = $form.data("datatable");
 
-                $.ajax({
-                    url: actionUrl,
-                    method: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        "X-CSRF-TOKEN": $form
-                            .find('input[name="_token"]')
-                            .val(),
-                        Accept: "application/json",
-                    },
-                    success: function (result) {
-                        if (result.status === "success") {
-                            notyf.success(result.message);
-                            resetForm($form);
+                showLoading();
 
-                            if (
-                                targetTable &&
-                                $.fn.DataTable.isDataTable(targetTable)
-                            ) {
-                                $(targetTable)
-                                    .DataTable()
-                                    .ajax.reload(null, false);
-                            }
-                            if (result.redirect) {
-                                window.location.href = result.redirect;
-                            }
-                        } else if (result.status === "error") {
-                            if (!handleSessionCodeError(result.message)) {
-                                notyf.error(
-                                    result.message ||
+                setTimeout(() => {
+                    $.ajax({
+                        url: actionUrl,
+                        method: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        headers: {
+                            "X-CSRF-TOKEN": $form
+                                .find('input[name="_token"]')
+                                .val(),
+                            Accept: "application/json",
+                        },
+                        success: function (result) {
+                            hideLoading();
+
+                            setTimeout(() => {
+                                if (result.status === "success") {
+                                    notyf.success(result.message);
+                                    resetForm($form);
+
+                                    if (
+                                        targetTable &&
+                                        $.fn.DataTable.isDataTable(targetTable)
+                                    ) {
+                                        $(targetTable)
+                                            .DataTable()
+                                            .ajax.reload(null, false);
+                                    }
+                                    if (result.redirect) {
+                                        window.location.href = result.redirect;
+                                    }
+                                } else if (result.status === "error") {
+                                    if (
+                                        !handleSessionCodeError(result.message)
+                                    ) {
+                                        notyf.error(
+                                            result.message ||
+                                                "An error occurred. Please try again."
+                                        );
+                                    }
+                                } else {
+                                    console.error(result.message);
+                                    notyf.error(
                                         "An error occurred. Please try again."
-                                );
-                            }
-                        } else {
-                            console.error(result.message);
-                            notyf.error("An error occurred. Please try again.");
-                        }
-                    },
-                    error: function (xhr) {
-                        if (xhr.status === 422) {
-                            showValidationErrors(
-                                $form,
-                                xhr.responseJSON.errors
-                            );
-                            notyf.error("Please check the form for errors.");
-                        } else {
-                            const response = xhr.responseJSON;
-                            if (!handleSessionCodeError(response?.message)) {
-                                notyf.error(
-                                    response?.message ||
-                                        "An error occurred. Please try again."
-                                );
-                            }
-                            console.error(xhr);
-                        }
-                    },
-                });
+                                    );
+                                }
+                            }, 150);
+                        },
+                        error: function (xhr) {
+                            hideLoading();
+
+                            setTimeout(() => {
+                                if (xhr.status === 422) {
+                                    showValidationErrors(
+                                        $form,
+                                        xhr.responseJSON.errors
+                                    );
+                                    notyf.error(
+                                        "Please check the form for errors."
+                                    );
+                                } else {
+                                    const response = xhr.responseJSON;
+                                    if (
+                                        !handleSessionCodeError(
+                                            response?.message
+                                        )
+                                    ) {
+                                        notyf.error(
+                                            response?.message ||
+                                                "An error occurred. Please try again."
+                                        );
+                                    }
+                                    console.error(xhr);
+                                }
+                            }, 150);
+                        },
+                    });
+                }, 200);
             });
         });
     }

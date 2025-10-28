@@ -3,17 +3,29 @@ let fetchData,
     toggleState,
     currentState,
     lastActivityTable,
-    generateCode;
+    accessCodeTable,
+    generateCode,
+    handlerFormAddAccessCode,
+    startRecording;
 
+// ======== Initialize component ::begin ========
 const pathParts = window.location.pathname.split("/");
 const hashedId = pathParts[pathParts.length - 1];
 
+const typeInput = $("#type");
+const recordInputWrapper = $("#record_inputs");
+const streamInputWrapper = $("#stream_inputs");
+// ======== Initialize component ::end ========
+
+// ======== Ajax CSRF token setup ::begin ========
 $.ajaxSetup({
     headers: {
         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
     },
 });
+// ======== Ajax CSRF token setup ::end ========
 
+// ======== Fetch data detail field ========
 fetchData = (hashedId) => {
     $.ajax({
         url: `/venue-management/detail/data/${hashedId}`,
@@ -29,6 +41,7 @@ fetchData = (hashedId) => {
     });
 };
 
+// ======== Populate fetched data to frontend ========
 populateData = (res) => {
     const activeClass = "bg-base-200 text-hot-shot";
     const inactiveClass = "bg-transparent text-after-midnight";
@@ -63,12 +76,14 @@ populateData = (res) => {
     }
 };
 
+// ======== Toggle status field ========
 toggleState = () => {
     $.ajax({
         url: `/venue-management/detail/status/update/${hashedId}`,
         method: "POST",
         dataType: "json",
         success: function (res) {
+            hideLoading();
             currentState = res.field.is_active;
 
             const activeClass = "bg-base-200 text-hot-shot";
@@ -94,12 +109,14 @@ toggleState = () => {
             notyf.success(res.message);
         },
         error: function (xhr, status, error) {
+            hideLoading();
             console.error("Failed to toggle state:", error);
             notyf.error("Failed to toggle state! Please try again later.");
         },
     });
 };
 
+// ======== Last activity datatable ========
 lastActivityTable = (hashedId) => {
     initCustomDatatable({
         tableId: "last-activity-table",
@@ -144,71 +161,222 @@ lastActivityTable = (hashedId) => {
     });
 };
 
-generateCode = () => {
-    const duration = $("#duration").val().trim();
-
-    if (!duration || isNaN(duration)) {
-        notyf.error("Please enter a valid duration (numbers only).");
-        return;
-    }
-
-    $.ajax({
-        url: `/venue-management/detail/code-access/generate/${hashedId}`,
-        method: "POST",
-        dataType: "json",
-        data: { duration: duration },
-        success: function (res) {
-            if (res.success) {
-                notyf.success(
-                    res.message || "Access code generated successfully"
-                );
-                $("#access_code").text(res.generated_code);
-
-                const modal = document.getElementById("access_code_modal");
-                if (modal) {
-                    modal.showModal();
-                }
-            } else {
-                notyf.error(res.message || "Failed to generate access code!");
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error("Failed to generate access code:", error);
-            notyf.error(
-                "Failed to generate access code! Please try again later."
-            );
-        },
+// ======== Access code datatable ========
+accessCodeTable = (hashedId) => {
+    initCustomDatatable({
+        tableId: "access-code-table",
+        tableDataUrl: `/venue-management/detail/access-code/data/${hashedId}`,
+        tableColumns: [
+            { data: "DT_RowIndex", name: "DT_RowIndex" },
+            {
+                data: "user.name",
+                name: "user.name",
+                orderable: false,
+                render: (data, type, row) => {
+                    return data ? data : "-";
+                },
+            },
+            {
+                data: "qr_code.code",
+                name: "qr_code.code",
+                orderable: false,
+                render: (data, type, row) => {
+                    return data ? data : "-";
+                },
+            },
+            { data: "venue.name", name: "venue.name", orderable: false },
+            { data: "field.name", name: "field.name", orderable: false },
+            { data: "type", name: "type", orderable: false },
+            { data: "status", name: "status", orderable: false },
+            {
+                data: "generated_code",
+                name: "generated_code",
+                orderable: false,
+            },
+            {
+                data: "start_time",
+                name: "start_time",
+                orderable: false,
+                render: (data) => dayjs(data).format("YYYY-MM-DD HH:mm:ss"),
+            },
+            {
+                data: "end_time",
+                name: "end_time",
+                orderable: false,
+                render: (data) => dayjs(data).format("YYYY-MM-DD HH:mm:ss"),
+            },
+            {
+                data: "duration",
+                name: "duration",
+                orderable: false,
+                render: function (data) {
+                    return data + " Min";
+                },
+            },
+            {
+                data: "expired_at",
+                name: "expired_at",
+                searchable: false,
+                orderable: false,
+                render: (data) => dayjs(data).format("YYYY-MM-DD HH:mm:ss"),
+            },
+            {
+                data: "generated_by.name",
+                name: "generated_by.name",
+                orderable: false,
+            },
+            {
+                data: "created_at",
+                name: "created_at",
+                searchable: false,
+                orderable: false,
+                render: (data) => dayjs(data).format("YYYY-MM-DD HH:mm:ss"),
+            },
+            {
+                data: "id",
+                name: "id",
+                searchable: false,
+                orderable: false,
+                render: function (data) {
+                    return `
+                        <div class="flex flex-col gap-2 w-full items-stretch">
+                            <button
+                                data-id="${data}" 
+                                class="start_record_btn rounded-lg px-3 py-2 text-xs text-white font-medium bg-temple-orange hover:bg-hot-shot w-full text-center">
+                                Record
+                            </button>
+                            <button
+                                data-id="${data}" 
+                                class="stop_record_btn rounded-lg px-3 py-2 text-xs text-white font-medium bg-candy-heart hover:bg-vivaldi-red w-full text-center">
+                                Stop
+                            </button>
+                        </div>
+                    `;
+                },
+            },
+        ],
     });
 };
 
-openModalGenerateCode = () => {
-    const modal = document.getElementById("access_code_modal");
-    if (modal) {
-        modal.showModal();
+// ======== Form add access code handler ========
+handlerFormAddAccessCode = () => {
+    $(document).on("change", "input[name='type']", function () {
+        const selectedType = $(this).val();
+        if (selectedType === "record") {
+            $("#name_label").text("Video Name");
+        } else if (selectedType === "stream") {
+            $("#name_label").text("Stream Name");
+        }
+    });
+
+    const defaultType = $("input[name='type']:checked").val();
+    if (defaultType === "record") {
+        $("#name_label").text("Video Name");
+    } else if (defaultType === "stream") {
+        $("#name_label").text("Stream Name");
     }
 };
 
-$(document).on("click", "#copy_code_btn", function () {
-    const code = $("#access_code").text().trim();
-    navigator.clipboard.writeText(code);
-    notyf.success("Code copied to clipboard!");
-});
+// ======== Start recording function ========
+startRecording = (hashedId) => {
+    $(document).on("click", ".start_record_btn", function () {
+        const sessionCodeId = $(this).data("id");
+        console.log("Start record button clicked, ID:", sessionCodeId);
+
+        showLoading();
+
+        setTimeout(() => {
+            $.ajax({
+                url: `/venue-management/detail/handle/start-record/${hashedId}`,
+                method: "POST",
+                data: { sessionCodeId: sessionCodeId },
+                dataType: "json",
+                success: function (res) {
+                    hideLoading();
+                    notyf.success(res.message);
+                },
+                error: function (xhr, status, error) {
+                    hideLoading();
+                    notyf.error("Failed to start recording. Please try again.");
+                },
+            });
+        }, 300);
+    });
+};
 
 document.addEventListener("DOMContentLoaded", function () {
     fetchData(hashedId);
     lastActivityTable(hashedId);
+    accessCodeTable(hashedId);
 
     $("#toggle_button").on("click", function () {
-        toggleState();
-    });
-    $("#generate_code_btn").on("click", function () {
-        generateCode();
-    });
-    $("#code_access_btn").on("click", function () {
-        openModalGenerateCode();
+        showLoading();
+
+        setTimeout(() => {
+            toggleState();
+        }, 300);
     });
 
-    $("#duration").on("input", function () {
-        this.value = this.value.replace(/[^0-9]/g, "");
+    const startTimePicker = flatpickr(".timepicker, #start_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        minTime: dayjs().format("HH:mm"),
+        onChange: function (selectedDates) {
+            if (!selectedDates[0]) return;
+            const minEndTime = dayjs(selectedDates[0])
+                .add(5, "minute")
+                .format("HH:mm");
+
+            if (endTimePicker) {
+                endTimePicker.set("minTime", minEndTime);
+
+                const currentEnd = endTimePicker.selectedDates[0];
+                if (
+                    currentEnd &&
+                    dayjs(currentEnd).isBefore(
+                        dayjs(selectedDates[0]).add(5, "minute")
+                    )
+                ) {
+                    endTimePicker.clear();
+                }
+            }
+        },
     });
+
+    const endTimePicker = flatpickr("#end_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        minTime: dayjs().add(5, "minute").format("HH:mm"),
+    });
+
+    FormValidation.init({
+        rules: {
+            name: { required: true, min: 3 },
+            type: { required: true },
+            start_time: { required: true },
+            end_time: { required: true },
+        },
+        messages: {
+            name: {
+                required: "Name cannot be empty.",
+                min: "Name must be at least 3 characters.",
+            },
+            type: {
+                required: "Type is required.",
+            },
+            start_time: {
+                required: "Start time is required.",
+            },
+            end_time: {
+                required: "End time is required.",
+            },
+        },
+    });
+
+    handlerFormAddAccessCode();
+    startRecording(hashedId);
 });

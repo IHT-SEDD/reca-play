@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\VenueManagement;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\VenueManagement\AccessCode\StoreAccessCodeRequest;
 use App\Models\Master\Field;
 use App\Models\Master\Venue;
 use App\Models\Record\Recording;
+use App\Models\Record\RecordingLog;
 use App\Models\Session\SessionCode;
+use App\Models\Session\SessionLog;
 use App\Services\CustomDatatable\CustomDatatableService;
 use Illuminate\Support\Facades\URL;
 use Vinkla\Hashids\Facades\Hashids;
@@ -14,14 +17,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class VenueManagementController extends Controller
 {
+    // ===============================
+    // Main View
+    // ===============================
     public function index()
     {
         return view('pages.venue.management.index');
     }
 
+    // ===============================
+    // Datatable Field List
+    // ===============================
     public function fieldList(Request $request)
     {
         $user = Auth::user();
@@ -37,6 +47,9 @@ class VenueManagementController extends Controller
         );
     }
 
+    // ===============================
+    // Data Statistic Venue
+    // ===============================
     public function data()
     {
         $user = Auth::user();
@@ -57,11 +70,17 @@ class VenueManagementController extends Controller
         ]);
     }
 
+    // ===============================
+    // Detail Field View
+    // ===============================
     public function detailFieldPage($hashedId)
     {
         return view('pages.venue.management.detail-field', compact('hashedId'));
     }
 
+    // ===============================
+    // Data Statistic Field Detail
+    // ===============================
     public function detailFieldData($hashedId)
     {
         $decoded  = Hashids::connection('main')->decode($hashedId);
@@ -96,6 +115,9 @@ class VenueManagementController extends Controller
         ]);
     }
 
+    // ===============================
+    // Data Last Activity Field
+    // ===============================
     public function lastActivity(Request $request, $hashedId)
     {
         $decoded  = Hashids::connection('main')->decode($hashedId);
@@ -118,6 +140,33 @@ class VenueManagementController extends Controller
         );
     }
 
+    // ===============================
+    // Datatable Access Code
+    // ===============================
+    public function accessCode(Request $request, $hashedId)
+    {
+        $decoded  = Hashids::connection('main')->decode($hashedId);
+        if (empty($decoded)) {
+            return response()->json(['error' => 'Invalid ID'], 400);
+        }
+
+        $fieldId = $decoded[0];
+
+        $lastActivityData = SessionCode::with(['user', 'qrCode', 'venue', 'field', 'recording', 'logs', 'generatedBy'])
+            ->where('field_id', $fieldId)
+            ->orderByDesc('created_at');
+
+        return CustomDatatableService::make(
+            $lastActivityData,
+            $request,
+            null,
+            null,
+        );
+    }
+
+    // ===============================
+    // Update Status Field
+    // ===============================
     public function updateStatusActive($hashedId)
     {
         try {
@@ -156,69 +205,119 @@ class VenueManagementController extends Controller
         }
     }
 
-    public function generateAccessCode($hashedId)
+    // ===============================
+    // Add New Access Code
+    // ===============================
+    public function newAccessCode(Request $request, $hashedId)
     {
+        $decoded  = Hashids::connection('main')->decode($hashedId);
+        if (empty($decoded)) {
+            return response()->json(['error' => 'Invalid ID'], 400);
+        }
+
+        $fieldId = $decoded[0];
+        $field = Field::select('id', 'venue_id', 'name')->findOrFail($fieldId);
+        $venue = $field->venue()->select('id', 'name')->first();
+
+        $validated = $this->validateAccessCode($request);
+
+        // dd($validated);
         try {
             DB::beginTransaction();
-            $decoded  = Hashids::connection('main')->decode($hashedId);
-            if (empty($decoded)) {
-                return response()->json(['error' => 'Invalid ID'], 400);
-            }
 
-            $fieldId = $decoded[0];
-            $field = Field::select('id', 'venue_id', 'name')->findOrFail($fieldId);
-            $venue = $field->venue()->select('id', 'name')->first();
-
-            $duration = request()->input('duration');
-            if (!$duration || !is_numeric($duration)) {
-                return response()->json(['error' => 'Invalid duration value'], 422);
-            }
-
-            $maxAttempts = 5;
-            $attempt = 0;
-            $generatedCode = null;
+            $timeData = $this->calculateDuration(
+                $validated['start_time'],
+                $validated['end_time']
+            );
 
             do {
-                if ($attempt++ > $maxAttempts) {
-                    throw new \Exception('Failed to generate unique access code after several attempts.');
-                }
-
-                $generatedCode = $this->generateCode($venue->name ?? '', $field->name ?? '', $duration);
+                $generatedCode = $this->generateAccessCodeString($venue->name ?? '', $field->name ?? '', $timeData['duration']);
             } while (SessionCode::where('generated_code', $generatedCode)->exists());
 
             $sessionCode = SessionCode::create([
-                'field_id' => $fieldId,
                 'venue_id' => $field->venue_id,
+                'field_id' => $fieldId,
                 'generate_by_user_id' => Auth::id(),
+                'type' => $validated['type'],
                 'status' => 'active',
                 'generated_code' => $generatedCode,
-                'duration' => $duration,
-                'expired_at' => Carbon::now()->addDay(),
+                'name' => $validated['name'],
+                'start_time' => $timeData['start_time'],
+                'end_time' => $timeData['end_time'],
+                'duration' => $timeData['duration'],
+                'expired_at' => $timeData['expired_at'],
             ]);
 
             DB::commit();
 
             return response()->json([
-                'success' => true,
-                'message' => 'Access code generated successfully',
-                'generated_code' => $sessionCode->generated_code,
+                'status' => 'success',
+                'message' => 'Session code saved successfully',
+                'data' => [
+                    'generated_code' => $sessionCode->generated_code,
+                    'duration' => $timeData['duration'],
+                    'expired_at' => $timeData['expired_at'],
+                ],
             ]);
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             DB::rollback();
 
-            if (str_contains($th->getMessage(), 'Duplicate entry')) {
-                return response()->json([
-                    'error' => 'Duplicate code detected. Please try again.',
-                ], 409);
-            }
             return response()->json([
-                'error' => 'Failed to generate access code',
-                'message' => $th->getMessage()
+                'status'  => 'error',
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
-    private function generateCode(string $venueName, string $fieldName, string $duration): string
+    // ===============================
+    // (private) Validate Inputs Access Code Form
+    // ===============================
+    private function validateAccessCode(Request $request): array
+    {
+        return $request->validate([
+            'type' => ['required', 'string'],
+            'name' => ['required', 'string', 'max:255', 'min:3'],
+            'start_time' => ['required'],
+            'end_time' => ['required'],
+        ], [
+            'name.required' => 'Name cannot be empty.',
+            'name.max' => 'Name maximum is 255 characters.',
+            'name.min' => 'Name minimum is 3 characters.',
+            'type.required' => 'Type cannot be empty.',
+            'start_time.required' => 'Start time cannot be empty.',
+            'end_time.required' => 'End time cannot be empty.',
+        ]);
+    }
+
+    // ===============================
+    // (private) Calculate Duration
+    // ===============================
+    private function calculateDuration(string $startTime, string $endTime): array
+    {
+        $today = Carbon::today();
+
+        $start = Carbon::parse($today->format('Y-m-d') . ' ' . $startTime);
+        $end = Carbon::parse($today->format('Y-m-d') . ' ' . $endTime);
+
+        if ($end->lessThan($start)) {
+            $end->addDay();
+        }
+
+        $duration = (int) $start->diffInMinutes($end);
+        $expiredAt = $end->toDateTimeString();
+
+        return [
+            'duration' => $duration,
+            'expired_at' => $expiredAt,
+            'start_time' => $start->toDateTimeString(),
+            'end_time' => $end->toDateTimeString(),
+        ];
+    }
+
+    // ===============================
+    // (private) Generate Access Code
+    // ===============================
+    private function generateAccessCodeString(string $venueName, string $fieldName, int $duration): string
     {
         $venueInitial = $this->getInitial($venueName);
         $fieldInitial = $this->getInitial($fieldName);
@@ -229,7 +328,6 @@ class VenueManagementController extends Controller
         }
 
         $number = random_int(0, 9);
-
         $mixed = str_shuffle($letters . $number);
 
         $durationPart = str_pad($duration, 2, '0', STR_PAD_LEFT);
@@ -237,6 +335,9 @@ class VenueManagementController extends Controller
         return "{$venueInitial}{$fieldInitial}{$durationPart}{$mixed}";
     }
 
+    // ===============================
+    // (private) Get Initial Field & Venue
+    // ===============================
     private function getInitial(string $name): string
     {
         $cleanName = strtoupper(preg_replace('/[^A-Z ]/i', '', $name));
@@ -249,5 +350,77 @@ class VenueManagementController extends Controller
         }
 
         return str_pad($initial, 2, 'X');
+    }
+
+    // ===============================
+    // Start Recording
+    // ===============================
+    public function startRecording(Request $request, $hashedId)
+    {
+        $decoded  = Hashids::connection('main')->decode($hashedId);
+        if (empty($decoded)) {
+            return response()->json(['error' => 'Invalid ID'], 400);
+        }
+
+        $fieldId = $decoded[0];
+        $field = Field::select('id', 'venue_id', 'name')->findOrFail($fieldId);
+        $venue = $field->venue()->select('id', 'name')->first();
+
+        $sessionCodeId = $request->input('sessionCodeId');
+
+        try {
+            DB::beginTransaction();
+
+            $sessionCode = SessionCode::findOrFail($sessionCodeId);
+            $message = '';
+
+            if ($sessionCode->type === 'record') {
+                // $cameraService = app(\App\Services\Camera\CameraControlService::class);
+                // $cameraService->initialize($fieldId);
+
+                $record = Recording::create([
+                    'field_id' => $fieldId,
+                    'session_code_id' => $sessionCode->id,
+                    'video_name' => $sessionCode->name,
+                    'duration' => $sessionCode->duration,
+                    'start_time' => $sessionCode->start_time,
+                    'end_time' => $sessionCode->end_time,
+                    'status' => 'recording',
+                ]);
+
+                RecordingLog::create([
+                    'recording_id' => $record->id,
+                    'status' => 'record_start',
+                ]);
+
+                // if ($cameraService->startRecording()) {
+                //     Log::channel('camera-record')->info('[RECORD] Recording started', [
+                //         'recording_id' => $record->id,
+                //         'field_id' => $fieldId,
+                //         'timestamp' => Carbon::now(),
+                //     ]);
+                // } else {
+                //     throw new \Exception("Failed to start recording");
+                // }
+
+                $message = 'Record successfully started!';
+            } else if ($sessionCode->type === 'stream') {
+                // Logic livestream here
+                $message = 'Stream successfully started!';
+            }
+
+            DB::commit();
+            return response()->json([
+                'status'  => 'success',
+                'message' => $message,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

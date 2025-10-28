@@ -73,12 +73,11 @@ checkScannedQr = () => {
             "X-Requested-With": "XMLHttpRequest",
         },
         success: function (data, textStatus, xhr) {
-            console.log(data);
-            
             if (data?.status === "error") {
                 notyf.error(data.message);
-            } else {
-                console.log(data.message);
+                setTimeout(() => {
+                    window.location.href = "/my-recording/";
+                }, 2500);
             }
         },
         error: function (xhr, status, error) {
