@@ -63,39 +63,55 @@ class RecordController extends Controller
                 ->where('user_id', $userId)
                 ->first();
 
+            if (!$sessionCode) {
+                return $this->errorResponse('Session code not found or invalid.', null, 404);
+            }
+
             $modelClass = $this->getModelService->getData($type);
             if (!$modelClass || !class_exists($modelClass)) {
                 return $this->errorResponse("Model for {$type} not found", null, 500);
             }
 
-            $data = $modelClass::where('id', $sessionCode->recording_id)
-                ->where('user_id', $userId)
-                ->where('field_id', $sessionCode->field_id)
-                ->where('session_code_id', $sessionCode->id)
-                ->first();
-            $fieldId = $data->field_id;
-
-            if (!$data) {
-                return $this->errorResponse('Data not found', null, 404);
-            }
-
-            $recordingId = $data->id;
-            if (!$recordingId) {
-                return $this->errorResponse('No record data found in session', url('/my-recording'));
-            }
-
-            // Auto stop if duration exceeded
             if ($type === 'record') {
+                $data = $modelClass::where('id', $sessionCode->recording_id)
+                    ->where('user_id', $userId)
+                    ->where('field_id', $sessionCode->field_id)
+                    ->where('session_code_id', $sessionCode->id)
+                    ->first();
+
+                if (!$data) {
+                    return $this->errorResponse('Recording data not found.', null, 404);
+                }
+
+                $fieldId = $data->field_id;
+                // dd($fieldId);
+                $recordingId = $data->id;
+
+                if (!$recordingId) {
+                    return $this->errorResponse('No record data found in session.', url('/my-recording'));
+                }
+
                 $autoStopResponse = $this->handleAutoStop($data, $fieldId);
-                if ($autoStopResponse) return $autoStopResponse;
+                if ($autoStopResponse) {
+                    return $autoStopResponse;
+                }
+
+                $cameraData = Camera::where('field_id', $fieldId)->get();
+
+                DB::beginTransaction();
+
+                $streamUrl = $this->livePreview($fieldId);
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 'success',
+                    'recordData' => $data,
+                    'scannedQrData' => $scannedQrData,
+                    'cameraData' => $cameraData,
+                    'streamUrl' => $streamUrl,
+                ]);
             }
-
-            // Camera list
-            $cameraData = Camera::where('field_id', $fieldId)->get();
-
-            DB::beginTransaction();
-
-            $streamUrl = $this->livePreview($fieldId);
 
             // $session = $this->checkSession();
             // $scannedQrData = $session['qrSession'];
@@ -122,15 +138,7 @@ class RecordController extends Controller
             //     }
             // }
 
-            DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'recordData' => $data,
-                'scannedQrData' => $scannedQrData,
-                'cameraData' => $cameraData,
-                'streamUrl' => $streamUrl,
-            ]);
+            return $this->errorResponse("Invalid type parameter.", null, 400);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::channel('camera-record')->error('[PREPARE RECORDING] Error', [

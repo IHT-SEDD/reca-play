@@ -96,7 +96,7 @@ getDataRecord = () => {
 
             if (res?.status === "error") {
                 notyf.error(res.message);
-                const redirectUrl = res.redirect || "/my-recording";
+                const redirectUrl = res.redirect || "/";
                 setTimeout(() => {
                     window.location.href = redirectUrl;
                 }, 1200);
@@ -144,7 +144,7 @@ getDataRecord = () => {
         },
         error: function (xhr, status, error) {
             console.error("AJAX error:", error, xhr.responseText);
-            window.location.href = "/my-recording";
+            window.location.href = "/";
         },
     });
 };
