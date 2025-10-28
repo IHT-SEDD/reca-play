@@ -266,7 +266,7 @@ stopRecordingManual = () => {
         stopLivePreview();
 
         $.ajax({
-            url: "/creator/record/stop",
+            url: "/creator/record/stop?type=record",
             method: "POST",
             headers: {
                 "X-Requested-With": "XMLHttpRequest",
