@@ -36,14 +36,14 @@ class ExpireSessionCodes extends Command
             if ($expiredCount > 0) {
                 $message = "✅ {$expiredCount} session code(s) marked as expired at " . now();
                 $this->info($message);
-                Log::channel('daily')->info('[ExpireSessionCodes] ' . $message);
+                Log::channel('expired-session')->info('[ExpireSessionCodes] ' . $message);
             } else {
                 $message = "ℹ️ No session codes to expire at " . now();
                 $this->info($message);
-                Log::channel('daily')->info('[ExpireSessionCodes] ' . $message);
+                Log::channel('expired-session')->info('[ExpireSessionCodes] ' . $message);
             }
         } catch (\Throwable $e) {
-            Log::channel('daily')->error('[ExpireSessionCodes] Failed to update session codes', [
+            Log::channel('expired-session')->error('[ExpireSessionCodes] Failed to update session codes', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
