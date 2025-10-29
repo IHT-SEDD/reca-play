@@ -36,7 +36,7 @@ function initCustomDatatable({
                                 'focus:ring-0 focus:outline-none font-medium rounded-xl text-xs md:text-sm p-3 text-center inline-flex items-center transition-colors',
                                 open
                                     ? 'bg-hot-shot text-white-owl dark:text-eerie-black'
-                                    : 'bg-white-owl hover:text-hot-shot text-after-midnight dark:text-white-owl dark:hover:text-hot-shot'
+                                    : 'bg-white-owl hover:text-hot-shot text-color-default dark:hover:text-hot-shot'
                             ]"
                             type="button">
                             <i data-lucide="ellipsis-vertical" class="w-4 h-4"></i>
@@ -145,9 +145,8 @@ function initCustomDatatable({
             </div>
         </div>
     `;
-}
-
-    },
+                },
+            },
         ],
 
         language: {

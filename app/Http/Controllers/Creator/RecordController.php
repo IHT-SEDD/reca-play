@@ -4,18 +4,16 @@ namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\Camera\GetPlaybackUrisJob;
-use App\Jobs\Camera\InsertRecordedVideoJob;
-use App\Jobs\Camera\ThumbnailVideoJob;
-use App\Jobs\Camera\TrimVideoJob;
 use App\Models\Master\Camera;
-use App\Models\Record\RecordedVideo;
-use App\Models\Record\Recording;
 use App\Models\Record\RecordingLog;
 use App\Models\Session\QrSession;
 use App\Models\Session\RecordSession;
 use App\Models\Session\SessionCode;
 use App\Models\Session\SessionLog;
 use App\Services\Support\GetModelService;
+use App\Services\Support\ResponseHelperService;
+use App\Services\Support\SessionHelperService;
+use App\Enums\SessionCodeStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,34 +21,41 @@ use Illuminate\Support\Facades\Log;
 
 class RecordController extends Controller
 {
+    // ============================================================
+    // Init service
+    // ============================================================
     protected GetModelService $getModelService;
+    protected SessionHelperService $sessionHelperService;
+    protected ResponseHelperService $responseHelperService;
 
-    // ===============================
-    // INIT SERVICE
-    // ===============================
-    public function __construct(GetModelService $getModelService)
-    {
+    public function __construct(
+        GetModelService $getModelService,
+        SessionHelperService $sessionHelperService,
+        ResponseHelperService $responseHelperService
+    ) {
         $this->getModelService = $getModelService;
+        $this->sessionHelperService = $sessionHelperService;
+        $this->responseHelperService = $responseHelperService;
     }
 
-    // ===============================
-    // SHOW RECORD PAGE
-    // ===============================
+    // ============================================================
+    // Show view of record
+    // ============================================================
     public function recordPage()
     {
         return view('pages.creator.record.index');
     }
 
-    // ===============================
-    // CHECK RECORD DATA OR STREAM
-    // ===============================
+    // ============================================================
+    // Check data record or stream
+    // ============================================================
     public function checkData(Request $request)
     {
         $userId = Auth::id();
         $type = $request->query('type');
         $sessionToken = session('qr_session_token');
         $sessionQrToken = session('qr_token');
-        $scannedQrData = $this->getActiveQrSession();
+        $scannedQrData = $this->sessionHelperService->getActiveQrSession();
 
         Log::channel('camera-record')->info('[PREPARE RECORDING] Start checkData', [
             'user_id' => $userId,
@@ -64,12 +69,17 @@ class RecordController extends Controller
                 ->first();
 
             if (!$sessionCode) {
-                return $this->errorResponse('Session code not found or invalid.', null, 404);
+                return $this->responseHelperService->errorResponse(
+                    'Session code not found or invalid.',
+                    404
+                );
             }
 
             $modelClass = $this->getModelService->getData($type);
             if (!$modelClass || !class_exists($modelClass)) {
-                return $this->errorResponse("Model for {$type} not found", null, 500);
+                if (!$modelClass || !class_exists($modelClass)) {
+                    throw new \Exception("Model for {$type} not found");
+                }
             }
 
             if ($type === 'record') {
@@ -80,15 +90,20 @@ class RecordController extends Controller
                     ->first();
 
                 if (!$data) {
-                    return $this->errorResponse('Recording data not found.', null, 404);
+                    return $this->responseHelperService->errorResponse(
+                        'Recording data not found.',
+                        404
+                    );
                 }
 
                 $fieldId = $data->field_id;
-                // dd($fieldId);
                 $recordingId = $data->id;
 
                 if (!$recordingId) {
-                    return $this->errorResponse('No record data found in session.', url('/my-recording'));
+                    return $this->responseHelperService->errorResponse(
+                        message: 'No record data found in session.',
+                        redirect: url('/my-recording')
+                    );
                 }
 
                 $autoStopResponse = $this->handleAutoStop($data, $fieldId);
@@ -104,56 +119,48 @@ class RecordController extends Controller
 
                 DB::commit();
 
-                return response()->json([
-                    'status' => 'success',
-                    'recordData' => $data,
-                    'scannedQrData' => $scannedQrData,
-                    'cameraData' => $cameraData,
-                    'streamUrl' => $streamUrl,
-                ]);
+                return $this->responseHelperService->successResponse(
+                    message: 'Record data fetched successfully.',
+                    data: [
+                        'recordData' => $data,
+                        'scannedQrData' => $scannedQrData,
+                        'cameraData' => $cameraData,
+                        'streamUrl' => $streamUrl,
+                    ]
+                );
             }
 
-            // $session = $this->checkSession();
-            // $scannedQrData = $session['qrSession'];
-            // $recordSession = $session['recordSession'];
-            // $sessionCodeId = $session['sessionCodeId'];
-            // $fieldId = $session['fieldId'];
-            // $sessionToken = $session['sessionToken'];
-
-
-
-
-            // Start recording if not started
-            // if ($type === 'record' && empty($data->start_time)) {
-            //     $cameraService = $this->initializeCameraService($fieldId);
-
-            //     if ($cameraService->startRecording()) {
-            //         $this->updateRecordingStart($data, $sessionToken, $userId);
-            //         Log::channel('camera-record')->info('[RECORD] Recording started', [
-            //             'recording_id' => $data->id,
-            //             'field_id' => $fieldId,
-            //         ]);
-            //     } else {
-            //         throw new \Exception("Failed to start recording");
-            //     }
-            // }
-
-            return $this->errorResponse("Invalid type parameter.", null, 400);
+            return $this->responseHelperService->errorResponse(
+                "Invalid type parameter.",
+                400
+            );
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::channel('camera-record')->error('[PREPARE RECORDING] Error', [
                 'error' => $e->getMessage()
             ]);
-            return $this->errorResponse($e->getMessage(), null, 500);
+            return $this->responseHelperService->errorResponse(
+                $e->getMessage(),
+                500
+            );
         }
     }
 
-    // ===============================
-    // STOP RECORDING (async queued jobs)
-    // ===============================
+    // ============================================================
+    // Stop recording (async queued jobs)
+    // ============================================================
     public function stopRecording(Request $request)
     {
         $userId = Auth::id();
+        $type = $request->query('type');
+
+        if (empty($type)) {
+            return $this->responseHelperService->errorResponse(
+                'Missing required parameter: type.',
+                400
+            );
+        }
+
         $sessionToken = session('qr_session_token');
 
         Log::channel('camera-record')->info("[STOP RECORDING] Start stopRecording", [
@@ -162,73 +169,87 @@ class RecordController extends Controller
         ]);
 
         try {
-            $session = $this->checkSession();
-            $recordSession = $session['recordSession'];
-            $sessionCodeId = $session['sessionCodeId'];
-            $fieldId = $session['fieldId'];
-            $sessionToken = $session['sessionToken'];
+            $sessionCode = SessionCode::where('session_token', $sessionToken)
+                ->where('user_id', $userId)
+                ->first();
 
-            $recordingId = $recordSession?->recording_id;
-            if (!$recordingId) {
-                return $this->errorResponse('No record data found in session');
+            if (!$sessionCode) {
+                return $this->responseHelperService->errorResponse(
+                    'Session code not found or invalid.',
+                    404
+                );
             }
 
-            $recording = Recording::find($recordingId);
-            if (!$recording) {
-                return $this->errorResponse('Recording not found', null, 404);
+            $modelClass = $this->getModelService->getData($type);
+            if (!$modelClass || !class_exists($modelClass)) {
+                DB::rollBack();
+                if (!$modelClass || !class_exists($modelClass)) {
+                    throw new \Exception("Model for {$type} not found");
+                }
             }
 
-            if (in_array($recording->status, ['done', 'processing'])) {
-                Log::channel('camera-record')->warning("[STOP RECORDING] Recording already processed or in progress", [
-                    'recording_id' => $recording->id,
-                    'current_status' => $recording->status,
-                ]);
+            if ($type === 'record') {
+                $data = $modelClass::where('id', $sessionCode->recording_id)
+                    ->where('user_id', $userId)
+                    ->where('field_id', $sessionCode->field_id)
+                    ->where('session_code_id', $sessionCode->id)
+                    ->first();
 
-                return response()->json([
-                    'status' => 'skipped',
-                    'message' => 'Recording already processed or still being processed.',
-                    'recordData' => $recording,
-                ]);
+                if (!$data) {
+                    return $this->responseHelperService->errorResponse(
+                        'Recording data not found.',
+                        404
+                    );
+                }
+
+                if (in_array($data->status, ['done', 'processing'])) {
+                    Log::channel('camera-record')->warning("[STOP RECORDING] Recording already processed or in progress", [
+                        'recording_id' => $data->id,
+                        'current_status' => $data->status,
+                    ]);
+
+                    return $this->responseHelperService->otherResponse(
+                        status: 'skipped',
+                        message: 'Recording already processed or still being processed.',
+                        data: ['recordData' => $data],
+                        code: 200
+                    );
+                }
+
+                return $this->finalizeRecording(
+                    $data,
+                    $data->field_id,
+                    $userId,
+                    $sessionCode->id,
+                    $sessionToken,
+                    false
+                );
             }
 
-            return $this->finalizeRecording($recording, $fieldId, $userId, $sessionCodeId, $sessionToken, false);
+            return $this->responseHelperService->errorResponse(
+                "Invalid type parameter.",
+                400
+            );
         } catch (\Throwable $e) {
-            DB::rollBack();
             Log::channel('camera-record')->error('[STOP RECORDING] Exception', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return $this->errorResponse($e->getMessage(), null, 500);
+            return $this->responseHelperService->errorResponse(
+                $e->getMessage(),
+                500
+            );
         }
     }
 
-    // ===============================
-    // HELPERS
-    // ===============================
-
+    // ============================================================
+    // Helpers
+    // ============================================================
     private function initializeCameraService(int $fieldId)
     {
         $service = app(\App\Services\Camera\CameraControlService::class);
         $service->initialize($fieldId);
         return $service;
-    }
-
-    private function updateRecordingStart($data, $sessionToken, $userId)
-    {
-        $data->update(['start_time' => now()]);
-
-        RecordingLog::where('recording_id', $data->id)
-            ->update(['status' => 'ongoing', 'updated_at' => now()]);
-
-        SessionLog::where('recording_id', $data->id)
-            ->where('user_id', $userId)
-            ->where('session_token', $sessionToken)
-            ->where('status', 'in use')
-            ->update([
-                'start_time' => now(),
-                'status' => 'recording',
-                'updated_at' => now(),
-            ]);
     }
 
     private function updateRecordingStop($data, $sessionToken, $sessionCodeId)
@@ -244,13 +265,11 @@ class RecordController extends Controller
                 'inactive_at' => now(),
                 'status' => 'finished',
             ]);
-    }
 
-    private function errorResponse(string $message, ?string $redirect = null)
-    {
-        $response = ['status' => 'error', 'message' => $message];
-        if ($redirect) $response['redirect'] = $redirect;
-        return response()->json($response);
+        SessionCode::findOrFail($sessionCodeId)
+            ->update([
+                'status' => SessionCodeStatus::Done,
+            ]);
     }
 
     private function livePreview(int $fieldId)
@@ -306,113 +325,94 @@ class RecordController extends Controller
         return null;
     }
 
-    private function checkSession(): array
-    {
-        $userId = Auth::id();
-        $sessionToken = session('qr_session_token');
-
-        $qrSession = QrSession::with(['qrCode.field.venue'])
-            ->where('user_id', $userId)
-            ->latest('last_active_at')
-            ->first();
-
-        $fieldId = $qrSession?->qrCode?->field_id ?? null;
-        $recordSessionQuery = RecordSession::where('user_id', $userId);
-        $recordSession = $recordSessionQuery->latest('created_at')->first();
-
-        $sessionCodeId = SessionCode::where('user_id', $userId)
-            ->where('field_id', $fieldId)
-            ->where('status', '!=', 'expired')
-            ->where('session_token', $sessionToken)
-            ->latest('created_at')
-            ->value('id');
-
-        return [
-            'qrSession' => $qrSession,
-            'recordSession' => $recordSession,
-            'sessionCodeId' => $sessionCodeId,
-            'fieldId' => $fieldId,
-            'sessionToken' => $sessionToken,
-        ];
-    }
-
     private function finalizeRecording($recording, $fieldId, $userId, $sessionCodeId, $sessionToken, $isAuto = false)
     {
+        $ownTransaction = false;
+
         try {
-            DB::beginTransaction();
+            if (DB::transactionLevel() === 0) {
+                DB::beginTransaction();
+                $ownTransaction = true;
+            }
 
             $cameraService = $this->initializeCameraService($fieldId);
             $cameraService->stopRecording();
 
             $recording->update([
-                'end_time' => now(),
                 'status' => 'processing',
             ]);
 
             $this->updateRecordingStop($recording, $sessionToken, $sessionCodeId);
-            RecordingLog::where('recording_id', $recording->id)
-                ->update(['status' => 'stopped', 'updated_at' => now()]);
 
-            // Bersihkan sesi
-            RecordSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
-            QrSession::where('user_id', $userId)->where('session_token', $sessionToken)->delete();
+            RecordSession::where('user_id', $userId)
+                ->where('session_token', $sessionToken)
+                ->where('user_id', $userId)
+                ->where('recording_id', $recording->id)
+                ->delete();
 
-            // Queue background job untuk unduh video
+            QrSession::where('user_id', $userId)
+                ->where('session_token', $sessionToken)
+                ->where('user_id', $userId)
+                ->delete();
+
             $videoName = str_replace(' ', '', $recording->video_name ?? 'recording');
+
             GetPlaybackUrisJob::dispatch(
                 $fieldId,
                 $recording->start_time,
-                now(),
+                $recording->end_time,
                 $userId,
                 $videoName,
                 $recording->id
             )->onQueue('camera-record-video-search');
 
-            DB::commit();
+            if ($ownTransaction) {
+                DB::commit();
+            }
 
-            Log::channel('camera-record')->info(($isAuto ? '[AUTO STOP]' : '[STOP RECORDING]') . ' Finalized recording', [
-                'recording_id' => $recording->id,
-                'field_id' => $fieldId,
-                'user_id' => $userId,
-                'mode' => $isAuto ? 'auto' : 'manual'
-            ]);
+            Log::channel('camera-record')->info(
+                ($isAuto ? '[AUTO STOP]' : '[STOP RECORDING]') . ' Finalized recording successfully',
+                [
+                    'recording_id' => $recording->id,
+                    'field_id' => $fieldId,
+                    'user_id' => $userId,
+                    'mode' => $isAuto ? 'auto' : 'manual'
+                ]
+            );
 
-            return response()->json([
-                'status' => 'success',
-                'message' => $isAuto
+            return $this->responseHelperService->successResponse(
+                message: $isAuto
                     ? 'Recording stopped automatically (duration reached).'
                     : 'Recording stopped manually. Video processing started in background.',
-                'recordData' => $recording
-            ]);
+                data: ['recordData' => $recording]
+            );
         } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::channel('camera-record')->error('[FINALIZE RECORDING] Error', [
+            if ($ownTransaction && DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            if (isset($recording) && $recording->exists) {
+                try {
+                    $recording->update(['status' => 'failed']);
+                } catch (\Throwable $inner) {
+                    Log::channel('camera-record')->warning('[FINALIZE RECORDING] Failed to update status after rollback', [
+                        'recording_id' => $recording->id,
+                        'inner_error' => $inner->getMessage(),
+                    ]);
+                }
+            }
+
+            Log::channel('camera-record')->error('[FINALIZE RECORDING] Exception occurred', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'recording_id' => $recording->id ?? null,
+                'user_id' => $userId ?? null,
             ]);
-            return $this->errorResponse($e->getMessage(), null, 500);
+
+            return $this->responseHelperService->errorResponse(
+                'Failed to finalize recording: ' . $e->getMessage(),
+                500
+            );
         }
-    }
-
-    private function getActiveQrSession(bool $requireActiveSession = true): ?QrSession
-    {
-        $userId = Auth::id();
-        $sessionToken = session('qr_session_token');
-        $sessionQrToken = session('qr_token');
-
-        if (!$userId || !$sessionToken) return null;
-
-        $query = QrSession::with(['qrCode.field.venue'])
-            ->where('user_id', $userId)
-            ->where('session_token', $sessionToken)
-            ->where('qr_token', $sessionQrToken)
-            ->latest();
-
-        if ($requireActiveSession) {
-            $query->whereNotNull('session_token');
-            $query->whereNotNull('qr_token');
-        }
-
-        return $query->first();
     }
 }

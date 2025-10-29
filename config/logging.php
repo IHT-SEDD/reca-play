@@ -174,6 +174,12 @@ return [
             'path' => storage_path('logs/camera/job.log'),
             'level' => 'debug',
         ],
+
+        'expired-session' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/session/expired-session.log'),
+            'level' => 'info',
+        ],
     ],
 
 ];

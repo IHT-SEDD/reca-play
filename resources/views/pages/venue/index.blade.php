@@ -2,16 +2,16 @@
   <div class="w-full mx-auto">
     <!-- Text Header 1 -->
     <div class="md:mb-8 mb-4 w-full flex justify-center items-center text-center">
-      <h1 class="md:text-4xl text-2xl font-bold text-after-midnight dark:text-white-owl">
+      <h1 class="md:text-4xl text-2xl font-bold text-color-default">
         LIST ALL VENUES THAT HAS
-        <span class="text-hot-shot">INTEGRATED</span>
+        <span class="text-highlighted-default">INTEGRATED</span>
         WITH US
       </h1>
     </div>
 
     <!-- Text Header 2 -->
     <div class="md:mb-8 mb-4 w-full flex justify-center items-center text-center">
-      <h1 class="md:text-2xl text-lg font-medium text-after-midnight dark:text-white-owl/80">
+      <h1 class="md:text-2xl text-lg font-medium text-color-default/80">
         Hit our contact for integrating your venue with us!
       </h1>
     </div>

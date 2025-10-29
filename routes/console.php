@@ -13,11 +13,12 @@ Schedule::command('app:expire-session-codes')
     ->dailyAt('00:05')
     ->withoutOverlapping()
     ->onSuccess(function () {
-        Log::info('[Scheduler] ExpireSessionCodes ran successfully at ' . now());
+        Log::channel('expired-session')->info('[Scheduler] ExpireSessionCodes ran successfully at ' . now());
     })
     ->onFailure(function () {
-        Log::error('[Scheduler] ExpireSessionCodes failed at ' . now());
+        Log::channel('expired-session')->error('[Scheduler] ExpireSessionCodes failed at ' . now());
     });
+
 
 Artisan::command('logs:clear-camera', function () {
     $logFiles = [
