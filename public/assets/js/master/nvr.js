@@ -1,5 +1,5 @@
 let nvrTable, selectVenue, selectPort;
-
+buttonActionIndex = 9;
 nvrTable = () => {
     initCustomDatatable({
         tableId: "nvr-table",

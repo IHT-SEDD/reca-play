@@ -22,23 +22,32 @@
     <x-input-error id="input-name-error"></x-input-error>
   </div>
 
-  <div class="mt-2">
-    <x-input-label for="description" :value="__('Description')" />
-    <x-inputs.textarea-input id="description" name="description" class="block mt-2 w-full"
-      placeholder="New venue type description" :value="$venueType->description ?? ''">
-    </x-inputs.textarea-input>
-    <x-input-error id="input-description-error"></x-input-error>
-  </div>
+ <div class="mt-2">
+  <x-input-label for="description" :value="__('Description')" />
+  <x-inputs.textarea-input id="description" name="description" class="block mt-2 w-full"
+   placeholder="New venue type description" :value="$venueType->description ?? ''">
+  </x-inputs.textarea-input>
+  <x-input-error id="input-description-error"></x-input-error>
+ </div>
 
-  <div class="mt-2">
-    <x-input-label for="is_active" :value="__('Active?')" />
-    <x-inputs.toggle-input id="is_active" name="is_active" />
-    <x-input-error id="input-is_active-error"></x-input-error>
-  </div>
+ <div class="mt-2">
+  <x-input-label for="is_active" :value="__('Active')" />
+  <x-inputs.toggle-input id="is_active" name="is_active" />
+  <x-input-error id="input-is_active-error"></x-input-error>
+ </div>
 
-  <!-- Update btn -->
-  <x-primary-button class="w-full mt-6">
-    {{ __('Update') }}
-  </x-primary-button>
+ <hr class="mt-2">
+
+<div class="grid grid-cols-2 gap-2 mt-5">
+    <!-- Close btn -->
+    <x-close-button :modal="'edit-master-modal'" class="w-full">
+       {{ __('Close') }}
+    </x-close-button>
+
+    <!-- Submit btn -->
+    <x-primary-button class="w-full">
+        {{ __('Update') }}
+    </x-primary-button>
+</div>
 </form>
 @endsection

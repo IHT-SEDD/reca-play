@@ -1,5 +1,5 @@
-let roleTable;
-
+let roleTable, buttonActionIndex;
+buttonActionIndex = 5;
 roleTable = () => {
     initCustomDatatable({
         tableId: "role-table",
@@ -25,6 +25,14 @@ roleTable = () => {
         ],
     });
 };
+
+
+formEdit = (data) => {
+       $('#edit-form input[name="id"]').val(data.id);
+       $('#edit-form input[name="name"]').val(data.name);
+       $('#edit-form input[name="guard_name"]').val(data.guard_name);
+      $('#modal_master').get(0).showModal();
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     roleTable();
