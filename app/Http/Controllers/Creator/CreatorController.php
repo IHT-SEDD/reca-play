@@ -14,6 +14,7 @@ use App\Services\Creator\ScanQr\ScanQrService;
 use App\Services\Support\GetModelService;
 use App\Services\Support\ResponseHelperService;
 use App\Services\Support\SessionHelperService;
+use App\Enums\SessionCodeStatus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -147,7 +148,7 @@ class CreatorController extends Controller
                 ->first();
 
             $sessionCodeQuery = SessionCode::where('generated_code', $accessCode)
-                ->where('status', 'active')
+                ->where('status', SessionCodeStatus::Active)
                 ->where('field_id', $qrCodeData->field_id);
 
             $sessionCode = $sessionCodeQuery->first();
