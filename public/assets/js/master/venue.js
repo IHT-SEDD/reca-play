@@ -1,5 +1,7 @@
-let venueTable, selectVenueType, buttonActionIndex, EditSelectVenueType;
+let venueTable, selectVenueType, buttonActionIndex, EditSelectVenueType, hasAction, withData;
 buttonActionIndex = 9;
+hasAction = true; // Set to true if action buttons are needed
+withData = []; // Set with relationship if needed
 venueTable = () => {
     initCustomDatatable({
         tableId: "venue-table",

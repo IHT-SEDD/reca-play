@@ -38,16 +38,10 @@
 
  <hr class="mt-2">
 
-<div class="grid grid-cols-2 gap-2 mt-5">
-    <!-- Close btn -->
-    <x-close-button :modal="'edit-master-modal'" class="w-full">
-       {{ __('Close') }}
-    </x-close-button>
-
-    <!-- Submit btn -->
-    <x-primary-button class="w-full">
+   <!-- Update btn -->
+    <x-primary-button class="w-full mt-4">
         {{ __('Update') }}
     </x-primary-button>
-</div>
+
 </form>
 @endsection

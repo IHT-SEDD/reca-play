@@ -1,5 +1,7 @@
-let nvrTable, selectVenue, selectPort;
-buttonActionIndex = 9;
+let nvrTable, selectVenue, selectVenueEdit , selectPortEdit, hasAction, withData;
+buttonActionIndex = 15;
+hasAction = true; // Set to true if action buttons are needed
+withData = []; // Set with relationship if needed
 nvrTable = () => {
     initCustomDatatable({
         tableId: "nvr-table",
@@ -90,6 +92,31 @@ selectVenue = () => {
             });
         },
     });
+
+ selectVenueEdit = new TomSelect("#select-venue-edit", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc",
+        },
+        load: function (query, callback) {
+            $.ajax({
+                url: "/select/venue",
+                data: { q: query },
+                dataType: "json",
+                success: function (res) {
+                    callback(res);
+                },
+                error: function () {
+                    callback();
+                },
+            });
+        },
+    });
 };
 
 selectPort = () => {
@@ -117,7 +144,62 @@ selectPort = () => {
             });
         },
     });
+
+  selectPortEdit =  new TomSelect("#select-port-edit", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc",
+        },
+        load: function (query, callback) {
+            $.ajax({
+                url: "/select/port",
+                data: { q: query },
+                dataType: "json",
+                success: function (res) {
+                    callback(res);
+                },
+                error: function () {
+                    callback();
+                },
+            });
+        },
+    });
 };
+
+formEdit = (data) => {
+       $('#edit-form input[name="id"]').val(data.id);
+       $('#edit-form input[name="name"]').val(data.name);
+       $('#edit-form input[name="initial"]').val(data.initial);
+       $('#edit-form input[name="brand"]').val(data.brand);
+       $('#edit-form input[name="type"]').val(data.type);
+       $('#edit-form input[name="ip_address"]').val(data.ip_address);
+       $('#edit-form input[name="auth_type"]').val(data.auth_type);
+       $('#edit-form input[name="username"]').val(data.username);
+       $('#edit-form input[name="password"]').val(data.password);
+       selectVenueEdit.setValue(data.venue_id);
+       selectPortEdit.setValue(data.port_id);
+        $('#edit-form textarea[name="description"]').val(data.description);
+           // toggle-input component renders a hidden input (value=0) and a checkbox (value=1)
+       // set the checkbox checked state according to data.is_active
+       const isActive = data.is_active == true;
+       const $checkbox = $('#edit-form input[type="checkbox"][name="is_active"]');
+       const $hidden = $('#edit-form input[type="hidden"][name="is_active"]');
+       if ($checkbox.length) {
+           $checkbox.prop('checked', isActive);
+           // trigger change so any UI bound styles update
+           $checkbox.trigger('change');
+       }
+       // ensure hidden input stays correct (0 when unchecked, 1 when checked) to keep consistency
+       if ($hidden.length) {
+           $hidden.val(isActive ? '0' : '0');
+       }
+      $('#modal_master').get(0).showModal();
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     nvrTable();
