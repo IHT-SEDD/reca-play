@@ -12,13 +12,16 @@ class MasterFormRequestService
  protected array $formRequests = [
   'role' => [
     'store' => \App\Http\Requests\Master\Role\StoreRoleRequest::class,
-    'update' => ''
+    'update' => \App\Http\Requests\Master\Role\UpdateRoleRequest::class
   ],
   'field' => [
     'store' => \App\Http\Requests\Master\Field\StoreFieldRequest::class,
-    'update' => ''
+    'update' => \App\Http\Requests\Master\Field\UpdateFieldRequest::class
   ],
-  'category' => \App\Http\Requests\Master\Category\StoreCategoryRequest::class,
+  'category' => [
+    'store' => \App\Http\Requests\Master\Category\StoreCategoryRequest::class,
+    'update' => \App\Http\Requests\Master\Category\UpdateCategoryRequest::class
+  ],
   'venue' => [
         'store' => \App\Http\Requests\Master\Venue\StoreVenueRequest::class,
         'update' => \App\Http\Requests\Master\Venue\UpdateVenueRequest::class,
@@ -41,7 +44,7 @@ class MasterFormRequestService
   ],
   'port' => [
     'store' => \App\Http\Requests\Master\Port\StorePortRequest::class,
-    'update' => ''
+    'update' => \App\Http\Requests\Master\Port\UpdatePortRequest::class
   ],
   'api' => [
     'store' => \App\Http\Requests\Master\Api\StoreApiRequest::class,

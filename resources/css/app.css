@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+
 [x-cloak] {
     display: none !important;
 }
@@ -26,12 +28,14 @@
 
 /* --- custom DataTable --- */
 
-.dataTables_wrapper {
-    overflow: visible !important;
+/* Pastikan cell dan container datatable tidak memangkas dropdown */
+table.dataTable td.dt-action {
+  overflow: visible !important;
+  position: relative !important;
+  z-index: auto !important;
 }
 
-.table-container,
-.table-responsive {
-    overflow: visible !important;
+
 }
+
 

@@ -191,12 +191,7 @@ formRequestInit = () => {
 
                           resetForm($form);
 
-                            // Tutup modal edit (opsional)
-                            window.dispatchEvent(
-                                new CustomEvent("close-modal", {
-                                    detail: "edit-master-modal",
-                                })
-                            );
+                          $('#modal_master').get(0).close();
 
                             // Refresh DataTable
                             if (

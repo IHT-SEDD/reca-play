@@ -40,49 +40,67 @@ function initCustomDatatable({
 
         columns: tableColumns,
         columnDefs: [
-            {
-                responsivePriority: 1,
-                targets: buttonActionIndex,
-                data: null,
-                orderable: false,
-                searchable: false,
-                className: "text-end whitespace-nowrap",
-                width: "1%",
-                render: function (data, type, row) {
-                    return `<div x-data="{ open: false }" class="relative inline-block text-left">
-                                <!-- Trigger -->
-                                <button 
-                                    @click="open = !open" 
-                                    :class="[
-                                        'focus:ring-0 focus:outline-none font-medium rounded-xl text-xs md:text-sm p-3 text-center inline-flex items-center transition-colors',
-                                        open 
-                                            ? 'bg-hot-shot text-white-owl dark:text-eerie-black' 
-                                            : 'bg-white-owl hover:text-hot-shot text-after-midnight dark:text-white-owl dark:hover:text-hot-shot'
-                                    ]" 
-                                    type="button">
-                                    <i data-lucide="ellipsis-vertical" class="w-4 h-4"></i>
-                                </button>
+           {
+    responsivePriority: 1,
+    targets: buttonActionIndex,
+    data: null,
+    orderable: false,
+    searchable: false,
+    className: "text-end whitespace-nowrap dt-actions", // 👈 tambahkan class ini
+    width: "1%",
+       render: function (data, type, row) {
+    return `
+        <div x-data="{ open: false }" class="relative inline-block text-left dt-action">
+            <button
+                @click="
+                    open = !open;
+                    if (open) {
+                        let menu = $refs.menu;
+                        let rect = $el.getBoundingClientRect();
+                        let menuRect = menu.getBoundingClientRect();
+                        let spaceBelow = window.innerHeight - rect.bottom;
+                        let spaceAbove = rect.top;
 
-                                <!-- Dropdown menu -->
-                                <div x-show="open" x-cloak @click.outside="open = false" x-transition
-                                    class="absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-full min-w-fit bg-white shadow-sm divide-y divide-eerie-black border border-base-200">
-                                    <ul class="flex flex-col justify-center items-start text-[13px] text-eerie-black font-medium p-2">
-                                        <li>
-                                            <button @click.stop="setTimeout(() => open = false, 200);editData(${row.id});" class="block w-full text-left text-sm font-medium px-3 py-2 rounded-md hover:text-hot-shot text-after-midnight">
-                                                Edit
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button @click.stop="setTimeout(() => open = false, 200);editData(${row.id});" class="block w-full text-left text-sm font-medium px-3 py-2 rounded-md hover:text-hot-shot text-after-midnight">
-                                                Delete
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div> 
-                        `;
-                },
-            },
+                        if (spaceBelow < menuRect.height && spaceAbove > menuRect.height) {
+                            menu.style.top = 'auto';
+                            menu.style.bottom = \`\${rect.height + 4}px\`;
+                        } else {
+                            menu.style.top = \`\${rect.height + 4}px\`;
+                            menu.style.bottom = 'auto';
+                        }
+                    }
+                "
+                class="focus:ring-0 focus:outline-none font-medium rounded-xl text-xs md:text-sm p-3 text-center inline-flex items-center transition-colors bg-white-owl hover:text-hot-shot text-after-midnight"
+            >
+                <i data-lucide="ellipsis-vertical" class="w-4 h-4"></i>
+            </button>
+
+            <div
+                x-ref="menu"
+                x-show="open"
+                x-cloak
+                @click.outside="open = false"
+                x-transition
+                class="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-md w-fit min-w-[120px] z-[9999]"
+            >
+                <ul class="p-2 text-sm text-after-midnight font-medium">
+                    <li>
+                        <button @click.stop="open = false; editData(${row.id});" class="block w-full text-left px-3 py-2 hover:text-hot-shot">
+                            Edit
+                        </button>
+                    </li>
+                    <li>
+                        <button @click.stop="open = false; deleteData(${row.id});" class="block w-full text-left px-3 py-2 hover:text-hot-shot">
+                            Delete
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    `;
+}
+
+    },
         ],
 
         language: {
@@ -110,6 +128,10 @@ function initCustomDatatable({
             $notFound.removeClass("hidden");
         }
 
+        if (Alpine.flushAndStopDeferringMutations) {
+            Alpine.flushAndStopDeferringMutations();
+        }
+
         $info.text(
             `Show ${info.start + 1} to ${info.end} of ${
                 info.recordsDisplay
@@ -131,6 +153,7 @@ function initCustomDatatable({
             Alpine.initTree(document.body);
         }
         window.lucide.createIcons({ icons: window.lucide.icons });
+        Alpine.initTree(document.querySelector(`#${tableId}`));
     });
 
     // ==== Custom Search ==== //
