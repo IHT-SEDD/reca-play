@@ -7,7 +7,8 @@ let fetchData,
     generateCode,
     handlerFormAddAccessCode,
     startRecording,
-    hasAction;
+    hasAction,
+    buttonActionIndex;
 
 // ======== Initialize component ::begin ========
 const pathParts = window.location.pathname.split("/");
@@ -16,7 +17,9 @@ const hashedId = pathParts[pathParts.length - 1];
 const typeInput = $("#type");
 const recordInputWrapper = $("#record_inputs");
 const streamInputWrapper = $("#stream_inputs");
+
 hasAction = false;
+buttonActionIndex = null;
 // ======== Initialize component ::end ========
 
 // ======== Ajax CSRF token setup ::begin ========
