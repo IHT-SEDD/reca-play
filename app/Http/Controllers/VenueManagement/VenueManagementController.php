@@ -11,6 +11,7 @@ use App\Models\Record\RecordingLog;
 use App\Models\Session\SessionCode;
 use App\Models\Session\SessionLog;
 use App\Services\CustomDatatable\CustomDatatableService;
+use App\Enums\SessionCodeStatus;
 use Illuminate\Support\Facades\URL;
 use Vinkla\Hashids\Facades\Hashids;
 use Illuminate\Http\Request;
@@ -239,7 +240,7 @@ class VenueManagementController extends Controller
                 'field_id' => $fieldId,
                 'generate_by_user_id' => Auth::id(),
                 'type' => $validated['type'],
-                'status' => 'active',
+                'status' => SessionCodeStatus::Active,
                 'generated_code' => $generatedCode,
                 'name' => $validated['name'],
                 'start_time' => $timeData['start_time'],

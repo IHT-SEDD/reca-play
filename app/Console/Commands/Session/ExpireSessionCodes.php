@@ -3,6 +3,7 @@
 namespace App\Console\Commands\Session;
 
 use App\Models\Session\SessionCode;
+use App\Enums\SessionCodeStatus;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -30,8 +31,15 @@ class ExpireSessionCodes extends Command
         try {
             $expiredCount = SessionCode::whereNotNull('expired_at')
                 ->where('expired_at', '<=', now())
-                ->where('status', '!=', 'expired')
-                ->update(['status' => 'expired', 'updated_at' => now()]);
+                ->whereNotIn('status', [
+                    SessionCodeStatus::Expired,
+                    SessionCodeStatus::InUse,
+                    SessionCodeStatus::Done,
+                ])
+                ->update([
+                    'status' => SessionCodeStatus::Expired,
+                    'updated_at' => now(),
+                ]);
 
             if ($expiredCount > 0) {
                 $message = "✅ {$expiredCount} session code(s) marked as expired at " . now();
