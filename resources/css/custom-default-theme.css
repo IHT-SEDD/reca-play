@@ -1,0 +1,40 @@
+.text-color-default {
+    @apply text-after-midnight dark:text-white-owl;
+}
+
+.text-highlighted-default {
+    @apply font-bold text-hot-shot dark:text-white;
+}
+
+.text-title-default {
+    @apply md:text-xl text-lg font-semibold tracking-wide text-eerie-black dark:text-white;
+}
+
+.text-button-default {
+    @apply font-medium text-sm capitalize tracking-wider text-white-owl dark:text-eerie-black;
+}
+
+.body-layout {
+    @apply font-sans antialiased;
+}
+
+.main-bg-default {
+    @apply bg-white-chalk dark:bg-reversed-grey;
+}
+
+.text-nav-active {
+    @apply text-sm font-medium leading-4 text-hot-shot;
+}
+.text-nav-default {
+    @apply text-sm font-medium leading-4 text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
+}
+
+.text-dw-button-default {
+    @apply text-xs md:text-sm font-medium text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
+}
+.text-dw-button-active {
+    @apply text-xs md:text-sm font-medium bg-white-owl text-hot-shot dark:text-eerie-black;
+}
+.text-dw-menu-default {
+    @apply text-[13px] text-after-midnight dark:text-white-owl font-medium;
+}

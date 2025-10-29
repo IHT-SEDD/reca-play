@@ -1,5 +1,5 @@
-let cameraTable, selectField, selectNvr;
-
+let cameraTable, selectField, selectNvr, buttonActionIndex;
+buttonActionIndex = 8;
 cameraTable = () => {
     initCustomDatatable({
         tableId: "camera-table",

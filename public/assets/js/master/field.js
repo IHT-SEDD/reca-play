@@ -1,5 +1,5 @@
-let fieldTable, selectVenue, selectCategory;
-
+let fieldTable, selectVenue, selectCategory, editSelectVenue, editSelectCategory ,buttonActionIndex;
+buttonActionIndex = 10;
 fieldTable = () => {
     initCustomDatatable({
         tableId: "field-table",
@@ -16,6 +16,16 @@ fieldTable = () => {
                 name: "description",
                 searchable: false,
                 orderable: false,
+            },
+             {
+                data: "pict_path",
+                name: "pict_path",
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    if (!data) return '<span class="text-gray-400">No Image</span>';
+                    return `<img src="/${data}" alt="${row.pict_filename}" width="250" height="250" class="rounded">`;
+                }
             },
             {
                 data: "created_at",
@@ -42,6 +52,31 @@ fieldTable = () => {
 
 selectCategory = () => {
     new TomSelect("#select-category", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc",
+        },
+        load: function (query, callback) {
+            $.ajax({
+                url: "/select/category",
+                data: { q: query },
+                dataType: "json",
+                success: function (res) {
+                    callback(res);
+                },
+                error: function () {
+                    callback();
+                },
+            });
+        },
+    });
+
+    editSelectCategory  =  new TomSelect("#edit-select-category", {
         valueField: "id",
         labelField: "text",
         searchField: "text",
@@ -92,7 +127,49 @@ selectVenue = () => {
             });
         },
     });
+
+   editSelectVenue =  new TomSelect("#edit-select-venue", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc",
+        },
+        load: function (query, callback) {
+            $.ajax({
+                url: "/select/venue",
+                data: { q: query },
+                dataType: "json",
+                success: function (res) {
+                    callback(res);
+                },
+                error: function () {
+                    callback();
+                },
+            });
+        },
+    });
 };
+
+formEdit = (data) => {
+    console.log(data);
+
+       $('#edit-form input[name="id"]').val(data.id);
+       $('#edit-form input[name="name"]').val(data.name);
+       $('#edit-form input[name="initial"]').val(data.initial);
+       $('#edit-form textarea[name="description"]').val(data.description);
+       $('#edit-form #edit-pictLabel').text(data.pict_filename ?? 'No file chosen');
+    //    EditSelectVenueType.addOption({
+    //         id: data.venue_type.id,
+    //         text: data.venue_type.name,
+    //     });
+        editSelectVenue.setValue(data.venue_id);
+        editSelectCategory.setValue(data.category_id);
+      $('#modal_master').get(0).showModal();
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     fieldTable();

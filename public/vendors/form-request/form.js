@@ -198,27 +198,22 @@ formRequestInit = () => {
                 let formData = new FormData(this);
                 let targetTable = $form.data("datatable");
 
-                $.ajax({
-                    url: actionUrl,
-                    method: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        "X-CSRF-TOKEN": $form
-                            .find('input[name="_token"]')
-                            .val(),
-                    },
-                    success: function (result) {
-                        if (result.status === "success") {
-                            notyf.success(result.message);
+            $.ajax({
+                url: actionUrl,
+                method: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    "X-CSRF-TOKEN": $form.find('input[name="_token"]').val(),
+                },
+                success: function (result) {
+                    if (result.status === "success") {
+                        notyf.success(result.message);
 
-                            // Tutup modal edit (opsional)
-                            window.dispatchEvent(
-                                new CustomEvent("close-modal", {
-                                    detail: "edit-master-modal",
-                                })
-                            );
+                          resetForm($form);
+
+                          $('#modal_master').get(0).close();
 
                             // Refresh DataTable
                             if (

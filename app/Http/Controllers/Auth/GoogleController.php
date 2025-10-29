@@ -12,7 +12,9 @@ use App\Services\OAuth\GoogleAuthService;
 
 class GoogleController extends Controller
 {
-
+    // ============================================================
+    // Init services
+    // ============================================================
     protected GoogleAuthService $googleService;
 
     public function __construct(GoogleAuthService $googleService)
@@ -20,12 +22,17 @@ class GoogleController extends Controller
         $this->googleService = $googleService;
     }
 
+    // ============================================================
+    // Redirect to google via socialite
+    // ============================================================
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();
     }
 
-
+    // ============================================================
+    // Handling google callback
+    // ============================================================
     public function handleGoogleCallback()
     {
         try {

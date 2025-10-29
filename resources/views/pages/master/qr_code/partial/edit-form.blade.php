@@ -1,14 +1,21 @@
-@extends('pages.master.partial.add-form-layout')
+@extends('pages.master.partial.modal-edit-layout')
 
-@section('title')
-<h1 class=" md:text-xl text-md font-bold text-hot-shot w-full">Add new qr code</h1>
+@section('edit-title')
+<h1 class=" md:text-xl text-md font-bold text-hot-shot w-full">Edit QR Code</h1>
 @endsection
 
-@section('content')
-<form method="POST" action="{{ url('/master/qr_code/add-data') }}" class="ajax-form" data-datatable="#qr_code-table"
-  novalidate>
+@section('edit-content')
+<form method="PUT" action="{{ url('/master/qr-code/update-data') }}" id="edit-form" class="ajax-edit-form"
+  data-datatable="#qr-code-table" novalidate>
   @csrf
+  @method('PUT')
+
   <div>
+    <x-inputs.text-input id="id" class="block mt-2 w-full" type="hidden" name="id" />
+  </div>
+
+ <!-- Name -->
+<div>
     <x-input-label for="name" :value="__('Name')" required />
     <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
       placeholder="New qr code name" autocomplete="off" />
@@ -24,8 +31,8 @@
   </div>
 
   <div class="mt-2">
-    <x-input-label for="field_id" :value="__('Field')" />
-    <select id="select-field" placeholder="Select field..." autocomplete="off" name="field_id" class="my-2">
+    <x-input-label for="edit-select-field" :value="__('Field')" />
+    <select id="edit-select-field" placeholder="Select field..." autocomplete="off" name="field_id" class="my-2">
     </select>
     <div class="flex items-center mb-4">
       <input id="disable-field-select" type="checkbox" value=""
@@ -35,8 +42,8 @@
   </div>
 
   <div class="mt-2">
-    <x-input-label for="venue_id" :value="__('Venue')" />
-    <select id="select-venue" placeholder="Select venue..." autocomplete="off" name="venue_id" class="my-2">
+    <x-input-label for="edit-select-venue" :value="__('Venue')" />
+    <select id="edit-select-venue" placeholder="Select venue..." autocomplete="off" name="venue_id" class="my-2">
     </select>
     <div class="flex items-center mb-4">
       <input id="disable-venue-select" type="checkbox" value=""
@@ -77,9 +84,12 @@
     <x-input-error id="input-is_active-error"></x-input-error>
   </div>
 
-  <!-- Submit btn -->
-  <x-primary-button class="w-full mt-6">
-    {{ __('Submit') }}
-  </x-primary-button>
+ <hr class="mt-2">
+
+     <!-- Update btn -->
+    <x-primary-button class="w-full mt-4">
+        {{ __('Update') }}
+    </x-primary-button>
+
 </form>
 @endsection

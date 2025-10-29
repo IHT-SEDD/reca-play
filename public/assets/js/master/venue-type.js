@@ -26,7 +26,7 @@ venueTypeTable = () => {
                                     Active
                                 </span>`;
                     } else {
-                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-vivaldi-red/90 text-red-600 flex justify-start w-fit items-center gap-1">
+                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-vivaldi-red/90 text-red-500 flex justify-start w-fit items-center gap-1">
                                     <i data-lucide="circle-x" class="w-4 h-4"></i>
                                     Active
                                 </span>`;
@@ -52,10 +52,10 @@ venueTypeTable = () => {
 };
 
 formEdit = (data) => {
-    console.log(data);
+
        $('#edit-form input[name="id"]').val(data.id);
        $('#edit-form input[name="name"]').val(data.name);
-       $('#edit-form input[name="description"]').val(data.description);
+       $('#edit-form textarea[name="description"]').val(data.description);
        // toggle-input component renders a hidden input (value=0) and a checkbox (value=1)
        // set the checkbox checked state according to data.is_active
        const isActive = data.is_active == true;
@@ -70,7 +70,7 @@ formEdit = (data) => {
        if ($hidden.length) {
            $hidden.val(isActive ? '0' : '0');
        }
-       window.dispatchEvent(new CustomEvent('open-modal', { detail: 'edit-master-modal' }));
+        $('#modal_master').get(0).showModal();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
