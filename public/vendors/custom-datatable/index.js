@@ -80,7 +80,6 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
         responsive: true,
         pageLength: 10,
         dom: "t",
-
         columns: tableColumns,
         columnDefs: [
             {

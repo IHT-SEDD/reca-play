@@ -1,10 +1,10 @@
 let fieldTable, populateData, hasAction, buttonActionIndex, withData;
 
-hasAction = false;
-buttonActionIndex = null;
-withData = null;
-
 fieldTable = () => {
+    hasAction = false;
+    buttonActionIndex = null;
+    withData = null;
+
     initCustomDatatable({
         tableId: "field-table",
         tableDataUrl: "/venue-management/field-data",

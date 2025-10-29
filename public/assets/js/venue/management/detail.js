@@ -18,10 +18,6 @@ const hashedId = pathParts[pathParts.length - 1];
 const typeInput = $("#type");
 const recordInputWrapper = $("#record_inputs");
 const streamInputWrapper = $("#stream_inputs");
-
-hasAction = false;
-buttonActionIndex = null;
-withData = null;
 // ======== Initialize component ::end ========
 
 // ======== Ajax CSRF token setup ::begin ========
@@ -125,6 +121,10 @@ toggleState = () => {
 
 // ======== Last activity datatable ========
 lastActivityTable = (hashedId) => {
+    hasAction = false;
+    buttonActionIndex = null;
+    withData = null;
+    
     initCustomDatatable({
         tableId: "last-activity-table",
         tableDataUrl: `/venue-management/detail/last-activity/data/${hashedId}`,
@@ -170,6 +170,10 @@ lastActivityTable = (hashedId) => {
 
 // ======== Access code datatable ========
 accessCodeTable = (hashedId) => {
+    hasAction = false;
+    buttonActionIndex = null;
+    withData = null;
+
     initCustomDatatable({
         tableId: "access-code-table",
         tableDataUrl: `/venue-management/detail/access-code/data/${hashedId}`,
