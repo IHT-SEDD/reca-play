@@ -7,6 +7,7 @@ use App\Models\Master\QrCode;
 use App\Models\Master\Venue;
 use App\Models\Record\Recording;
 use App\Models\User;
+use App\Enums\SessionCodeStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,11 @@ class SessionCode extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'status' => SessionCodeStatus::class,
+        'expired_at' => 'datetime',
+    ];
 
     public function user()
     {
@@ -54,12 +60,12 @@ class SessionCode extends Model
 
     public function isValid(): bool
     {
-        return $this->status !== 'expired' &&
+        return $this->status !== SessionCodeStatus::Expired &&
             (!$this->expired_at || now()->lt($this->expired_at));
     }
 
     public function scopeNotExpired($query)
     {
-        return $query->where('status', '!=', 'expired');
+        return $query->whereNot('status', SessionCodeStatus::Expired);
     }
 }

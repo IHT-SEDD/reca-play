@@ -13,6 +13,7 @@ use App\Models\Session\SessionLog;
 use App\Services\Support\GetModelService;
 use App\Services\Support\ResponseHelperService;
 use App\Services\Support\SessionHelperService;
+use App\Enums\SessionCodeStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -264,6 +265,11 @@ class RecordController extends Controller
                 'inactive_at' => now(),
                 'status' => 'finished',
             ]);
+
+        SessionCode::findOrFail($sessionCodeId)
+            ->update([
+                'status' => SessionCodeStatus::Done,
+            ]);
     }
 
     private function livePreview(int $fieldId)
@@ -337,9 +343,6 @@ class RecordController extends Controller
             ]);
 
             $this->updateRecordingStop($recording, $sessionToken, $sessionCodeId);
-
-            RecordingLog::where('recording_id', $recording->id)
-                ->update(['status' => 'stopped', 'updated_at' => now()]);
 
             RecordSession::where('user_id', $userId)
                 ->where('session_token', $sessionToken)

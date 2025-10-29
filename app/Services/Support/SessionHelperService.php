@@ -4,6 +4,7 @@ namespace App\Services\Support;
 
 use App\Models\Session\QrSession;
 use App\Models\Session\SessionCode;
+use App\Enums\SessionCodeStatus;
 use Illuminate\Support\Facades\Auth;
 
 class SessionHelperService
@@ -41,7 +42,7 @@ class SessionHelperService
   public function getValidAccessCode(string $accessCode, int $userId, ?int $qrCodeId = null, $data = null): SessionCode
   {
     $sessionCode = SessionCode::where('generated_code', $accessCode)
-      ->where('status', '!=', 'expired')
+      ->whereNot('status', SessionCodeStatus::Expired)
       ->first();
 
     if (!$sessionCode) {
@@ -49,7 +50,7 @@ class SessionHelperService
     }
 
     if ($sessionCode->expired_at && now()->greaterThan($sessionCode->expired_at)) {
-      $sessionCode->update(['status' => 'expired']);
+      $sessionCode->update(['status' => SessionCodeStatus::Expired]);
       throw new \Exception('Session code has expired. Please ask cashier for a new code.');
     }
 
