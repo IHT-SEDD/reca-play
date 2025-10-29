@@ -72,11 +72,11 @@ renderList = (videos) => {
                         <p class="text-after-midnight/50 dark:text-white-owl text-xs">
                             ${formatDateTime(videoItem.created_at)}
                         </p>
-                        <p class="flex items-center text-xs text-after-midnight dark:text-white-owl">
+                        <p class="flex items-center text-xs text-color-default">
                             <i data-lucide="user" class="w-4 h-4 md:me-2"></i>
                             ${videoItem.user?.name ?? "Unknown"}
                         </p>
-                        <p class="text-xs font-medium tracking-wide text-after-midnight dark:text-white-owl">
+                        <p class="text-xs font-medium tracking-wide text-color-default">
                             ${videoItem.field?.name ?? "-"} at ${
                     videoItem.field?.venue?.name ?? "-"
                 }

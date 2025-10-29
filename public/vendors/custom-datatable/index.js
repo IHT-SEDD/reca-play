@@ -39,7 +39,7 @@ function initCustomDatatable({
                                 'focus:ring-0 focus:outline-none font-medium rounded-xl text-xs md:text-sm p-3 text-center inline-flex items-center transition-colors',
                                 open
                                     ? 'bg-hot-shot text-white-owl dark:text-eerie-black'
-                                    : 'bg-white-owl hover:text-hot-shot text-after-midnight dark:text-white-owl dark:hover:text-hot-shot'
+                                    : 'bg-white-owl hover:text-hot-shot text-color-default dark:hover:text-hot-shot'
                             ]"
                             type="button">
                             <i data-lucide="ellipsis-vertical" class="w-4 h-4"></i>
@@ -90,16 +90,16 @@ function initCustomDatatable({
 
         columns: tableColumns,
         columnDefs: [
-           {
-    responsivePriority: 1,
-    targets: buttonActionIndex,
-    data: null,
-    orderable: false,
-    searchable: false,
-    className: "text-end whitespace-nowrap dt-actions", // 👈 tambahkan class ini
-    width: "1%",
-       render: function (data, type, row) {
-    return `
+            {
+                responsivePriority: 1,
+                targets: buttonActionIndex,
+                data: null,
+                orderable: false,
+                searchable: false,
+                className: "text-end whitespace-nowrap dt-actions", // 👈 tambahkan class ini
+                width: "1%",
+                render: function (data, type, row) {
+                    return `
         <div x-data="{ open: false }" class="relative inline-block text-left dt-action">
             <button
                 @click="
@@ -148,9 +148,8 @@ function initCustomDatatable({
             </div>
         </div>
     `;
-}
-
-    },
+                },
+            },
         ],
 
         language: {
