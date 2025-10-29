@@ -1,3 +1,35 @@
+@import "custom-default-theme.css";
+@import "flatpickr-tailwind.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* --- Scrollbar Simplebar --- */
+    [data-simplebar] .simplebar-scrollbar::before {
+        background: #9e9ea9 !important; /* warna thumb */
+        border-radius: 9999px;
+    }
+
+    [data-simplebar]
+        .simplebar-track.simplebar-vertical
+        .simplebar-scrollbar::before {
+        width: 6px !important; /* tebal vertical */
+    }
+
+    [data-simplebar]
+        .simplebar-track.simplebar-horizontal
+        .simplebar-scrollbar::before {
+        height: 6px !important; /* tebal horizontal */
+    }
+
+    /* --- custom DataTable --- */
+    .dataTables_wrapper {
+        overflow: visible !important;
+    }
+}

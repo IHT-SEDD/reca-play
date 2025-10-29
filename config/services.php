@@ -35,11 +35,17 @@ return [
         ],
     ],
 
-    'hikvision' => [
-        'host' => "http://192.168.1.8",
-        'user' => "admin",
-        'pass' => "IsolaNo1",
-        'manual_channel' => 1,
-        'search_track'   => 101,
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'mediamtx' => [
+        'host' => env('MEDIAMTX_HOST', '127.0.0.1:8889'),
+    ],
+
+    'under_maintenance' => [
+        'status' => env('APP_UNDER_MAINTENANCE', false),
     ],
 ];

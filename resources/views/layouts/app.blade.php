@@ -19,7 +19,9 @@
 ])
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="bumblebee">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    x-data="{ darkMode: localStorage.getItem('dark') === 'true' }" x-bind:class="{ 'dark': darkMode }"
+    x-init="$watch('darkMode', val => localStorage.setItem('dark', val))" data-theme="bumblebee">
 
 <head>
     <meta charset="utf-8">
@@ -32,30 +34,49 @@
     <!-- Meta SEO -->
     @include('layouts.meta-seo')
 
-    <!-- Scripts -->
+    <!-- Scripts CSS :begin -->
+    <link rel="stylesheet" href="{{ asset('vendors/flatpickr/flatpickr.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('vendors/simplebar/simplebar.css') }}" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
+    <!-- Scripts CSS :end -->
 </head>
 
-<body class="font-sans antialiased">
-    <div class="min-h-screen bg-white-chalk">
-        @include('layouts.navigation')
+<body class="body-layout">
+    <div data-simplebar style="height: 100vh;">
+        <div class="min-h-screen flex flex-col main-bg-default">
+            @include('layouts.navigation')
 
-        <!-- Super admin menu -->
-        @if (Auth::user() && Auth::user()->isSuperAdmin())
-        @include('layouts.superadmin-navigation')
-        @endif
+            <!-- Super admin menu -->
+            @if (Auth::user() && Auth::user()->isSuperAdmin())
+            @include('layouts.superadmin-navigation')
+            @endif
 
-        <!-- Page Content -->
-        <main>
-            {{ $slot }}
-        </main>
+            <!-- Owner menu -->
+            @if (Auth::user() && Auth::user()->isVenueManagement())
+            @include('layouts.venue-navigation')
+            @endif
 
-        <footer>
-            @include('layouts.footer')
-        </footer>
+            <!-- Page Content -->
+            <main class="p-6 w-full mx-auto ">
+                <x-indicators.loading></x-indicators.loading>
+                {{ $slot }}
+            </main>
+
+            <footer class="mt-auto">
+                @include('layouts.footer')
+            </footer>
+        </div>
     </div>
 
-    {{ $scripts ?? '' }}
+    <!-- Scripts JS :begin -->
+    <script src="{{ asset('vendors/jquery/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ asset('vendors/dayjs/dayjs.min.js') }}"></script>
+    <script src="{{ asset('vendors/flatpickr/flatpickr.js') }}"></script>
+    <script src="{{ asset('vendors/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ asset('assets/js/loading.js') }}"></script>
+    @stack('scripts')
+    <!-- Scripts JS :end -->
 </body>
 
 </html>

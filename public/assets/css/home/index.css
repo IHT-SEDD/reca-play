@@ -1,0 +1,16 @@
+#latestVideoList {
+    transition: grid-template-columns 0.5s ease-in-out;
+}
+
+.modal[open]::backdrop {
+    @apply bg-black/50;
+}
+
+.modal {
+    @apply transition-opacity duration-300 ease-out;
+    opacity: 0;
+}
+
+.modal.show {
+    opacity: 1;
+}

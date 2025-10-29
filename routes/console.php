@@ -2,7 +2,43 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Schedule::command('app:expire-session-codes')
+    ->dailyAt('00:05')
+    ->withoutOverlapping()
+    ->onSuccess(function () {
+        Log::channel('expired-session')->info('[Scheduler] ExpireSessionCodes ran successfully at ' . now());
+    })
+    ->onFailure(function () {
+        Log::channel('expired-session')->error('[Scheduler] ExpireSessionCodes failed at ' . now());
+    });
+
+
+Artisan::command('logs:clear-camera', function () {
+    $logFiles = [
+        'storage/logs/camera/control.log',
+        'storage/logs/camera/record.log',
+        'storage/logs/camera/job.log',
+        'storage/logs/worker/camera_record_process.log',
+        'storage/logs/worker/camera_download.log',
+        'storage/logs/creator/creator.log',
+        'storage/logs/laravel.log',
+    ];
+
+    foreach ($logFiles as $file) {
+        if (file_exists(base_path($file))) {
+            file_put_contents(base_path($file), '');
+            $this->info("Cleared: {$file}");
+        } else {
+            $this->warn("File not found: {$file}");
+        }
+    }
+
+    $this->info('All specified log files have been cleared.');
+})->describe('Clear specific camera and system log files');

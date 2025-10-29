@@ -1,0 +1,14 @@
+#container_venue_list {
+    transition: grid-template-columns 0.5s ease-in-out;
+}
+.dataTables_wrapper,
+.table-responsive, /* jika pakai bootstrap */
+.table-container { /* ganti sesuai struktur markupmu */
+  overflow: visible !important;
+}
+
+/* pastikan menu di atas semua elemen */
+.dropdown-menu-fixed {
+  position: absolute;
+  z-index: 9999;
+}
