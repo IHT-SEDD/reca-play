@@ -44,6 +44,7 @@
 
 <body class="font-sans text-gray-900 antialiased">
     <div data-simplebar style="height: 100vh;">
+        <x-indicators.loading></x-indicators.loading>
         <div
             class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-white-chalk dark:bg-reversed-grey">
             <div class="flex flex-col items-center justify-center mb-6 gap-6 w-full">
@@ -52,7 +53,7 @@
                         class="w-14 h-14 md:w-20 md:h-20">
                 </a>
             </div>
-            
+
             <div class="w-full sm:max-w-md p-6 bg-white shadow-md overflow-hidden sm:rounded-lg">
                 <h1 class="text-lg font-bold text-start mb-6">{{ $title }}</h1>
                 {{ $slot }}
@@ -63,8 +64,8 @@
     <!-- Scripts JS :begin -->
     <script src="{{ asset('vendors/jquery/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('vendors/zxcvbn/zxcvbn.js') }}"></script>
-    <script src="{{ asset('assets/register/index.js') }}"></script>
     <script src="{{ asset('vendors/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ asset('assets/js/loading.js') }}"></script>
     @stack('scripts')
     <!-- Scripts JS :end -->
 </body>

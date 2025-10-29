@@ -1,5 +1,6 @@
-let userTable, selectRole;
+let userTable, selectRole, buttonActionIndex;
 
+buttonActionIndex = 7;
 userTable = () => {
     initCustomDatatable({
         tableId: "users-table",

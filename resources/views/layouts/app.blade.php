@@ -35,8 +35,9 @@
     @include('layouts.meta-seo')
 
     <!-- Scripts CSS :begin -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('vendors/flatpickr/flatpickr.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('vendors/simplebar/simplebar.css') }}" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     <!-- Scripts CSS :end -->
 </head>
@@ -58,6 +59,7 @@
 
             <!-- Page Content -->
             <main class="p-6 w-full mx-auto ">
+                <x-indicators.loading></x-indicators.loading>
                 {{ $slot }}
             </main>
 
@@ -70,7 +72,9 @@
     <!-- Scripts JS :begin -->
     <script src="{{ asset('vendors/jquery/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('vendors/dayjs/dayjs.min.js') }}"></script>
+    <script src="{{ asset('vendors/flatpickr/flatpickr.js') }}"></script>
     <script src="{{ asset('vendors/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ asset('assets/js/loading.js') }}"></script>
     @stack('scripts')
     <!-- Scripts JS :end -->
 </body>

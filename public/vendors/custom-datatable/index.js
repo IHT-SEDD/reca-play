@@ -5,6 +5,8 @@ function initCustomDatatable({
     tableDataUrl,
     tableColumns,
     withData = [],
+    hasAction = true,
+    buttonActionIndex = null,
 }) {
     // Global variables
     const $table = $(`#${tableId}`);
@@ -16,6 +18,54 @@ function initCustomDatatable({
     const $pageNumber = $(`#page-number-${tableId}`);
     const $prevBtn = $(`#prev-data-${tableId}`);
     const $nextBtn = $(`#next-data-${tableId}`);
+
+    const columnDefs = [];
+
+    if (hasAction && buttonActionIndex !== null) {
+        columnDefs.push({
+            responsivePriority: 1,
+            targets: buttonActionIndex,
+            data: null,
+            orderable: false,
+            searchable: false,
+            className: "text-end whitespace-nowrap",
+            width: "1%",
+            render: function (data, type, row) {
+                return `
+                    <div x-data="{ open: false }" class="relative inline-block text-left">
+                        <button
+                            @click="open = !open"
+                            :class="[
+                                'focus:ring-0 focus:outline-none font-medium rounded-xl text-xs md:text-sm p-3 text-center inline-flex items-center transition-colors',
+                                open
+                                    ? 'bg-hot-shot text-white-owl dark:text-eerie-black'
+                                    : 'bg-white-owl hover:text-hot-shot text-after-midnight dark:text-white-owl dark:hover:text-hot-shot'
+                            ]"
+                            type="button">
+                            <i data-lucide="ellipsis-vertical" class="w-4 h-4"></i>
+                        </button>
+
+                        <div x-show="open" x-cloak @click.outside="open = false" x-transition
+                            class="absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-full min-w-fit bg-white shadow-sm divide-y divide-eerie-black border border-base-200">
+                            <ul class="flex flex-col justify-center items-start text-[13px] text-eerie-black font-medium p-2">
+                                <li>
+                                    <button @click.stop="setTimeout(() => open = false, 200);editData(${row.id});"
+                                        class="block w-full text-left text-sm font-medium px-3 py-2 rounded-md hover:text-hot-shot text-after-midnight">
+                                        Edit
+                                    </button>
+                                </li>
+                                <li>
+                                    <button @click.stop="setTimeout(() => open = false, 200);deleteData(${row.id});"
+                                        class="block w-full text-left text-sm font-medium px-3 py-2 rounded-md hover:text-hot-shot text-after-midnight">
+                                        Delete
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>`;
+            },
+        });
+    }
 
     const table = $table.DataTable({
         processing: true,

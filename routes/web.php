@@ -228,8 +228,13 @@ Route::middleware(['check.maintenance'])->group(function () {
                     Route::get('/{hashedId}', [VenueManagementController::class, 'detailFieldPage'])->name('venue-management.detail-field');
                     Route::get('/data/{hashedId}', [VenueManagementController::class, 'detailFieldData'])->name('venue-management.detail-field-data');
                     Route::get('/last-activity/data/{hashedId}', [VenueManagementController::class, 'lastActivity'])->name('venue-management.last-activity');
+                    Route::get('/access-code/data/{hashedId}', [VenueManagementController::class, 'accessCode'])->name('venue-management.access-code');
+                    Route::post('/access-code/add/{hashedId}', [VenueManagementController::class, 'newAccessCode'])->name('venue-management.generate-access-code');
                     Route::post('/status/update/{hashedId}', [VenueManagementController::class, 'updateStatusActive'])->name('venue-management.update-status');
-                    Route::post('/code-access/generate/{hashedId}', [VenueManagementController::class, 'generateAccessCode'])->name('venue-management.generate-access-code');
+
+                    Route::prefix('handle')->group(function () {
+                        Route::post('start-record/{hashedId}', [VenueManagementController::class, 'startRecording'])->name('venue-management.start-record');
+                    });
                 });
             });
         });

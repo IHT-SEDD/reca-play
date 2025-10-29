@@ -1,6 +1,6 @@
 <x-app-layout :pageTitle="'Record a Moment'">
- <div class="py-8 flex justify-center items-center">
-  <div class="w-full max-w-8xl mx-auto md:px-8 px-5">
+ <div class="flex justify-center items-center">
+  <div class="w-full max-w-8xl mx-auto">
    <div class="flex justify-center items-center flex-col gap-4">
     <!-- Title -->
     <div class="flex flex-col justify-center items-center gap-1 mb-4">
@@ -24,14 +24,16 @@
        <video id="preview_cam" autoplay playsinline muted class="rounded-2xl bg-after-midnight block w-full"></video>
 
        <!-- Control Panel :begin -->
-       <div class="flex md:flex-row flex-col items-center justify-between bg-orochimaru/70 p-3 rounded-2xl w-full space-x-4 gap-3 md:gap-0">
+       <div
+        class="flex md:flex-row flex-col items-center justify-between bg-orochimaru/70 p-3 rounded-2xl w-full space-x-4 gap-3 md:gap-0">
         <!-- Cam Data Section :begin -->
         {{-- <div class="flex flex-col"> --}}
          <div class="flex items-center gap-2 text-md font-semibold text-after-midnight">
           <i data-lucide="cctv" class="w-5 h-5"></i>
           <span id="cam_name"></span>
          </div>
-        {{-- </div> --}}
+         {{--
+        </div> --}}
         <!-- Cam Data Section :end -->
 
         <!-- Button Section :begin -->
