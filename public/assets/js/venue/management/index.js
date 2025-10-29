@@ -1,6 +1,8 @@
-let fieldTable, populateData, hasAction;
+let fieldTable, populateData, hasAction, buttonActionIndex;
 
 hasAction = false;
+buttonActionIndex = null;
+
 fieldTable = () => {
     initCustomDatatable({
         tableId: "field-table",
