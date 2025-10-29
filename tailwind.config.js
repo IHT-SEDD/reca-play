@@ -17,8 +17,12 @@ export default {
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./storage/framework/views/*.php",
         "./resources/views/**/*.blade.php",
+        "./resources/js/**/*.js",
         "./node_modules/flowbite/**/*.js",
     ],
+
+    // ========== SAFELIST FOR CLASSES ==========
+    safelist,
 
     theme: {
         extend: {
@@ -31,12 +35,12 @@ export default {
                 ...customColors,
             },
             // ========== CUSTOM SIZES ==========
-            maxWidth: customSizes,
+            maxWidth: {
+                ...customSizes,
+            },
         },
     },
     plugins: [forms, daisyui, flowbiteplugin],
     // ========== DAISY UI CONFIG ==========
     daisyui: daisyuiConfig,
-    // ========== SAFELIST FOR CLASSES ==========
-    safelist,
 };
