@@ -165,86 +165,33 @@ class RecordedSearchService
     {
         if (!file_exists($inputFile) || filesize($inputFile) < 1024) return false;
 
-        // $cmd = $this->buildTrimCommand($inputFile, $outputFile, $startSec, $duration, $forceEncode);
+        $cmd = $this->buildTrimCommand($inputFile, $outputFile, $startSec, $duration, $forceEncode);
 
-        // Log::channel('camera-record')->info("[TRIM START]", [
-        //     'input' => $inputFile,
-        //     'output' => $outputFile,
-        //     'startSec' => $startSec,
-        //     'duration' => $duration,
-        //     'forceEncode' => $forceEncode,
-        //     'cmd' => implode(' ', $cmd),
-        //     'inputSize' => file_exists($inputFile) ? filesize($inputFile) : 0,
-        // ]);
+        Log::channel('camera-record')->info("[TRIM START]", [
+            'input' => $inputFile,
+            'output' => $outputFile,
+            'startSec' => $startSec,
+            'duration' => $duration,
+            'forceEncode' => $forceEncode,
+            'cmd' => implode(' ', $cmd),
+            'inputSize' => file_exists($inputFile) ? filesize($inputFile) : 0,
+        ]);
 
-        // $process = new Process($cmd);
-        // $process->setTimeout(0)->run();
-
-        // if (!$process->isSuccessful() || !file_exists($outputFile) || filesize($outputFile) < 1024) {
-        //     Log::channel('camera-record')->error("[TRIM FAIL]", [
-        //         'stderr' => trim($process->getErrorOutput())
-        //     ]);
-        //     return false;
-        // }
-
-        // Log::channel('camera-record')->info("[TRIM DONE]", [
-        //     'output' => $outputFile,
-        //     'size' => filesize($outputFile)
-        // ]);
-        // return true;
-
-        $fastCmd = [
-            'ffmpeg',
-            '-y',
-            '-ss',
-            (string)$startSec,
-            '-i',
-            $inputFile,
-            '-t',
-            (string)$duration,
-            '-c',
-            'copy',
-            '-movflags',
-            '+faststart',
-            $outputFile
-        ];
-
-        $process = new Process($fastCmd);
+        $process = new Process($cmd);
         $process->setTimeout(0)->run();
 
-        if ($process->isSuccessful() && file_exists($outputFile) && filesize($outputFile) > 1024) {
-            return true;
+        if (!$process->isSuccessful() || !file_exists($outputFile) || filesize($outputFile) < 1024) {
+            Log::channel('camera-record')->error("[TRIM FAIL]", [
+                'stderr' => trim($process->getErrorOutput())
+            ]);
+            return false;
         }
 
-        // fallback re-encode
-        $encodeCmd = [
-            'ffmpeg',
-            '-y',
-            '-ss',
-            (string)$startSec,
-            '-i',
-            $inputFile,
-            '-t',
-            (string)$duration,
-            '-c:v',
-            'libx264',
-            '-preset',
-            'fast',
-            '-crf',
-            '23',
-            '-c:a',
-            'aac',
-            '-b:a',
-            '128k',
-            '-movflags',
-            '+faststart',
-            $outputFile
-        ];
-
-        $process = new Process($encodeCmd);
-        $process->setTimeout(0)->run();
-
-        return $process->isSuccessful() && file_exists($outputFile) && filesize($outputFile) > 1024;
+        Log::channel('camera-record')->info("[TRIM DONE]", [
+            'output' => $outputFile,
+            'size' => filesize($outputFile)
+        ]);
+        return true;
     }
 
     // =========================================================
@@ -404,8 +351,7 @@ XML;
                     '-show_entries',
                     'stream=codec_name',
                     '-of',
-                    // 'default=noprint_wrappers=1:nokey=1',
-                    'csv=p=0',
+                    'default=noprint_wrappers=1:nokey=1',
                     $rawTs
                 ]);
                 $codecCheck->run();
@@ -420,127 +366,72 @@ XML;
                     '-show_entries',
                     'stream=codec_name',
                     '-of',
-                    // 'default=noprint_wrappers=1:nokey=1',
-                    'csv=p=0',
+                    'default=noprint_wrappers=1:nokey=1',
                     $rawTs
                 ]);
                 $audioCheck->run();
                 $audioCodec = trim($audioCheck->getOutput());
 
                 if ($videoCodec === 'h264' && $audioCodec === 'aac') {
-                    rename($rawTs, $encodedMp4);
-                    $encodedFiles[] = $encodedMp4;
-                    continue;
+                    $encodedFiles[] = $rawTs;
+                    Log::channel('camera-record')->info("[SEG COPY OK] seg_{$seq}", ['size' => filesize($rawTs)]);
+                } else {
+                    $process = new Process([
+                        'ffmpeg',
+                        '-y',
+                        '-err_detect',
+                        'ignore_err',
+                        '-i',
+                        $rawTs,
+                        '-c:v',
+                        'libx264',
+                        '-preset',
+                        'ultrafast',
+                        '-crf',
+                        '23',
+                        '-c:a',
+                        'aac',
+                        '-b:a',
+                        '128k',
+                        '-movflags',
+                        '+faststart',
+                        $encodedMp4
+                    ]);
+                    $process->setTimeout(0)->start();
+                    $processes[] = ['process' => $process, 'raw' => $rawTs, 'mp4' => $encodedMp4];
                 }
-
-                $ffmpeg = new Process([
-                    'ffmpeg',
-                    '-y',
-                    '-loglevel',
-                    'error',
-                    '-i',
-                    $rawTs,
-                    '-c:v',
-                    'libx264',
-                    '-preset',
-                    'ultrafast',
-                    '-crf',
-                    '24',
-                    '-c:a',
-                    'aac',
-                    '-b:a',
-                    '96k',
-                    '-movflags',
-                    '+faststart',
-                    $encodedMp4
-                ]);
-
-                $ffmpeg->setTimeout(0)->start();
-                $processes[] = ['process' => $ffmpeg, 'raw' => $rawTs, 'mp4' => $encodedMp4];
-
-                while (count($processes) >= $maxParallel) {
-                    foreach ($processes as $key => $p) {
-                        if (!$p['process']->isRunning()) {
-                            if ($p['process']->isSuccessful() && file_exists($p['out'])) {
-                                $encodedFiles[] = $p['out'];
-                            } else {
-                                Log::channel('camera-record')->error("[ENCODE FAIL]", ['stderr' => $p['process']->getErrorOutput()]);
-                            }
-                            @unlink($p['raw']);
-                            unset($processes[$key]);
-                        }
-                    }
-                    usleep(200000);
-                }
-
-                // if ($videoCodec === 'h264' && $audioCodec === 'aac') {
-                //     $encodedFiles[] = $rawTs;
-                //     Log::channel('camera-record')->info("[SEG COPY OK] seg_{$seq}", ['size' => filesize($rawTs)]);
-                // } else {
-                //     $process = new Process([
-                //         'ffmpeg',
-                //         '-y',
-                //         '-err_detect',
-                //         'ignore_err',
-                //         '-i',
-                //         $rawTs,
-                //         '-c:v',
-                //         'libx264',
-                //         '-preset',
-                //         'ultrafast',
-                //         '-crf',
-                //         '23',
-                //         '-c:a',
-                //         'aac',
-                //         '-b:a',
-                //         '128k',
-                //         '-movflags',
-                //         '+faststart',
-                //         $encodedMp4
-                //     ]);
-                //     $process->setTimeout(0)->start();
-                //     $processes[] = ['process' => $process, 'raw' => $rawTs, 'mp4' => $encodedMp4];
-                // }
             } catch (\Throwable $e) {
                 Log::channel('camera-record')->error("[DOWNLOAD ERROR] seg_{$seq}", ['error' => $e->getMessage()]);
             }
 
-            // while (count($processes) >= $maxParallel) {
-            //     foreach ($processes as $key => $p) {
-            //         if (!$p['process']->isRunning()) {
-            //             if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
-            //                 $encodedFiles[] = $p['mp4'];
-            //                 Log::channel('camera-record')->info("[SEG ENCODE OK] seg_{$seq}", ['size' => filesize($p['mp4'])]);
-            //             } else {
-            //                 Log::channel('camera-record')->error("[SEG ENCODE FAIL] seg_{$seq}", [
-            //                     'stderr' => $p['process']->getErrorOutput()
-            //                 ]);
-            //             }
-            //             @unlink($p['raw']);
-            //             unset($processes[$key]);
-            //         }
-            //     }
-            //     usleep(100000);
-            // }
+            while (count($processes) >= $maxParallel) {
+                foreach ($processes as $key => $p) {
+                    if (!$p['process']->isRunning()) {
+                        if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
+                            $encodedFiles[] = $p['mp4'];
+                            Log::channel('camera-record')->info("[SEG ENCODE OK] seg_{$seq}", ['size' => filesize($p['mp4'])]);
+                        } else {
+                            Log::channel('camera-record')->error("[SEG ENCODE FAIL] seg_{$seq}", [
+                                'stderr' => $p['process']->getErrorOutput()
+                            ]);
+                        }
+                        @unlink($p['raw']);
+                        unset($processes[$key]);
+                    }
+                }
+                usleep(100000);
+            }
             $seq++;
         }
 
         foreach ($processes as $p) {
             $p['process']->wait();
-            if ($p['process']->isSuccessful() && file_exists($p['out'])) {
-                $encodedFiles[] = $p['out'];
+            if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
+                $encodedFiles[] = $p['mp4'];
+                Log::channel('camera-record')->info("[SEG ENCODE OK FINAL]", ['size' => filesize($p['mp4'])]);
             }
             @unlink($p['raw']);
         }
-
-        // foreach ($processes as $p) {
-        //     $p['process']->wait();
-        //     if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
-        //         $encodedFiles[] = $p['mp4'];
-        //         Log::channel('camera-record')->info("[SEG ENCODE OK FINAL]", ['size' => filesize($p['mp4'])]);
-        //     }
-        //     @unlink($p['raw']);
-        // }
 
         return $encodedFiles;
     }
@@ -673,8 +564,6 @@ XML;
 
                 $directUse = (($startDiff <= $tolerance * 3 || $endDiff <= $tolerance * 3) || $coverageRatio >= 0.90);
 
-                // $directUse = abs($uriStart - $startTs) <= $tolerance && abs($uriEnd - $endTs) <= $tolerance;
-
                 $uris[] = [
                     'uri' => $uri,
                     'start' => $uriStart,
@@ -706,19 +595,6 @@ XML;
             ]);
             return [$directUri];
         }
-
-        // $mergedStart = min(array_column($uris, 'start') ?: [$startTs]);
-        // $mergedEnd   = max(array_column($uris, 'end') ?: [$endTs]);
-        // if ($mergedStart <= $startTs && $mergedEnd >= $endTs) {
-        //     Log::channel('camera-record')->info("[URI SELECT] Multiple URIs cover the requested range", [
-        //         'request_start' => gmdate('Y-m-d H:i:s', $startTs),
-        //         'request_end' => gmdate('Y-m-d H:i:s', $endTs),
-        //         'covered_start' => gmdate('Y-m-d H:i:s', $mergedStart),
-        //         'covered_end' => gmdate('Y-m-d H:i:s', $mergedEnd),
-        //         'uri_count' => count($uris)
-        //     ]);
-        //     return $uris;
-        // }
 
         if (!empty($uris)) {
             usort($uris, fn($a, $b) => ($b['end'] - $b['start']) <=> ($a['end'] - $a['start']));
