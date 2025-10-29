@@ -1,5 +1,6 @@
-let roleTable, buttonActionIndex;
+let roleTable, buttonActionIndex, hasAction;
 buttonActionIndex = 5;
+ hasAction = true;
 roleTable = () => {
     initCustomDatatable({
         tableId: "role-table",

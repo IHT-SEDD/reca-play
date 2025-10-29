@@ -1,5 +1,7 @@
-let apiTable;
-
+let apiTable, hasAction, withData, buttonActionIndex;
+buttonActionIndex = 8;
+hasAction = true; // Set to true if action buttons are needed
+withData = []; // Set with relationship if needed
 apiTable = () => {
     initCustomDatatable({
         tableId: "api-table",
@@ -28,12 +30,12 @@ apiTable = () => {
                 render: function (data) {
                     console.log(data);
                     if (data == true) {
-                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-lilliputian-lime/90 text-base-100 flex justify-start w-fit items-center gap-1">
+                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-lilliputian-lime/90 text-green-600 flex justify-start w-fit items-center gap-1">
                                     <i data-lucide="circle-check" class="w-4 h-4"></i>
                                     Active
                                 </span>`;
                     } else {
-                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-vivaldi-red/90 text-base-100 flex justify-start w-fit items-center gap-1">
+                        return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-vivaldi-red/90 text-danger-500 flex justify-start w-fit items-center gap-1">
                                     <i data-lucide="circle-x" class="w-4 h-4"></i>
                                     Active
                                 </span>`;
@@ -61,6 +63,32 @@ apiTable = () => {
         ],
     });
 };
+
+formEdit = (data) => {
+    console.log(data);
+
+       $('#edit-form input[name="id"]').val(data.id);
+       $('#edit-form input[name="name"]').val(data.name);
+       $('#edit-form input[name="url"]').val(data.url);
+       $('#edit-form input[name="username"]').val(data.username);
+       $('#edit-form input[name="password"]').val(data.password);
+         // toggle-input component renders a hidden input (value=0) and a checkbox (value=1)
+       // set the checkbox checked state according to data.is_active
+       const isActive = data.is_active == true;
+       const $checkbox = $('#edit-form input[type="checkbox"][name="is_active"]');
+       const $hidden = $('#edit-form input[type="hidden"][name="is_active"]');
+       if ($checkbox.length) {
+           $checkbox.prop('checked', isActive);
+           // trigger change so any UI bound styles update
+           $checkbox.trigger('change');
+       }
+       // ensure hidden input stays correct (0 when unchecked, 1 when checked) to keep consistency
+       if ($hidden.length) {
+           $hidden.val(isActive ? '0' : '0');
+       }
+
+      $('#modal_master').get(0).showModal();
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     apiTable();

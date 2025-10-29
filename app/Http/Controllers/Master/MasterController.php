@@ -144,13 +144,12 @@ class MasterController extends Controller
      */
     public function updateData(Request $request, string $type)
     {
-
         // dd($request->all());
         $validated = $this->masterFormRequestService->getValidatedData($type, $request, 'update');
         $userId = Auth::id();
         $id = $request->id;
 
-        // dd($request->all(), $validated);
+        // dd($validated);
         try {
             DB::beginTransaction();
 

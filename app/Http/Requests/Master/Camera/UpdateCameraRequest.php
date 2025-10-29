@@ -9,36 +9,7 @@ class UpdateCameraRequest extends StoreCameraRequest
 {
     protected function prepareForValidation()
     {
-        if (!$this->has('code') || empty($this->code)) {
-            $today = now();
-            $year = $today->year;
-
-            DB::transaction(function () use ($today, &$code) {
-                $lastCamera = \App\Models\Master\Camera::whereYear('created_at', $today->year)
-                    ->lockForUpdate()
-                    ->latest('id')
-                    ->first();
-
-                $lastNumber = 0;
-                if ($lastCamera && preg_match('/CAM(\d+)-\d{6}/', $lastCamera->code, $matches)) {
-                    $lastNumber = (int) $matches[1];
-                }
-
-                $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-
-                $this->merge([
-                    'code' => 'CAM' . $newNumber . '-' . $today->format('dmy')
-                ]);
-            });
-        }
-    }
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
+       // Empty: no need to generate a new Code when updating
     }
 
     /**
@@ -49,7 +20,6 @@ class UpdateCameraRequest extends StoreCameraRequest
     public function rules(): array
     {
         return [
-            'code' => ['nullable', 'string', 'unique:cameras,code', 'min:2'],
             'brand' => ['nullable', 'string', 'min:5'],
             'type' => ['nullable', 'string', 'min:2'],
             'name' => ['required', 'string', 'max:255', 'min:3'],
@@ -66,8 +36,6 @@ class UpdateCameraRequest extends StoreCameraRequest
     public function messages(): array
     {
         return [
-            'code.min' => 'Code minimum is 2 characters.',
-            'code.unique' => 'Code already exists.',
 
             'brand.min' => 'Brand minimum is 5 characters.',
 

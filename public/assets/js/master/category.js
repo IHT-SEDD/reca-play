@@ -1,5 +1,7 @@
-let categoryTable, buttonActionIndex;
+let categoryTable, buttonActionIndex, hasAction, withData;
 buttonActionIndex = 6;
+hasAction = true; // Set to true if action buttons are needed
+withData = []; // Set with relationship if needed
 categoryTable = () => {
     initCustomDatatable({
         tableId: "category-table",
