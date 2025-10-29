@@ -3,10 +3,7 @@
 function initCustomDatatable({
     tableId,
     tableDataUrl,
-    tableColumns,
-    withData = [],
-    hasAction = true,
-    buttonActionIndex = null,
+    tableColumns
 }) {
     // Global variables
     const $table = $(`#${tableId}`);
@@ -90,16 +87,16 @@ function initCustomDatatable({
 
         columns: tableColumns,
         columnDefs: [
-            {
-                responsivePriority: 1,
-                targets: buttonActionIndex,
-                data: null,
-                orderable: false,
-                searchable: false,
-                className: "text-end whitespace-nowrap dt-actions", // 👈 tambahkan class ini
-                width: "1%",
-                render: function (data, type, row) {
-                    return `
+           {
+    responsivePriority: 1,
+    targets: buttonActionIndex,
+    data: null,
+    orderable: false,
+    searchable: false,
+    className: "text-end whitespace-nowrap dt-actions",
+    width: "1%",
+       render: function (data, type, row) {
+    return `
         <div x-data="{ open: false }" class="relative inline-block text-left dt-action">
             <button
                 @click="

@@ -187,7 +187,55 @@ accessCodeTable = (hashedId) => {
             { data: "venue.name", name: "venue.name", orderable: false },
             { data: "field.name", name: "field.name", orderable: false },
             { data: "type", name: "type", orderable: false },
-            { data: "status", name: "status", orderable: false },
+            {
+                data: "status",
+                name: "status",
+                orderable: false,
+                render: function (data, type, row) {
+                    let icon = "";
+                    let colorClass = "";
+                    let label = data;
+
+                    switch (data) {
+                        case "active":
+                            icon =
+                                '<i data-lucide="user-search" class="w-4 h-auto me-2"></i>';
+                            colorClass = "text-paradise-green";
+                            break;
+
+                        case "in_use":
+                            icon =
+                                '<i data-lucide="hand" class="w-4 h-auto me-2"></i>';
+                            colorClass = "text-fuego";
+                            break;
+
+                        case "done":
+                            icon =
+                                '<i data-lucide="circle-check" class="w-4 h-auto me-2"></i>';
+                            colorClass = "text-exit-light";
+                            break;
+
+                        case "expired":
+                            icon =
+                                '<i data-lucide="shield-x" class="w-4 h-auto me-2"></i>';
+                            colorClass = "text-vivaldi-red";
+                            break;
+
+                        default:
+                            icon =
+                                '<i data-lucide="help-circle" class="w-4 h-auto me-2"></i>';
+                            colorClass = "text-gray-400";
+                            break;
+                    }
+
+                    return `
+                        <span class="flex items-center font-semibold text-sm ${colorClass}">
+                            ${icon}
+                            ${label.replace("_", " ")}
+                        </span>
+                    `;
+                },
+            },
             {
                 data: "generated_code",
                 name: "generated_code",
@@ -237,20 +285,21 @@ accessCodeTable = (hashedId) => {
                 name: "id",
                 searchable: false,
                 orderable: false,
-                render: function (data) {
+                render: function (data, type, row) {
+                    const status = row.status;
+                    const disabled =
+                        status === "done" ||
+                        status === "expired" ||
+                        status === "in_use"
+                            ? "disabled opacity-50 cursor-not-allowed"
+                            : "";
+
                     return `
-                        <div class="flex flex-col gap-2 w-full items-stretch">
-                            <button
-                                data-id="${data}" 
-                                class="start_record_btn rounded-lg px-3 py-2 text-xs text-white font-medium bg-temple-orange hover:bg-hot-shot w-full text-center">
-                                Record
-                            </button>
-                            <button
-                                data-id="${data}" 
-                                class="stop_record_btn rounded-lg px-3 py-2 text-xs text-white font-medium bg-candy-heart hover:bg-vivaldi-red w-full text-center">
-                                Stop
-                            </button>
-                        </div>
+                        <button
+                            data-id="${data}" 
+                            class="start_record_btn rounded-lg px-3 py-2 text-xs text-white font-medium bg-temple-orange hover:bg-hot-shot w-full text-center ${disabled}">
+                            Record
+                        </button>
                     `;
                 },
             },
@@ -280,10 +329,13 @@ handlerFormAddAccessCode = () => {
 // ======== Start recording function ========
 startRecording = (hashedId) => {
     $(document).on("click", ".start_record_btn", function () {
-        const sessionCodeId = $(this).data("id");
+        const $btn = $(this);
+        const sessionCodeId = $btn.data("id");
+        if ($btn.hasClass("disabled")) return;
         console.log("Start record button clicked, ID:", sessionCodeId);
 
         showLoading();
+        $btn.addClass("disabled opacity-50 cursor-not-allowed");
 
         setTimeout(() => {
             $.ajax({
@@ -294,10 +346,12 @@ startRecording = (hashedId) => {
                 success: function (res) {
                     hideLoading();
                     notyf.success(res.message);
+                    $btn.addClass("disabled opacity-50 cursor-not-allowed");
                 },
                 error: function (xhr, status, error) {
                     hideLoading();
                     notyf.error("Failed to start recording. Please try again.");
+                    $btn.removeClass("disabled opacity-50 cursor-not-allowed");
                 },
             });
         }, 300);

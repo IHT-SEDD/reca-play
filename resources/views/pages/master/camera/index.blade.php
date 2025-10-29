@@ -10,6 +10,8 @@
   </div>
  </div>
 
+ @include('pages.master.camera.partial.edit-form')
+
  @push('styles')
  <link rel="stylesheet" href="{{ asset('vendors/tom-select/tom-select.css') }}">
  @endpush

@@ -6,9 +6,13 @@ let qrCodeTable,
     editFieldSelectInput,
     editVenueSelectInput,
     handlingDownloadQr,
-    buttonActionIndex;
+    buttonActionIndex,
+    withData,
+    hasAction;
     buttonActionIndex = 11;
-qrCodeTable = () => {
+    hasAction = true; // Set to true if action buttons are needed
+    withData = []; // Set with relationship if needed
+    qrCodeTable = () => {
     initCustomDatatable({
         tableId: "qr_code-table",
         tableDataUrl: "/master/qr_code/data",
@@ -112,62 +116,10 @@ selectField = () => {
         },
     });
 
- editFieldSelectInput =  new TomSelect("#edit-select-field", {
-        valueField: "id",
-        labelField: "label",
-        searchField: ["label"],
-        preload: true,
-        create: false,
-        sortField: { field: "label", direction: "asc" },
-        load: function (query, callback) {
-            $.ajax({
-                url: "/select/field",
-                data: { q: query, with: "venue" },
-                dataType: "json",
-                success: function (res) {
-                    const formatted = res.map((item) => ({
-                        id: item.id,
-                        label: item.venue
-                            ? `${item.venue.name} - ${item.text}`
-                            : item.text,
-                    }));
-                    callback(formatted);
-                },
-                error: function () {
-                    callback();
-                },
-            });
-        },
-    });
 };
 
 selectVenue = () => {
     venueSelectInput = new TomSelect("#select-venue", {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        create: false,
-        sortField: {
-            field: "text",
-            direction: "asc",
-        },
-        load: function (query, callback) {
-            $.ajax({
-                url: "/select/venue",
-                data: { q: query },
-                dataType: "json",
-                success: function (res) {
-                    callback(res);
-                },
-                error: function () {
-                    callback();
-                },
-            });
-        },
-    });
-
-    editVenueSelectInput = new TomSelect("#edit-select-venue", {
         valueField: "id",
         labelField: "text",
         searchField: "text",
@@ -277,38 +229,6 @@ formEdit = (data) => {
        $('#edit-form input[name="id"]').val(data.id);
        $('#edit-form input[name="name"]').val(data.name);
        $('#edit-form textarea[name="description"]').val(data.description);
-    // Untuk field
-        if (data.field) {
-            editFieldSelectInput.addOption({
-                id: data.field.id,
-                text: data.field.name,
-            });
-            editFieldSelectInput.setValue(data.field.id);
-        } else {
-            editFieldSelectInput.clear(); // opsional: kosongkan select jika null
-        }
-
-        // Untuk venue
-        if (data.venue) {
-            editVenueSelectInput.addOption({
-                id: data.venue.id,
-                text: data.venue.name,
-            });
-            editVenueSelectInput.setValue(data.venue.id);
-
-        } else {
-               $('#edit-form select[name="venue_id"]').addClass('d-none');
-            editVenueSelectInput.clear(); // opsional: kosongkan select jika null
-        }
-
-        // Set radio button checked berdasarkan data.type
-        if (data.type) {
-            $(`#edit-form input[name="type"][value="${data.type}"]`).prop('checked', true);
-        } else {
-            // Kalau tidak ada data type, kosongkan semua radio
-            $('#edit-form input[name="type"]').prop('checked', false);
-        }
-
          // toggle-input component renders a hidden input (value=0) and a checkbox (value=1)
        // set the checkbox checked state according to data.is_active
        const isActive = data.is_active == true;

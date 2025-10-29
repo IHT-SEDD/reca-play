@@ -1,5 +1,7 @@
-let fieldTable, selectVenue, selectCategory, editSelectVenue, editSelectCategory ,buttonActionIndex;
+let fieldTable, selectVenue, selectCategory, editSelectVenue, editSelectCategory ,buttonActionIndex, hasAction, withData;
 buttonActionIndex = 10;
+hasAction = true; // Set to true if action buttons are needed
+withData = []; // Set with relationship if needed
 fieldTable = () => {
     initCustomDatatable({
         tableId: "field-table",
@@ -155,8 +157,6 @@ selectVenue = () => {
 };
 
 formEdit = (data) => {
-    console.log(data);
-
        $('#edit-form input[name="id"]').val(data.id);
        $('#edit-form input[name="name"]').val(data.name);
        $('#edit-form input[name="initial"]').val(data.initial);
