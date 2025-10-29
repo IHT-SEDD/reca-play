@@ -249,7 +249,7 @@ class CreatorController extends Controller
             'qr_code_id' => $scannedQrData->qr_code_id,
             'recording_id' => $data->id,
             'session_token' => $sessionToken,
-            'status' => 'in use',
+            'status' => SessionCodeStatus::InUse,
             'used_at' => now(),
         ]);
 
