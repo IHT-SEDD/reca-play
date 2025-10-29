@@ -25,9 +25,10 @@ Artisan::command('logs:clear-camera', function () {
         'storage/logs/camera/control.log',
         'storage/logs/camera/record.log',
         'storage/logs/camera/job.log',
-        'storage/logs/worker.log',
-        'storage/logs/laravel.log',
+        'storage/logs/worker/camera_record_process.log',
+        'storage/logs/worker/camera_download.log',
         'storage/logs/creator/creator.log',
+        'storage/logs/laravel.log',
     ];
 
     foreach ($logFiles as $file) {
