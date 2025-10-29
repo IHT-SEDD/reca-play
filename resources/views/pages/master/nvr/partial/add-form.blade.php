@@ -46,7 +46,7 @@
   </div>
 
   <div class="md:w-1/2 w-full">
-   <x-input-label for="port_id" :value="__('Port')" />
+   <x-input-label for="select-port" :value="__('Port')" />
    <select id="select-port" placeholder="Select port..." autocomplete="off" name="port_id" class="my-1.5">
    </select>
   </div>
@@ -84,7 +84,7 @@
  </div>
 
  <div class="mt-2">
-  <x-input-label for="venue_id" :value="__('Venue')" required />
+  <x-input-label for="select-venue" :value="__('Venue')" required />
   <select id="select-venue" placeholder="Select venue..." autocomplete="off" name="venue_id" class="my-1.5" required>
   </select>
  </div>

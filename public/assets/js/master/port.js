@@ -1,5 +1,7 @@
-let portTable, buttonActionIndex;
+let portTable, buttonActionIndex, hasAction, withData;
 buttonActionIndex = 6;
+hasAction = true; // Set to true if action buttons are needed
+withData = []; // Set with relationship if needed
 portTable = () => {
     initCustomDatatable({
         tableId: "port-table",

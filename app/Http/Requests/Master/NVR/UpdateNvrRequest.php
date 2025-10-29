@@ -5,41 +5,13 @@ namespace App\Http\Requests\Master\NVR;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 
-class StoreNvrRequest extends FormRequest
+class UpdateNvrRequest extends StoreNvrRequest
 {
     protected function prepareForValidation()
     {
-        if (!$this->has('code') || empty($this->code)) {
-            $today = now();
-            $year = $today->year;
-
-            DB::transaction(function () use ($today, &$code) {
-                $lastNvr = \App\Models\Master\Nvr::whereYear('created_at', $today->year)
-                    ->lockForUpdate()
-                    ->latest('id')
-                    ->first();
-
-                $lastNumber = 0;
-                if ($lastNvr && preg_match('/NVR(\d+)-\d{6}/', $lastNvr->code, $matches)) {
-                    $lastNumber = (int) $matches[1];
-                }
-
-                $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-
-                $this->merge([
-                    'code' => 'NVR' . $newNumber . '-' . $today->format('dmy')
-                ]);
-            });
-        }
+          // Empty: no need to generate a new Code when updating
     }
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -51,8 +23,6 @@ class StoreNvrRequest extends FormRequest
         return [
             'venue_id' => ['required', 'string', 'exists:venues,id'],
             'port_id' => ['nullable', 'integer', 'exists:ports,id'],
-
-            'code' => ['nullable', 'string', 'unique:nvrs,code', 'min:2'],
             'brand' => ['nullable', 'string', 'min:5'],
             'type' => ['nullable', 'string', 'min:5'],
             'name' => ['required', 'string', 'max:255', 'min:3'],
@@ -71,9 +41,6 @@ class StoreNvrRequest extends FormRequest
         return [
             'venue_id.required' => 'Venue cannot be empty.',
             'venue_id.exists' => 'Venue not found.',
-
-            'code.min' => 'Code minimum is 2 characters.',
-            'code.unique' => 'Code already exists.',
 
             'brand.min' => 'Brand minimum is 5 characters.',
 
