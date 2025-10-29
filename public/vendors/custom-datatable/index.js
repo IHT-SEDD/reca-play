@@ -1,10 +1,6 @@
 "use strict";
 
-function initCustomDatatable({
-    tableId,
-    tableDataUrl,
-    tableColumns
-}) {
+function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
     // Global variables
     const $table = $(`#${tableId}`);
     const $search = $(`#search-data-${tableId}`);
@@ -87,16 +83,16 @@ function initCustomDatatable({
 
         columns: tableColumns,
         columnDefs: [
-           {
-    responsivePriority: 1,
-    targets: buttonActionIndex,
-    data: null,
-    orderable: false,
-    searchable: false,
-    className: "text-end whitespace-nowrap dt-actions",
-    width: "1%",
-       render: function (data, type, row) {
-    return `
+            {
+                responsivePriority: 1,
+                targets: buttonActionIndex,
+                data: null,
+                orderable: false,
+                searchable: false,
+                className: "text-end whitespace-nowrap dt-actions",
+                width: "1%",
+                render: function (data, type, row) {
+                    return `
         <div x-data="{ open: false }" class="relative inline-block text-left dt-action">
             <button
                 @click="
@@ -148,7 +144,7 @@ function initCustomDatatable({
                 },
             },
         ],
-
+        columnDefs: columnDefs,
         language: {
             processing: "Loading data...",
             zeroRecords: "",
