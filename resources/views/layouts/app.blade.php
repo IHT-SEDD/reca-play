@@ -42,9 +42,9 @@
     <!-- Scripts CSS :end -->
 </head>
 
-<body class="font-sans text-gray-900 antialiased">
+<body class="body-layout">
     <div data-simplebar style="height: 100vh;">
-        <div class="min-h-screen flex flex-col bg-white-chalk dark:bg-reversed-grey">
+        <div class="min-h-screen flex flex-col main-bg-default">
             @include('layouts.navigation')
 
             <!-- Super admin menu -->

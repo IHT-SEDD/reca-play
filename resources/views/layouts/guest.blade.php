@@ -42,11 +42,10 @@
     <!-- Scripts CSS :end -->
 </head>
 
-<body class="font-sans text-gray-900 antialiased">
+<body class="body-layout">
     <div data-simplebar style="height: 100vh;">
         <x-indicators.loading></x-indicators.loading>
-        <div
-            class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-white-chalk dark:bg-reversed-grey">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 main-bg-default">
             <div class="flex flex-col items-center justify-center mb-6 gap-6 w-full">
                 <a href="/">
                     <img src="{{ asset('assets/img/logos/reca-black.png') }}" alt="Logo RECA"

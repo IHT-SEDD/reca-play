@@ -16,9 +16,9 @@ use Illuminate\Http\JsonResponse;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
+    // ============================================================
+    // Display the login view.
+    // ============================================================
     public function create(): View
     {
         return view('auth.login');
@@ -82,9 +82,9 @@ class AuthenticatedSessionController extends Controller
         return redirect()->to($redirectUrl);
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
+    // ============================================================
+    // Destroy an authenticated session.
+    // ============================================================
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
