@@ -8,7 +8,8 @@ let fetchData,
     handlerFormAddAccessCode,
     startRecording,
     hasAction,
-    buttonActionIndex;
+    buttonActionIndex,
+    withData;
 
 // ======== Initialize component ::begin ========
 const pathParts = window.location.pathname.split("/");
@@ -20,6 +21,7 @@ const streamInputWrapper = $("#stream_inputs");
 
 hasAction = false;
 buttonActionIndex = null;
+withData = null;
 // ======== Initialize component ::end ========
 
 // ======== Ajax CSRF token setup ::begin ========
