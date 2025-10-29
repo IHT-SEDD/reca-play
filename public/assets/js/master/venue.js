@@ -116,7 +116,7 @@ formEdit = (data) => {
             text: data.venue_type.name,
         });
         EditSelectVenueType.setValue(data.venue_type.id);
-       window.dispatchEvent(new CustomEvent('open-modal', { detail: 'edit-master-modal' }));
+      $('#modal_master').get(0).showModal();
 }
 
 document.addEventListener("DOMContentLoaded", function () {

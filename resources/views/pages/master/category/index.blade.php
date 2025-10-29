@@ -10,6 +10,8 @@
   </div>
  </div>
 
+    @include('pages.master.category.partial.edit-form')
+
  @push('styles')
  @endpush
 
