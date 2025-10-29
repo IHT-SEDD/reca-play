@@ -1,5 +1,6 @@
-let fieldTable, populateData;
+let fieldTable, populateData, hasAction;
 
+hasAction = false;
 fieldTable = () => {
     initCustomDatatable({
         tableId: "field-table",
@@ -37,7 +38,6 @@ fieldTable = () => {
                 },
             },
         ],
-        hasAction: false,
     });
 };
 
