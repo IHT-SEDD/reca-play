@@ -6,7 +6,7 @@
 <div x-data="{ open: false }" class="relative inline-block text-left">
     <!-- Trigger button -->
     <button @click="open = !open" :class="[
-        'focus:ring-0 focus:outline-none rounded-xl px-5 py-2.5 text-center inline-flex items-center transition-colors',
+        'dw-button',
         open 
             ? 'text-dw-button-active' 
             : 'text-dw-button-default'
@@ -18,8 +18,7 @@
     </button>
 
     <!-- Dropdown menu -->
-    <div id="dropdownDivider" x-show="open" x-cloak @click.outside="open = false" x-transition
-        class="absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-full min-w-fit bg-white shadow-sm divide-y divide-eerie-black border border-base-200">
+    <div id="dropdownDivider" x-show="open" x-cloak @click.outside="open = false" x-transition class="dw-menu">
         <!-- Slot menu -->
         <ul class="flex flex-col justify-center items-start text-dw-menu-default p-2">
             {{ $slot }}

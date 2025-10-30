@@ -7,26 +7,26 @@
 .text-title-default {
     @apply md:text-xl text-lg font-semibold tracking-wide text-eerie-black dark:text-white;
 }
+
+/* Button */
 .text-button-default {
     @apply font-medium text-sm capitalize tracking-wider text-white-owl dark:text-eerie-black;
 }
 
+/* Layout */
 .body-layout {
     @apply font-sans antialiased;
 }
+
+/* Main Wrapper */
 .main-bg-default {
     @apply bg-floral-white dark:bg-reversed-grey;
 }
+
+/* Nav */
 .main-nav-default {
     @apply bg-white dark:bg-night border-b border-white-owl;
 }
-.superadmin-nav-default {
-    @apply bg-white dark:bg-night border-b border-white-owl shadow-sm;
-}
-.main-footer-default {
-    @apply bg-white dark:bg-night border-t border-white-owl;
-}
-
 .text-nav-active {
     @apply text-sm font-medium leading-4 text-hot-shot;
 }
@@ -34,12 +34,43 @@
     @apply text-sm font-medium leading-4 text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
 }
 
+/* Superadmin Nav */
+.superadmin-nav-default {
+    @apply bg-white dark:bg-night border-b border-white-owl shadow-sm;
+}
+
+/* Footer */
+.main-footer-default {
+    @apply bg-white dark:bg-night border-t border-white-owl;
+}
+
+/* Dropdown */
+.dw-button {
+    @apply focus:ring-0 focus:outline-none rounded-xl px-5 py-2.5 text-center inline-flex items-center transition-colors;
+}
 .text-dw-button-default {
     @apply text-xs md:text-sm font-medium text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
 }
 .text-dw-button-active {
     @apply text-xs md:text-sm font-medium bg-white-owl text-hot-shot dark:text-eerie-black;
 }
+.dw-menu {
+    @apply absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-full min-w-fit bg-white shadow-sm divide-y divide-eerie-black border border-base-200;
+}
 .text-dw-menu-default {
     @apply text-[13px] text-after-midnight dark:text-white-owl font-medium;
+}
+
+/* Auth */
+.auth-wrapper {
+    @apply w-full sm:max-w-md p-6 bg-white shadow-md overflow-hidden sm:rounded-xl;
+}
+.auth-title {
+    @apply text-eerie-black dark:text-white text-lg font-bold text-start mb-6;
+}
+.auth-logo {
+    @apply w-14 h-14 md:w-20 md:h-20;
+}
+.auth-logo-wrapper {
+    @apply flex flex-col items-center justify-center mb-6 gap-6 w-full;
 }
