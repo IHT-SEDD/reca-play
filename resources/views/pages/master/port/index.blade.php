@@ -12,6 +12,8 @@
 
   @include('pages.master.port.partial.edit-form')
 
+  @include('pages.master.partial.master-delete-modal')
+
  @push('styles')
  <link rel="stylesheet" href="{{ asset('vendors/tom-select/tom-select.css') }}">
  @endpush

@@ -86,68 +86,7 @@ function initCustomDatatable({
         dom: "t",
 
         columns: tableColumns,
-        columnDefs: [
-           {
-    responsivePriority: 1,
-    targets: buttonActionIndex,
-    data: null,
-    orderable: false,
-    searchable: false,
-    className: "text-end whitespace-nowrap dt-actions",
-    width: "1%",
-       render: function (data, type, row) {
-    return `
-        <div x-data="{ open: false }" class="relative inline-block text-left dt-action">
-            <button
-                @click="
-                    open = !open;
-                    if (open) {
-                        let menu = $refs.menu;
-                        let rect = $el.getBoundingClientRect();
-                        let menuRect = menu.getBoundingClientRect();
-                        let spaceBelow = window.innerHeight - rect.bottom;
-                        let spaceAbove = rect.top;
-
-                        if (spaceBelow < menuRect.height && spaceAbove > menuRect.height) {
-                            menu.style.top = 'auto';
-                            menu.style.bottom = \`\${rect.height + 4}px\`;
-                        } else {
-                            menu.style.top = \`\${rect.height + 4}px\`;
-                            menu.style.bottom = 'auto';
-                        }
-                    }
-                "
-                class="focus:ring-0 focus:outline-none font-medium rounded-xl text-xs md:text-sm p-3 text-center inline-flex items-center transition-colors bg-white-owl hover:text-hot-shot text-after-midnight"
-            >
-                <i data-lucide="ellipsis-vertical" class="w-4 h-4"></i>
-            </button>
-
-            <div
-                x-ref="menu"
-                x-show="open"
-                x-cloak
-                @click.outside="open = false"
-                x-transition
-                class="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-md w-fit min-w-[120px] z-[9999]"
-            >
-                <ul class="p-2 text-sm text-after-midnight font-medium">
-                    <li>
-                        <button @click.stop="open = false; editData(${row.id});" class="block w-full text-left px-3 py-2 hover:text-hot-shot">
-                            Edit
-                        </button>
-                    </li>
-                    <li>
-                        <button @click.stop="open = false; deleteData(${row.id});" class="block w-full text-left px-3 py-2 hover:text-hot-shot">
-                            Delete
-                        </button>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    `;
-                },
-            },
-        ],
+        columnDefs: columnDefs,
 
         language: {
             processing: "Loading data...",
@@ -302,6 +241,57 @@ function handleSessionCodeError(message) {
     }
 
     return false;
+}
+
+const deleteData = (id) => {
+    const modalDelete = $('#master-delete-modal');
+    const path = window.location.pathname;
+    const segments = path.split("/").filter(Boolean);
+    const master = segments[1];
+
+    modalDelete.get(0).showModal();
+
+   $('#master-delete-btn').on('click', function (e) {
+    e.preventDefault();
+
+     $.ajax({
+        type: "DELETE",
+        data : {
+            _token : $('meta[name="csrf-token"]').attr('content')
+        },
+        url: `/master/${master}/${id}/delete-data`,
+        success: function (response) {
+
+            if (
+                modalDelete.data('datatable') &&
+                $.fn.DataTable.isDataTable(modalDelete.data('datatable'))
+            ) {
+                $(modalDelete.data('datatable'))
+                    .DataTable()
+                    .ajax.reload(null, false);
+            }
+
+            modalDelete.get(0).close();
+
+            notyf.success(response.message);
+
+        },
+        error: function (xhr) {;
+
+            if (xhr.status === 422) {
+                showValidationErrors($form, xhr.responseJSON.errors);
+                notyf.error("Please check the form for errors.");
+            } else {
+                const response = xhr.responseJSON;
+                if (!handleSessionCodeError(response?.message)) {
+                    notyf.error(response?.message || "An error occurred. Please try again.");
+                }
+                console.error(xhr);
+            }
+        },
+    });
+});
+
 }
 
 const editData = (id) => {

@@ -12,6 +12,8 @@
 
   @include('pages.master.role.partial.edit-form')
 
+  @include('pages.master.partial.master-delete-modal')
+
  @push('styles')
  @endpush
 
