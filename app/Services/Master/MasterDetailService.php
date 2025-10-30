@@ -40,7 +40,7 @@ class MasterDetailService
   */
  public function getData(string $type, string|int $id): ?Model
  {
-  $normalized = Str::of($type)->replace('-', '_')->lower();
+  $normalized = (string) Str::of($type)->replace('-', '_')->lower();
 
   if (! isset($this->masterData[$normalized])) {
    return null;
