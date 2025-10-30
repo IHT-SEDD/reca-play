@@ -3,22 +3,29 @@
 namespace App\Http\Controllers\VenueManagement;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\VenueManagement\AccessCode\StoreAccessCodeRequest;
+
+use App\Enums\RecordingLogStatus;
+use App\Enums\RecordingStatus;
+use App\Enums\StreamingLogStatus;
+use App\Enums\StreamingStatus;
+use App\Enums\SessionCodeStatus;
+
 use App\Models\Master\Field;
 use App\Models\Master\Venue;
 use App\Models\Record\Recording;
 use App\Models\Record\RecordingLog;
 use App\Models\Session\SessionCode;
-use App\Models\Session\SessionLog;
-use App\Services\CustomDatatable\CustomDatatableService;
-use App\Enums\SessionCodeStatus;
-use Illuminate\Support\Facades\URL;
-use Vinkla\Hashids\Facades\Hashids;
+use App\Models\Stream\Streaming;
+use App\Models\Stream\StreamingLog;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+
+use App\Services\CustomDatatable\CustomDatatableService;
+use Vinkla\Hashids\Facades\Hashids;
 
 class VenueManagementController extends Controller
 {
@@ -356,7 +363,7 @@ class VenueManagementController extends Controller
     // ===============================
     // Start Recording
     // ===============================
-    public function startRecording(Request $request, $hashedId)
+    public function startRecordingOrStreaming(Request $request, $hashedId)
     {
         $decoded  = Hashids::connection('main')->decode($hashedId);
         if (empty($decoded)) {
@@ -386,12 +393,12 @@ class VenueManagementController extends Controller
                     'duration' => $sessionCode->duration,
                     'start_time' => $sessionCode->start_time,
                     'end_time' => $sessionCode->end_time,
-                    'status' => 'recording',
+                    'status' => RecordingStatus::Recording,
                 ]);
 
                 RecordingLog::create([
                     'recording_id' => $record->id,
-                    'status' => 'record_start',
+                    'status' => RecordingLogStatus::RecordStart,
                 ]);
 
                 if ($cameraService->startRecording()) {
@@ -405,8 +412,35 @@ class VenueManagementController extends Controller
                 }
 
                 $message = 'Record successfully started!';
-            } else if ($sessionCode->type === 'stream') {
-                // Logic livestream here
+            } elseif ($sessionCode->type === 'stream') {
+                $cameraService = app(\App\Services\Camera\CameraControlService::class);
+                $cameraService->initialize($fieldId);
+
+                $stream = Streaming::create([
+                    'field_id' => $fieldId,
+                    'session_code_id' => $sessionCode->id,
+                    'video_name' => $sessionCode->name,
+                    'duration' => $sessionCode->duration,
+                    'start_time' => $sessionCode->start_time,
+                    'end_time' => $sessionCode->end_time,
+                    'status' => StreamingStatus::Streaming,
+                ]);
+
+                StreamingLog::create([
+                    'streaming_id' => $stream->id,
+                    'status' => StreamingLogStatus::StreamStart,
+                ]);
+
+                if ($cameraService->startRecording()) {
+                    Log::channel('camera-stream')->info('[STREAM] Streaming & Recording started', [
+                        'streaming_id' => $stream->id,
+                        'field_id' => $fieldId,
+                        'timestamp' => Carbon::now(),
+                    ]);
+                } else {
+                    throw new \Exception("Failed to start streaming");
+                }
+
                 $message = 'Stream successfully started!';
             }
 

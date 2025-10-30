@@ -1,5 +1,6 @@
 export default {
     // Shades of white
+    "floral-white": "#faf3e8",
     "white-chalk": "#F7F4F1", // Background
     "white-owl": "#f5f4f4",
     "white-edgar": "#EEEDED",
@@ -11,13 +12,14 @@ export default {
     adhesion: "#9e9ea9",
     "evening-inparis": "#93939f",
     carbon: "#7d7d8c",
-    "reversed-grey": "#080808",
-
+    
     // Shades of black
     "after-midnight": "#38383F",
-    "thamar-black": "#181818",
     "eerie-black": "#1C1C1C",
+    "thamar-black": "#181818",
+    night: "#121615",
     "chaos-black": "#0F0F0F",
+    "reversed-grey": "#080808",
 
     // Shades of red
     "sunday-best": "#f9c8c8",
@@ -26,7 +28,7 @@ export default {
 
     // Shades of orange
     "temple-orange": "#f07856",
-    "fuego": "#ed5931",
+    fuego: "#ed5931",
     "hot-shot": "#EC5228",
     miami: "#f6921e",
     "kin-gold": "#f59300",

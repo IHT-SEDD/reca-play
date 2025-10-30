@@ -162,6 +162,11 @@ return [
             'path' => storage_path('logs/camera/record.log'),
             'level' => 'debug',
         ],
+        'camera-stream' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/camera/stream.log'),
+            'level' => 'debug',
+        ],
 
         'camera-control' => [
             'driver' => 'single',

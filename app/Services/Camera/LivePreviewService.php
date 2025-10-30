@@ -2,6 +2,7 @@
 
 namespace App\Services\Camera;
 
+use App\Enums\MasterStatus;
 use App\Models\Master\Camera;
 use App\Models\Master\Nvr;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +19,7 @@ class LivePreviewService
  public function getLivePreviewUrl(int $fieldId): ?string
  {
   $camera = Camera::where('field_id', $fieldId)
-   ->where('is_active', 1)
+   ->where('is_active', MasterStatus::Active)
    ->orderBy('code', 'asc')
    ->first();
 
@@ -29,7 +30,7 @@ class LivePreviewService
  {
   $camera = Camera::where('field_id', $fieldId)
    ->where('code', $cameraCode)
-   ->where('is_active', 1)
+   ->where('is_active', MasterStatus::Active)
    ->first();
 
   if (!$camera) {
@@ -38,7 +39,7 @@ class LivePreviewService
    );
 
    $camera = Camera::where('field_id', $fieldId)
-    ->where('is_active', 1)
+    ->where('is_active', MasterStatus::Active)
     ->orderBy('code', 'asc')
     ->first();
   }

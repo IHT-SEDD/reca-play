@@ -3,30 +3,55 @@
 namespace App\Services\Master;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class MasterDetailService
 {
+ protected array $masterData = [];
+
+ public function __construct()
+ {
+  $this->masterData = $this->discoverModels();
+ }
+
  /**
-  * Mapping type to model class
+  * Discover all model classes inside App\Models\Master
   */
- protected array $masterData = [
-  'field' => 'App\Models\Master\Field',
-  'role' => 'Spatie\Permission\Models\Role',
-  'category' => 'App\Models\Master\Category',
-  'venue' => 'App\Models\Master\Venue',
-  'venue-type' => 'App\Models\Master\VenueType',
-  'camera' => 'App\Models\Master\Camera',
-  'nvr' => 'App\Models\Master\Nvr',
-  'qr_code' => 'App\Models\Master\QrCode',
-  'port' => 'App\Models\Master\Port',
-  'api' => 'App\Models\Master\Api',
- ];
+ protected function discoverModels(): array
+ {
+  $namespace = 'App\\Models\\Master\\';
+  $path = app_path('Models/Master');
+  $models = [];
+
+  foreach (glob($path . '/*.php') as $file) {
+   $className = pathinfo($file, PATHINFO_FILENAME);
+   $key = Str::snake($className);
+   $models[$key] = $namespace . $className;
+  }
+
+  $models['role'] = Role::class;
+
+  return $models;
+ }
 
  /**
   * Get model class by type
   */
- public function getData(string $type, string | int $id): ?Model
+ public function getData(string $type, string|int $id): ?Model
  {
-  return $this->masterData[$type]::find($id) ?? null;
+  $normalized = Str::of($type)->replace('-', '_')->lower();
+
+  if (! isset($this->masterData[$normalized])) {
+   return null;
+  }
+
+  $modelClass = $this->masterData[$normalized];
+
+  if (! is_subclass_of($modelClass, Model::class)) {
+   return null;
+  }
+
+  return $modelClass::find($id);
  }
 }

@@ -2,15 +2,17 @@
 
 namespace App\Jobs\Camera;
 
-use App\Models\Record\RecordedVideo;
-use App\Models\Record\Recording;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+
+use App\Models\Record\RecordedVideo;
+use App\Models\Record\Recording;
+
+use App\Enums\RecordingStatus;
 use Symfony\Component\Process\Process;
 
 class InsertRecordedVideoJob implements ShouldQueue
@@ -101,8 +103,9 @@ class InsertRecordedVideoJob implements ShouldQueue
         ]);
 
         $recording = Recording::find($this->recordingId);
-        if ($recording && $recording->status !== 'done') {
-            $recording->update(['status' => 'done']);
+        if ($recording && $recording->status !== RecordingStatus::Done) {
+            $recording->update(['status' => RecordingStatus::Done]);
+
             Log::channel('camera-job')->info("[JOB] Recording marked as done", [
                 'recording_id' => $this->recordingId,
                 'status' => 'done'

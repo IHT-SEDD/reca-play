@@ -2,13 +2,18 @@
 
 namespace App\Models\Record;
 
+use App\Enums\RecordingLogStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class RecordingLog extends Model
 {
     protected $guarded = ['id'];
 
-    public const Searchable = ['user_device_ip', 'qr_code', 'status'];
+    protected $casts = [
+        'status' => RecordingLogStatus::class,
+    ];
+
+    public const Searchable = ['qr_code', 'status'];
     public const Unsearchable = ['id', 'recording_id', 'created_at', 'updated_at'];
 
     public function recording()

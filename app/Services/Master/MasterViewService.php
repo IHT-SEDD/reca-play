@@ -2,21 +2,42 @@
 
 namespace App\Services\Master;
 
+use Illuminate\Support\Facades\File;
+
 class MasterViewService
 {
- // Available master view is accessible
- protected array $availableViews = [
-  'field' => 'pages.master.field.index',
-  'role' => 'pages.master.role.index',
-  'category' => 'pages.master.category.index',
-  'venue' => 'pages.master.venue.index',
-  'venue-type' => 'pages.master.venue-type.index',
-  'camera' => 'pages.master.camera.index',
-  'nvr' => 'pages.master.nvr.index',
-  'qr_code' => 'pages.master.qr_code.index',
-  'port' => 'pages.master.port.index',
-  'api' => 'pages.master.api.index',
- ];
+ protected array $availableViews = [];
+
+ public function __construct()
+ {
+  $this->availableViews = $this->discoverViews();
+ }
+
+ /**
+  * Automatically discover master views
+  * Scans: resources/views/pages/master/*
+  */
+ protected function discoverViews(): array
+ {
+  $views = [];
+  $basePath = resource_path('views/pages/master');
+
+  if (! File::exists($basePath)) {
+   return $views;
+  }
+
+  foreach (File::directories($basePath) as $dir) {
+   $folder = basename($dir);
+   $indexFile = $dir . '/index.blade.php';
+
+   // hanya daftarkan kalau ada index.blade.php
+   if (File::exists($indexFile)) {
+    $views[$folder] = "pages.master.{$folder}.index";
+   }
+  }
+
+  return $views;
+ }
 
  // Get view based on $type
  public function getView(string $type): ?string

@@ -1,4 +1,4 @@
-<nav class="bg-white dark:bg-thamar-black border-t border-base-200 dark:border-transparent">
+<nav class="main-footer-default">
   <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
     <div class="grid grid-cols-1 md:grid-cols-3 h-fit w-full gap-3 md:gap-2">
       <!-- Section 1 :begin -->
