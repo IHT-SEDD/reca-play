@@ -46,7 +46,7 @@ class UpdateVenueRequest extends StoreVenueRequest
             $data['logo_filename'] = $venue->logo_filename;
         }
 
-            unset($data['logo']);
+        unset($data['logo']);
 
         return $data;
     }
