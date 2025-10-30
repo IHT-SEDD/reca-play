@@ -23,7 +23,7 @@ class GoogleAuthService
 
             if (!$user) {
                 $user = User::create([
-                    'role_id' => 4,
+                    'role_id' => 3,
                     'name' => $googleUser->getName(),
                     'username' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),

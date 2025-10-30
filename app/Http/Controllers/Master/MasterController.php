@@ -8,6 +8,7 @@ use App\Services\Master\MasterDatatableService;
 use App\Services\Master\MasterFormRequestService;
 use App\Services\Master\MasterViewService;
 use App\Services\Master\MasterDetailService;
+use App\Services\Master\MasterStorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,17 +20,20 @@ class MasterController extends Controller
     protected MasterDatatableService $masterDatatableService;
     protected MasterFormRequestService $masterFormRequestService;
     protected MasterDetailService $masterDetailService;
+    protected MasterStorageService $masterStorageService;
 
     public function __construct(
         MasterViewService $masterViewService,
         MasterDatatableService $masterDatatableService,
         MasterFormRequestService $masterFormRequestService,
-        MasterDetailService $masterDetailService
+        MasterDetailService $masterDetailService,
+        MasterStorageService $masterStorageService
     ) {
         $this->masterViewService = $masterViewService;
         $this->masterDatatableService = $masterDatatableService;
         $this->masterFormRequestService = $masterFormRequestService;
         $this->masterDetailService = $masterDetailService;
+        $this->masterStorageService = $masterStorageService;
     }
 
     // View of master
@@ -42,8 +46,11 @@ class MasterController extends Controller
 
         // Return view if view is exist and accessible
         $view = $this->masterViewService->getView($type);
+        // Set tittle page
+        $tittle = str_replace('-', ' ', ucwords($type));
         return view($view, [
-            'type' => $type
+            'type' => $type,
+            'tittle' => $tittle
         ]);
     }
 
@@ -195,8 +202,38 @@ class MasterController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function deleteData(string $type, string $id)
     {
-        //
+        try{
+
+         $modelClass = $this->masterDatatableService->getData($type);
+
+        if (!$modelClass || !class_exists($modelClass)) {
+            throw new \Exception("Model for {$type} not found");
+        }
+
+         $data = $modelClass::find($id);
+
+         if(!$data){
+            throw new \Exception("Data from ID : {$id} not found");
+         }
+
+         $this->masterStorageService->getData($type, $data);
+
+         $data->delete();
+
+        return response()->json([
+        'status'  => 'success',
+        'message' => "Data {$type} deleted successfully"
+        ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+
     }
 }
