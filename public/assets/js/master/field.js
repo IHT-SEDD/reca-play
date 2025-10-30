@@ -1,7 +1,7 @@
 let fieldTable, selectVenue, selectCategory, editSelectVenue, editSelectCategory ,buttonActionIndex, hasAction, withData;
 buttonActionIndex = 10;
 hasAction = true; // Set to true if action buttons are needed
-withData = []; // Set with relationship if needed
+withData = ['category', 'venue']; // Set with relationship if needed
 fieldTable = () => {
     initCustomDatatable({
         tableId: "field-table",
