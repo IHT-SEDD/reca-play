@@ -1,6 +1,10 @@
-let fieldTable, populateData;
+let fieldTable, populateData, hasAction, buttonActionIndex, withData;
 
 fieldTable = () => {
+    hasAction = false;
+    buttonActionIndex = null;
+    withData = null;
+
     initCustomDatatable({
         tableId: "field-table",
         tableDataUrl: "/venue-management/field-data",
@@ -37,7 +41,6 @@ fieldTable = () => {
                 },
             },
         ],
-        hasAction: false,
     });
 };
 

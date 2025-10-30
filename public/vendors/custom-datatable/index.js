@@ -1,10 +1,6 @@
 "use strict";
 
-function initCustomDatatable({
-    tableId,
-    tableDataUrl,
-    tableColumns
-}) {
+function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
     // Global variables
     const $table = $(`#${tableId}`);
     const $search = $(`#search-data-${tableId}`);
@@ -84,7 +80,6 @@ function initCustomDatatable({
         responsive: true,
         pageLength: 10,
         dom: "t",
-
         columns: tableColumns,
         columnDefs: columnDefs,
 

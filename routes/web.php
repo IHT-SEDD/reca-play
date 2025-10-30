@@ -234,7 +234,7 @@ Route::middleware(['check.maintenance'])->group(function () {
                     Route::post('/status/update/{hashedId}', [VenueManagementController::class, 'updateStatusActive'])->name('venue-management.update-status');
 
                     Route::prefix('handle')->group(function () {
-                        Route::post('start-record/{hashedId}', [VenueManagementController::class, 'startRecording'])->name('venue-management.start-record');
+                        Route::post('start-record/{hashedId}', [VenueManagementController::class, 'startRecordingOrStreaming'])->name('venue-management.start');
                     });
                 });
             });

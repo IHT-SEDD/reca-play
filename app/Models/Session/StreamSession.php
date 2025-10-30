@@ -2,19 +2,19 @@
 
 namespace App\Models\Session;
 
-use App\Enums\RecordSessionStatus;
-use App\Models\Record\Recording;
+use App\Enums\StreamSessionStatus;
+use App\Models\Stream\Streaming;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RecordSession extends Model
+class StreamSession extends Model
 {
     use HasFactory;
 
     protected $guarded = ['id'];
 
     protected $casts = [
-        'status' => RecordSessionStatus::class,
+        'status' => StreamSessionStatus::class,
     ];
 
     public function user()
@@ -22,9 +22,9 @@ class RecordSession extends Model
         return $this->belongsTo(\App\Models\User::class);
     }
 
-    public function recording()
+    public function streaming()
     {
-        return $this->belongsTo(Recording::class);
+        return $this->belongsTo(Streaming::class);
     }
 
     public function getStatusLabelAttribute(): string

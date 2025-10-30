@@ -6,7 +6,10 @@ let fetchData,
     accessCodeTable,
     generateCode,
     handlerFormAddAccessCode,
-    startRecording;
+    startRecording,
+    hasAction,
+    buttonActionIndex,
+    withData;
 
 // ======== Initialize component ::begin ========
 const pathParts = window.location.pathname.split("/");
@@ -118,6 +121,10 @@ toggleState = () => {
 
 // ======== Last activity datatable ========
 lastActivityTable = (hashedId) => {
+    hasAction = false;
+    buttonActionIndex = null;
+    withData = null;
+    
     initCustomDatatable({
         tableId: "last-activity-table",
         tableDataUrl: `/venue-management/detail/last-activity/data/${hashedId}`,
@@ -163,6 +170,10 @@ lastActivityTable = (hashedId) => {
 
 // ======== Access code datatable ========
 accessCodeTable = (hashedId) => {
+    hasAction = false;
+    buttonActionIndex = null;
+    withData = null;
+
     initCustomDatatable({
         tableId: "access-code-table",
         tableDataUrl: `/venue-management/detail/access-code/data/${hashedId}`,
