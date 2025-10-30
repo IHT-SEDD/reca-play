@@ -1,15 +1,12 @@
 .text-color-default {
     @apply text-after-midnight dark:text-white-owl;
 }
-
 .text-highlighted-default {
     @apply font-bold text-hot-shot dark:text-white;
 }
-
 .text-title-default {
     @apply md:text-xl text-lg font-semibold tracking-wide text-eerie-black dark:text-white;
 }
-
 .text-button-default {
     @apply font-medium text-sm capitalize tracking-wider text-white-owl dark:text-eerie-black;
 }
@@ -17,9 +14,17 @@
 .body-layout {
     @apply font-sans antialiased;
 }
-
 .main-bg-default {
-    @apply bg-white-chalk dark:bg-reversed-grey;
+    @apply bg-floral-white dark:bg-reversed-grey;
+}
+.main-nav-default {
+    @apply bg-white dark:bg-night border-b border-white-owl;
+}
+.superadmin-nav-default {
+    @apply bg-white dark:bg-night border-b border-white-owl shadow-sm;
+}
+.main-footer-default {
+    @apply bg-white dark:bg-night border-t border-white-owl;
 }
 
 .text-nav-active {

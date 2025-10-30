@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Creator;
 
+use App\Enums\RecordSessionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Master\QrCode;
 use App\Models\Record\RecordingLog;
@@ -15,6 +16,9 @@ use App\Services\Support\GetModelService;
 use App\Services\Support\ResponseHelperService;
 use App\Services\Support\SessionHelperService;
 use App\Enums\SessionCodeStatus;
+use App\Enums\StreamSessionStatus;
+use App\Models\Session\StreamSession;
+use App\Models\Stream\StreamingLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -126,6 +130,10 @@ class CreatorController extends Controller
     // ============================================================
     public function addNewData(Request $request, $type)
     {
+        if (!$this->isValidType($type)) {
+            return $this->responseHelperService->errorResponse('Invalid type parameter.', 400);
+        }
+
         $userId = Auth::id();
         $ip = $request->ip();
         $scannedQrData = $this->sessionHelperService->getActiveQrSession();
@@ -147,11 +155,10 @@ class CreatorController extends Controller
                 ->where('is_active', 1)
                 ->first();
 
-            $sessionCodeQuery = SessionCode::where('generated_code', $accessCode)
+            $sessionCode = SessionCode::where('generated_code', $accessCode)
                 ->where('status', SessionCodeStatus::Active)
-                ->where('field_id', $qrCodeData->field_id);
-
-            $sessionCode = $sessionCodeQuery->first();
+                ->where('field_id', $qrCodeData->field_id)
+                ->first();
 
             if (!$sessionCode) {
                 DB::rollBack();
@@ -166,10 +173,9 @@ class CreatorController extends Controller
                 throw new \Exception("Model for {$type} not found");
             }
 
-            $dataQuery = $modelClass::where('session_code_id', $sessionCode->id)
-                ->where('field_id', $sessionCode->field_id);
-
-            $data = $dataQuery->first();
+            $data = $modelClass::where('session_code_id', $sessionCode->id)
+                ->where('field_id', $sessionCode->field_id)
+                ->first();
 
             if (!$data) {
                 DB::rollBack();
@@ -179,11 +185,7 @@ class CreatorController extends Controller
                 );
             }
 
-            if ($type === 'record') {
-                $this->handleRecordData($request, $accessCode, $data, $scannedQrData, $sessionToken, $userId, $ip);
-            } else {
-                session(['stream_data_user' => $data->id]);
-            }
+            $this->handleDataByType($type, $accessCode, $data, $scannedQrData, $sessionToken, $userId, $ip);
 
             DB::commit();
 
@@ -199,9 +201,9 @@ class CreatorController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::channel('creator')->error("Failed to save data {$type}", [
-                'mode' => $type,
-                'data' => $data,
+
+            Log::channel('creator')->error("Failed to save {$type} data", [
+                'type' => $type,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $userId,
@@ -218,47 +220,80 @@ class CreatorController extends Controller
     // ============================================================
     // Handling process of new record data
     // ============================================================
-    private function handleRecordData($request, $accessCode, $data, $scannedQrData, $sessionToken, $userId, $ip)
+    private function isValidType(?string $type): bool
     {
-        if (!$accessCode) throw new \Exception('Access code is required.');
+        return in_array($type, ['record', 'stream']);
+    }
 
-        $sessionCode = $this->sessionHelperService->getValidAccessCode($accessCode, $userId, $scannedQrData->qr_code_id, $data);
+    private function getConfigByType(string $type): array
+    {
+        return match ($type) {
+            'record' => [
+                'logModel' => RecordingLog::class,
+                'sessionModel' => RecordSession::class,
+                'statusEnum' => RecordSessionStatus::Ongoing,
+                'idField' => 'recording_id',
+                'sessionStatus' => 'record',
+            ],
+            'stream' => [
+                'logModel' => StreamingLog::class,
+                'sessionModel' => StreamSession::class,
+                'statusEnum' => StreamSessionStatus::Ongoing,
+                'idField' => 'streaming_id',
+                'sessionStatus' => 'stream',
+            ],
+        };
+    }
+
+    private function handleDataByType($type, $accessCode, $data, $scannedQrData, $sessionToken, $userId, $ip)
+    {
+        if (!$accessCode) {
+            throw new \Exception('Access code is required.');
+        }
+
+        $config = $this->getConfigByType($type);
+        $sessionCode = $this->sessionHelperService
+            ->getValidAccessCode($accessCode, $userId, $scannedQrData->qr_code_id, $data);
 
         $data->update([
             'user_id' => $userId,
             'session_token' => $sessionToken,
         ]);
 
-        RecordingLog::where('recording_id', $data->id)
+        // Update log table
+        $config['logModel']::where($config['idField'], $data->id)
             ->update([
                 'qr_code' => $scannedQrData?->qrCode?->code,
                 'updated_at' => Carbon::now(),
             ]);
 
-        RecordSession::create([
+        // Create session record
+        $config['sessionModel']::create([
             'user_id' => $userId,
             'session_token' => $sessionToken,
-            'recording_id' => $data->id,
+            $config['idField'] => $data->id,
             'qr_code' => $scannedQrData?->qrCode?->code,
-            'status' => 'ongoing',
+            'status' => $config['statusEnum'],
             'ip_address' => $ip,
         ]);
 
+        // Update session code
         $sessionCode->update([
             'user_id' => $userId,
             'qr_code_id' => $scannedQrData->qr_code_id,
-            'recording_id' => $data->id,
+            $config['idField'] => $data->id,
             'session_token' => $sessionToken,
             'status' => SessionCodeStatus::InUse,
             'used_at' => now(),
         ]);
 
+        // Insert into session log
         SessionLog::create([
             'user_id' => $userId,
             'qr_code_id' => $scannedQrData->qr_code_id,
             'session_code_id' => $sessionCode->id,
-            'recording_id' => $data->id,
-            'type' => 'record',
+            $config['idField'] => $data->id,
+            'type' => $config['sessionStatus'],
             'session_token' => $sessionToken,
             'start_time' => $data->start_time,
             'end_time' => $data->end_time,
