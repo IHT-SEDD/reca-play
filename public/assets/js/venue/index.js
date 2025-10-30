@@ -38,8 +38,8 @@ populateData = (search = "", reset = true) => {
                             <!-- Venue Logo -->
                             <div class="flex items-center justify-center rounded-full p-2">
                                 ${
-                                    venue.logo_filename
-                                        ? `<img src="/storage/venue_logos/${venue.logo_filename}" alt="${venue.name}" class="w-10 h-10 rounded-full object-cover">`
+                                    venue.logo_path
+                                        ? `<img src="${venue.logo_path}" alt="${venue.name}" class="w-10 h-10 rounded-full object-cover">`
                                         : `<i data-lucide="images" class="w-6 h-6 text-hot-shot"></i>`
                                 }
                             </div>
