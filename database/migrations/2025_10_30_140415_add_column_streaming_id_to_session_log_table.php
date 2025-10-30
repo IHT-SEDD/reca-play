@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('session_codes', function (Blueprint $table) {
+        Schema::table('session_logs', function (Blueprint $table) {
             $table->unsignedBigInteger('streaming_id')->nullable()->after('recording_id');
             $table->foreign('streaming_id')->references('id')->on('streamings')->onDelete('set null')->onUpdate('cascade');
         });
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('session_codes', function (Blueprint $table) {
+        Schema::table('session_logs', function (Blueprint $table) {
             $table->dropForeign(['streaming_id']);
             $table->dropColumn('streaming_id');
         });

@@ -23,8 +23,6 @@ return new class extends Migration
             $table->string('status')->default('prepare');
             $table->ipAddress('ip_address')->nullable();
             $table->timestamps();
-
-            $table->timestamps();
         });
     }
 
