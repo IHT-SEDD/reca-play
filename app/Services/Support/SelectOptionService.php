@@ -2,6 +2,7 @@
 
 namespace App\Services\Support;
 
+use App\Enums\MasterStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
@@ -34,25 +35,6 @@ class SelectOptionService
     return $this->buildQuery($model, $filterActive, $search, $with)->get();
   }
 
-  // protected function buildQuery(string $model, bool $filterActive, ?string $search = null, array $with = []): Builder
-  // {
-  //   $query = $model::query()->select('id', 'name as text');
-
-  //   if (!empty($with)) {
-  //     $query->with($with);
-  //   }
-
-  //   if ($filterActive && Schema::hasColumn((new $model)->getTable(), 'is_active')) {
-  //     $query->where('is_active', true);
-  //   }
-
-  //   if ($search) {
-  //     $query->where('name', 'like', "%{$search}%");
-  //   }
-
-  //   return $query->limit($this->limit);
-  // }
-
   protected function buildQuery(string $model, bool $filterActive, ?string $search = null, array $with = []): Builder
   {
     $instance = new $model;
@@ -60,7 +42,6 @@ class SelectOptionService
 
     $select = ['id', 'name as text'];
 
-    // ✅ tambahkan foreign key jika relasi disebut di $with
     foreach ($with as $relation) {
       $fk = "{$relation}_id";
       if (Schema::hasColumn($table, $fk)) {
@@ -75,7 +56,7 @@ class SelectOptionService
     }
 
     if ($filterActive && Schema::hasColumn($table, 'is_active')) {
-      $query->where('is_active', true);
+      $query->where('is_active', MasterStatus::Active);
     }
 
     if ($search) {

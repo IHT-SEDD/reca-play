@@ -1,25 +1,24 @@
 <?php
 
-namespace App\Models\Record;
+namespace App\Models\Stream;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
-
-use App\Models\Master\Camera;
+use App\Enums\StreamingStatus;
 use App\Models\Master\Field;
+use App\Models\Record\RecordedVideo;
 use App\Models\Session\SessionCode;
 use App\Models\User;
-
-use App\Enums\RecordingStatus;
+use Illuminate\Support\Carbon;
 use Vinkla\Hashids\Facades\Hashids;
 
-class Recording extends Model
+use Illuminate\Database\Eloquent\Model;
+
+class Streaming extends Model
 {
     protected $guarded = ['id'];
     protected $appends = ['duration_formatted', 'hashed_id'];
 
     protected $casts = [
-        'status' => RecordingStatus::class,
+        'status' => StreamingStatus::class,
     ];
 
     public const Searchable = ['user_id', 'field_id', 'video_name', 'start_time', 'end_time'];
@@ -35,14 +34,9 @@ class Recording extends Model
         return $this->belongsTo(Field::class);
     }
 
-    public function camera()
+    public function streamingLog()
     {
-        return $this->belongsTo(Camera::class);
-    }
-
-    public function recordingLog()
-    {
-        return $this->hasMany(RecordingLog::class);
+        return $this->hasMany(StreamingLog::class);
     }
 
     public function recordedVideo()
