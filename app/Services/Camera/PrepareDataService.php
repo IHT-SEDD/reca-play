@@ -2,6 +2,7 @@
 
 namespace App\Services\Camera;
 
+use App\Enums\MasterStatus;
 use App\Models\Master\Api;
 use App\Models\Master\Camera;
 use App\Models\Master\Field;
@@ -49,7 +50,7 @@ class PrepareDataService
  {
   $fieldData = Field::findOrFail($fieldId);
   $cameras = Camera::where('field_id', $fieldId)
-   ->where('is_active', 1)
+   ->where('is_active', MasterStatus::Active)
    ->get(['id', 'code', 'name', 'channel', 'nvr_id']);
 
   if ($cameras->isEmpty()) {

@@ -2,6 +2,7 @@
 
 namespace App\Models\Master;
 
+use App\Enums\MasterStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Nvr extends Model
@@ -11,7 +12,7 @@ class Nvr extends Model
     protected $with = ['venue', 'port'];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active' => MasterStatus::class,
     ];
 
     public const Searchable = ['venue_id', 'code', 'brand', 'type', 'name', 'initial', 'ip_address', 'is_active'];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Creator;
 
+use App\Enums\MasterStatus;
 use App\Enums\RecordSessionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Master\QrCode;
@@ -152,7 +153,7 @@ class CreatorController extends Controller
             DB::beginTransaction();
 
             $qrCodeData = QrCode::where('qr_token', $sessionQrToken)
-                ->where('is_active', 1)
+                ->where('is_active', MasterStatus::Active)
                 ->first();
 
             $sessionCode = SessionCode::where('generated_code', $accessCode)
