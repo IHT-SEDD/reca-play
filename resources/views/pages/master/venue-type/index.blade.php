@@ -12,6 +12,8 @@
 
     @include('pages.master.venue-type.partial.edit-form')
 
+    @include('pages.master.partial.master-delete-modal')
+
     @push('styles')
     @endpush
 
