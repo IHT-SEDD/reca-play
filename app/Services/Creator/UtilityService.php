@@ -99,7 +99,7 @@ class UtilityService
   public function finalizeRecording($data, $fieldId, $userId, $sessionCodeId, $sessionToken, $isAuto = false, $type)
   {
     $ownTransaction = false;
-    $config = app('App\Services\Creator\GetConfigService')->getConfigByType($type);
+    $config = $this->getConfigByType($type);
 
     try {
       if (DB::transactionLevel() === 0) {
