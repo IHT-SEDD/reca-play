@@ -4,10 +4,12 @@ let venueTable,
     EditSelectVenueType,
     hasAction,
     withData;
-buttonActionIndex = 9;
-hasAction = true; // Set to true if action buttons are needed
-withData = []; // Set with relationship if needed
+
 venueTable = () => {
+    buttonActionIndex = 9;
+    hasAction = true; // Set to true if action buttons are needed
+    withData = []; // Set with relationship if needed
+    
     initCustomDatatable({
         tableId: "venue-table",
         tableDataUrl: "/master/venue/data",
