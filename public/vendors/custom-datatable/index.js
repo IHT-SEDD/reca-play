@@ -239,55 +239,54 @@ function handleSessionCodeError(message) {
 }
 
 const deleteData = (id) => {
-    const modalDelete = $('#master-delete-modal');
+    const modalDelete = $("#master-delete-modal");
     const path = window.location.pathname;
     const segments = path.split("/").filter(Boolean);
     const master = segments[1];
 
     modalDelete.get(0).showModal();
 
-   $('#master-delete-btn').on('click', function (e) {
-    e.preventDefault();
+    $("#master-delete-btn").on("click", function (e) {
+        e.preventDefault();
 
-     $.ajax({
-        type: "DELETE",
-        data : {
-            _token : $('meta[name="csrf-token"]').attr('content')
-        },
-        url: `/master/${master}/${id}/delete-data`,
-        success: function (response) {
-
-            if (
-                modalDelete.data('datatable') &&
-                $.fn.DataTable.isDataTable(modalDelete.data('datatable'))
-            ) {
-                $(modalDelete.data('datatable'))
-                    .DataTable()
-                    .ajax.reload(null, false);
-            }
-
-            modalDelete.get(0).close();
-
-            notyf.success(response.message);
-
-        },
-        error: function (xhr) {;
-
-            if (xhr.status === 422) {
-                showValidationErrors($form, xhr.responseJSON.errors);
-                notyf.error("Please check the form for errors.");
-            } else {
-                const response = xhr.responseJSON;
-                if (!handleSessionCodeError(response?.message)) {
-                    notyf.error(response?.message || "An error occurred. Please try again.");
+        $.ajax({
+            type: "DELETE",
+            data: {
+                _token: $('meta[name="csrf-token"]').attr("content"),
+            },
+            url: `/master/${master}/${id}/delete-data`,
+            success: function (response) {
+                if (
+                    modalDelete.data("datatable") &&
+                    $.fn.DataTable.isDataTable(modalDelete.data("datatable"))
+                ) {
+                    $(modalDelete.data("datatable"))
+                        .DataTable()
+                        .ajax.reload(null, false);
                 }
-                console.error(xhr);
-            }
-        },
-    });
-});
 
-}
+                modalDelete.get(0).close();
+
+                notyf.success(response.message);
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showValidationErrors($form, xhr.responseJSON.errors);
+                    notyf.error("Please check the form for errors.");
+                } else {
+                    const response = xhr.responseJSON;
+                    if (!handleSessionCodeError(response?.message)) {
+                        notyf.error(
+                            response?.message ||
+                                "An error occurred. Please try again."
+                        );
+                    }
+                    console.error(xhr);
+                }
+            },
+        });
+    });
+};
 
 const editData = (id) => {
     const path = window.location.pathname;

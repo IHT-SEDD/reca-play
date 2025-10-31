@@ -2,7 +2,7 @@ let userTable, selectRole, buttonActionIndex, hasAction, withData;
 
 userTable = () => {
     buttonActionIndex = 7;
-    hasAction = true; // Set to true if action buttons are needed
+    hasAction = false; // Set to true if action buttons are needed
     withData = []; // Set with relationship if needed
 
     initCustomDatatable({
