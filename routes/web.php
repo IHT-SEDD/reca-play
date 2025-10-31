@@ -19,6 +19,8 @@ use App\Http\Controllers\{
     Watch\WatchController,
     ScanQrController
 };
+use App\Http\Controllers\Creator\StreamController;
+use App\Http\Controllers\Creator\SupportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -169,7 +171,12 @@ Route::middleware(['check.maintenance'])->group(function () {
             |--------------------------------------------------
             */
             Route::prefix('live-stream')->group(function () {
-                Route::get('/', [CreatorController::class, 'liveStreamPage'])->name('creator.live-stream');
+                Route::get('/', [StreamController::class, 'streamPage'])->name('creator.stream');
+                Route::get('/check', [StreamController::class, 'checkData'])->name('creator.stream-check');
+
+                Route::middleware('throttle:stop-record')->group(function () {
+                    Route::post('/stop', [StreamController::class, 'stopStreaming'])->name('creator.stream-stop');
+                });
             });
         });
 

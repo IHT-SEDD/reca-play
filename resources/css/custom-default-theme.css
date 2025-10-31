@@ -74,3 +74,8 @@
 .auth-logo-wrapper {
     @apply flex flex-col items-center justify-center mb-6 gap-6 w-full;
 }
+
+/* Inputs */
+.label-input {
+    @apply font-medium text-xs md:text-sm text-carbon dark:text-white-edgar;
+}
