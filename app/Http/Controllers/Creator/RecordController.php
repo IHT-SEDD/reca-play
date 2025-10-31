@@ -172,6 +172,17 @@ class RecordController extends Controller
                 );
             }
 
+            $now = now();
+            if (!$data->end_time || $data->end_time->ne($now)) {
+                Log::channel('camera-record')->info("[STOP RECORD] Updating end_time", [
+                    'old_end_time' => $data->end_time,
+                    'new_end_time' => $now,
+                ]);
+
+                $data->end_time = $now;
+                $data->save();
+            }
+
             if (in_array($data->status, ['done', 'processing'])) {
                 Log::channel('camera-record')->warning("[STOP RECORDING] Already processed or in progress", [
                     'id' => $data->id,

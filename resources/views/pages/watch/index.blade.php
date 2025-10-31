@@ -11,11 +11,17 @@
 
       <!-- Detail Video :begin -->
       <div class="w-full p-2">
-        <h3 class="font-semibold lg:text-xl text-lg" id="video_name"></h3>
+        <h3 class="font-semibold lg:text-2xl text-xl" id="video_name"></h3>
         <div class="flex lg:flex-row flex-col justify-between lg:items-center items-start">
-          <div class="flex flex-col justify-center items-start gap-1 mb-2">
-            <p class="text-md tracking-wide" id="owner_video"></p>
-            <p class="text-md tracking-wide" id="date_created"></p>
+          <div class="flex flex-col justify-center items-start gap-0.5 mb-2">
+            <p class="text-md tracking-wide flex items-center gap-2">
+              <i data-lucide="log-in" class="w-4 h-auto"></i>
+              <span id="owner_video" class="text-left"></span>
+            </p>
+            <p class="text-md tracking-wide flex items-center gap-2">
+              <i data-lucide="calendar-clock" class="w-4 h-auto"></i>
+              <span id="date_created" class="text-left"></span>
+            </p>
           </div>
           <button
             class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
