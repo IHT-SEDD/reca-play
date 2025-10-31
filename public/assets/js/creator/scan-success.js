@@ -70,31 +70,35 @@ modeBtnHandler = () => {
 checkScannedQr = () => {
     showLoading();
 
-    $.ajax({
-        url: "/creator/new/check",
-        method: "GET",
-        headers: {
-            "X-Requested-With": "XMLHttpRequest",
-        },
-        success: function (data, textStatus, xhr) {
-            if (data?.status === "error") {
-                hideLoading();
+    setTimeout(() => {
+        $.ajax({
+            url: "/creator/new/check",
+            method: "GET",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            success: function (data, textStatus, xhr) {
+                if (data?.status === "error") {
+                    hideLoading();
 
-                notyf.error(data.message);
+                    notyf.error(data.message);
+                    setTimeout(() => {
+                        window.location.href = "/my-recording/";
+                    }, 2500);
+                }
+
+                hideLoading();
+            },
+            error: function (xhr, status, error) {
+                hideLoading();
+                console.error("AJAX error:", error);
+
                 setTimeout(() => {
                     window.location.href = "/my-recording/";
                 }, 2500);
-            }
-        },
-        error: function (xhr, status, error) {
-            hideLoading();
-            console.error("AJAX error:", error);
-
-            setTimeout(() => {
-                window.location.href = "/my-recording/";
-            }, 2500);
-        },
-    });
+            },
+        });
+    }, 300);
 };
 
 // ======== Get response submit and check status button ========
