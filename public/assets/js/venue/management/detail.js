@@ -124,7 +124,7 @@ lastActivityTable = (hashedId) => {
     hasAction = false;
     buttonActionIndex = null;
     withData = null;
-    
+
     initCustomDatatable({
         tableId: "last-activity-table",
         tableDataUrl: `/venue-management/detail/last-activity/data/${hashedId}`,
@@ -197,7 +197,24 @@ accessCodeTable = (hashedId) => {
             },
             { data: "venue.name", name: "venue.name", orderable: false },
             { data: "field.name", name: "field.name", orderable: false },
-            { data: "type", name: "type", orderable: false },
+            {
+                data: "type",
+                name: "type",
+                orderable: false,
+                render: function (data, type, row) {
+                    if (data == "record") {
+                        return `<div class="badge badge-primary gap-2">
+                        <i data-lucide="video" class="w-4 h-auto me-2"></i>
+                        ${data}
+                        </div>`;
+                    } else {
+                        return `<div class="badge badge-secondary gap-2">
+                        <i data-lucide="radio" class="w-4 h-auto me-2"></i>
+                        ${data}
+                        </div>`;
+                    }
+                },
+            },
             {
                 data: "status",
                 name: "status",
