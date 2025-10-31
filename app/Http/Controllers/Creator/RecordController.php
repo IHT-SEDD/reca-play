@@ -164,6 +164,7 @@ class RecordController extends Controller
                 ->where('field_id', $sessionCode->field_id)
                 ->where('session_code_id', $sessionCode->id)
                 ->first();
+
             if (!$data) {
                 return $this->responseHelperService->errorResponse(
                     'Recording data not found.',

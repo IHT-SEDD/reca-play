@@ -17,6 +17,7 @@ use App\Enums\RecordingLogStatus;
 use App\Enums\SessionLogStatus;
 use App\Enums\StreamingLogStatus;
 use App\Services\Camera\LivePreviewService;
+use App\Services\Support\GetModelService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -35,7 +36,7 @@ class UtilityService
   // ============================================================
   public function getDataByType(string $type, SessionCode $sessionCode, int $userId)
   {
-    $modelClass = app('App\Services\Creator\GetModelService')->getData($type);
+    $modelClass = app(GetModelService::class)->getData($type);
 
     if (!$modelClass || !class_exists($modelClass)) {
       throw new \Exception("Model for {$type} not found");
@@ -107,12 +108,11 @@ class UtilityService
         $ownTransaction = true;
       }
 
-      $cameraService = app('App\Services\Camera\CameraService')->initializeCameraService($fieldId);
+      $cameraService = $this->initializeCameraService($fieldId);
       $cameraService->stopRecording();
 
       $data->update(['status' => $config['statusEnum']]);
-      app('App\Services\Creator\RecordingUpdateService')
-        ->updateRecordingStop($data, $sessionToken, $sessionCodeId, $type);
+      $this->updateRecordingStop($data, $sessionToken, $sessionCodeId, $type);
 
       $config['sessionModel']::where('user_id', $userId)
         ->where('session_token', $sessionToken)
