@@ -1,7 +1,10 @@
-let userTable, selectRole, buttonActionIndex;
+let userTable, selectRole, buttonActionIndex, hasAction, withData;
 
-buttonActionIndex = 7;
 userTable = () => {
+    buttonActionIndex = 7;
+    hasAction = true; // Set to true if action buttons are needed
+    withData = []; // Set with relationship if needed
+
     initCustomDatatable({
         tableId: "users-table",
         tableDataUrl: "/user-management/users-data",

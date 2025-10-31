@@ -2,55 +2,6 @@ import colors from "./extend.colors.js";
 
 const colorNames = Object.keys(colors);
 
-// ========== COLORS LIST ==========
-// const colorNames = [
-//     // Shades of white
-//     "white-chalk",
-//     "white-owl",
-//     "white-edgar",
-//     "christmas-silver",
-//     "orochimaru",
-
-//     // Shades of grey
-//     "magnesium",
-//     "adhesion",
-//     "evening-inparis",
-//     "carbon",
-//     "reversed-grey",
-
-//     // Shades of black
-//     "after-midnight",
-//     "thamar-black",
-//     "eerie-black",
-//     "chaos-black",
-
-//     // Shades of red
-//     "sunday-best",
-//     "candy-heart",
-//     "vivaldi-red",
-
-//     // Shades of orange
-//     "temple-orange",
-//     "fuego",
-//     "hot-shot",
-//     "miami",
-//     "kin-gold",
-
-//     // Shades of yellow
-//     "creamy-korn",
-
-//     // Shades of green
-//     "lilliputian-lime",
-//     "exit-light",
-//     "toxic-essence",
-//     "winter-oasis",
-
-//     // Shades of daisy ui
-//     "base-100",
-//     "base-200",
-//     "base-300",
-// ];
-
 // Generate class list langsung (tidak pakai regex)
 const colorSafelist = colorNames.flatMap((c) => [
     `bg-${c}`,
@@ -107,4 +58,10 @@ export default [
 
     // ========== Opacity Levels ==========
     { pattern: /opacity-(0|5|10|20|25|30|40|50|60|70|75|80|90|95|100)/ },
+
+    // ========== Badge colors ==========
+    { pattern: /badge-(primary|secondary|accent|success|error|info|outline)/ },
+
+    // ========== Badge ==========
+    "badge",
 ];
