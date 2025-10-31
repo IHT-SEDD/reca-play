@@ -27,11 +27,13 @@ modeBtnHandler = () => {
             .removeClass("bg-hot-shot/20 text-hot-shot")
             .addClass("bg-hot-shot text-white")
             .prop("disabled", true);
+
         // Disable streaming btn
         streamingBtn
             .removeClass("bg-hot-shot text-white")
             .addClass("bg-hot-shot/20 text-hot-shot")
             .prop("disabled", false);
+
         // Show the form panel
         formPanel.removeClass("hidden").addClass("inline-block");
         choosedModeText.text("You choose recording mode!");
@@ -66,6 +68,8 @@ modeBtnHandler = () => {
 
 // ======== Check scanned QR ========
 checkScannedQr = () => {
+    showLoading();
+
     $.ajax({
         url: "/creator/new/check",
         method: "GET",
@@ -74,6 +78,8 @@ checkScannedQr = () => {
         },
         success: function (data, textStatus, xhr) {
             if (data?.status === "error") {
+                hideLoading();
+
                 notyf.error(data.message);
                 setTimeout(() => {
                     window.location.href = "/my-recording/";
@@ -81,6 +87,7 @@ checkScannedQr = () => {
             }
         },
         error: function (xhr, status, error) {
+            hideLoading();
             console.error("AJAX error:", error);
 
             setTimeout(() => {
@@ -94,18 +101,22 @@ checkScannedQr = () => {
 responseFormAndButton = () => {
     if (submitBtnRecord.length) {
         submitBtnRecord.on("click", function (e) {
+            showLoading();
             console.log("Start Recording button clicked");
             setTimeout(() => {
                 window.location.href = "/creator/record";
+                hideLoading();
             }, 2500);
         });
     }
 
     if (submitBtnStream.length) {
         submitBtnStream.on("click", function (e) {
+            showLoading();
             console.log("Start Streaming button clicked");
             setTimeout(() => {
-                window.location.href = "/creator/record";
+                window.location.href = "/creator/stream";
+                hideLoading();
             }, 2500);
         });
     }

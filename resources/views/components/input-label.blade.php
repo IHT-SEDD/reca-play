@@ -4,8 +4,7 @@
 ])
 
 
-<label {{ $attributes->merge(['class' => 'block font-medium text-xs md:text-sm text-after-midnight/95
-    dark:text-white-owl flex lg:flex-row flex-col lg:items-center items-start
+<label {{ $attributes->merge(['class' => 'block label-input flex lg:flex-row flex-col lg:items-center items-start
     justify-between gap-2']) }}>
     <span class="flex items-center gap-1">
         {{ $value ?? $slot }}
