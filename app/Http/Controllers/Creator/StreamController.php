@@ -138,14 +138,14 @@ class StreamController extends Controller
     public function stopStreaming(Request $request)
     {
         $userId = Auth::id();
-        $type = $request->query('type');
+        $type = 'stream';
         $sessionToken = session('qr_session_token');
 
         if (!$this->utilityService->isValidType($type)) {
             return $this->responseHelperService->errorResponse('Invalid or missing type parameter.', 400);
         }
 
-        Log::channel('camera-' . $type)->info("[STOP {$type}] Start stopRecording", [
+        Log::channel('camera-stream')->info("[STOP STREAMING] Start stopStreaming", [
             'user_id' => $userId,
             'session_token' => $sessionToken,
         ]);
@@ -158,23 +158,27 @@ class StreamController extends Controller
                 return $this->responseHelperService->errorResponse('Session code not found.', 404);
             }
 
-            $data = $this->utilityService->getDataByType($type, $sessionCode, $userId);
+            $data = Streaming::where('id', $sessionCode->streaming_id)
+                ->where('user_id', $userId)
+                ->where('field_id', $sessionCode->field_id)
+                ->where('session_code_id', $sessionCode->id)
+                ->first();
             if (!$data) {
                 return $this->responseHelperService->errorResponse(
-                    ucfirst($type) . ' data not found.',
+                    'Streaming data not found.',
                     404
                 );
             }
 
             if (in_array($data->status, ['done', 'processing'])) {
-                Log::channel('camera-' . $type)->warning("[STOP {$type}] Already processed or in progress", [
+                Log::channel('camera-stream')->warning("[STOP STREAMING] Already processed or in progress", [
                     'id' => $data->id,
                     'current_status' => $data->status,
                 ]);
 
                 return $this->responseHelperService->otherResponse(
                     status: 'skipped',
-                    message: ucfirst($type) . ' already processed or still being processed.',
+                    message: 'Streaming already processed or still being processed.',
                     data: ['recordData' => $data],
                     code: 200
                 );
@@ -199,7 +203,7 @@ class StreamController extends Controller
 
             return $this->responseHelperService->errorResponse($result['message'], 500);
         } catch (\Throwable $e) {
-            Log::channel('camera-' . $type)->error('[STOP ' . strtoupper($type) . '] Exception', [
+            Log::channel('camera-stream')->error('[STOP STREAMING] Exception', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
