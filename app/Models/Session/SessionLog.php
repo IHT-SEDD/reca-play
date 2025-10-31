@@ -2,6 +2,7 @@
 
 namespace App\Models\Session;
 
+use App\Enums\SessionLogStatus;
 use App\Models\Master\QrCode;
 use App\Models\Record\Recording;
 use App\Models\User;
@@ -10,11 +11,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class SessionLog extends Model
 {
-     use HasFactory;
+    use HasFactory;
 
-     protected $guarded = ['id'];
+    protected $guarded = ['id'];
 
-     public function user()
+    protected $casts = [
+        'status' => SessionLogStatus::class,
+    ];
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

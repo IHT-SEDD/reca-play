@@ -17,6 +17,7 @@ use App\Services\Support\GetModelService;
 use App\Services\Support\ResponseHelperService;
 use App\Services\Support\SessionHelperService;
 use App\Enums\SessionCodeStatus;
+use App\Enums\SessionLogStatus;
 use App\Enums\StreamSessionStatus;
 use App\Models\Session\StreamSession;
 use App\Models\Stream\StreamingLog;
@@ -300,7 +301,7 @@ class CreatorController extends Controller
             'end_time' => $data->end_time,
             'active_at' => now(),
             'inactive_at' => $data->end_time,
-            'status' => 'ongoing',
+            'status' => SessionLogStatus::Ongoing,
         ]);
     }
 }

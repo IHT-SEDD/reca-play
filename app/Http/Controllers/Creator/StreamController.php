@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\Camera;
-use App\Models\Record\Recording;
 use App\Models\Session\SessionCode;
-
+use App\Models\Stream\Streaming;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +16,7 @@ use App\Services\Support\SessionHelperService;
 use App\Services\Creator\UtilityService;
 use Illuminate\Support\Facades\DB;
 
-class RecordController extends Controller
+class StreamController extends Controller
 {
     // ============================================================
     // Init service
@@ -40,11 +39,11 @@ class RecordController extends Controller
     }
 
     // ============================================================
-    // Show view of record
+    // Show view of stream
     // ============================================================
-    public function recordPage()
+    public function streamPage()
     {
-        return view('pages.creator.record.index');
+        return view('pages.creator.stream.index');
     }
 
     // ============================================================
@@ -76,7 +75,7 @@ class RecordController extends Controller
                 );
             }
 
-            $data = Recording::where('id', $sessionCode->recording_id)
+            $data = Streaming::where('id', $sessionCode->recording_id)
                 ->where('user_id', $userId)
                 ->where('field_id', $sessionCode->field_id)
                 ->where('session_code_id', $sessionCode->id)
@@ -134,9 +133,9 @@ class RecordController extends Controller
     }
 
     // ============================================================
-    // Stop recording (async queued jobs)
+    // Stop streaming (async queued jobs)
     // ============================================================
-    public function stopRecording(Request $request)
+    public function stopStreaming(Request $request)
     {
         $userId = Auth::id();
         $type = $request->query('type');
