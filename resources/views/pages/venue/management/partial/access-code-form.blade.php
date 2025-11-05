@@ -11,6 +11,7 @@
   <div class="flex lg:flex-row flex-col justify-start gap-2 lg:items-center items-start w-full mt-2">
    <x-inputs.radio-input id="type" name="type" value="record">Record</x-inputs.radio-input>
    <x-inputs.radio-input id="type" name="type" value="stream">Stream</x-inputs.radio-input>
+   <x-inputs.radio-input id="type" name="type" value="selfie">Selfie</x-inputs.radio-input>
   </div>
 
   <div class="mt-4">

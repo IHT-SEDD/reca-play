@@ -73,14 +73,6 @@ class CreatorController extends Controller
     }
 
     // ============================================================
-    // Show view live stream
-    // ============================================================
-    public function liveStreamPage()
-    {
-        return view('pages.creator.live-stream.index');
-    }
-
-    // ============================================================
     // Handling process of scanned qr
     // ============================================================
     public function scanQrProcess(Request $request)
