@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Creator;
 
 use App\Enums\MasterStatus;
 use App\Enums\RecordSessionStatus;
+use App\Enums\SelfieSessionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Master\QrCode;
 use App\Models\Record\RecordingLog;
@@ -19,6 +20,8 @@ use App\Services\Support\SessionHelperService;
 use App\Enums\SessionCodeStatus;
 use App\Enums\SessionLogStatus;
 use App\Enums\StreamSessionStatus;
+use App\Models\Selfie\SelfieLog;
+use App\Models\Session\SelfieSession;
 use App\Models\Session\StreamSession;
 use App\Models\Stream\StreamingLog;
 use Carbon\Carbon;
@@ -171,6 +174,12 @@ class CreatorController extends Controller
                 ->where('field_id', $sessionCode->field_id)
                 ->first();
 
+            if ($type === 'selfie') {
+                $data->update([
+                    'photo_name' => $request->pict_name,
+                ]);
+            }
+
             if (!$data) {
                 DB::rollBack();
                 return $this->responseHelperService->errorResponse(
@@ -216,7 +225,7 @@ class CreatorController extends Controller
     // ============================================================
     private function isValidType(?string $type): bool
     {
-        return in_array($type, ['record', 'stream']);
+        return in_array($type, ['record', 'stream', 'selfie']);
     }
 
     private function getConfigByType(string $type): array
@@ -235,6 +244,13 @@ class CreatorController extends Controller
                 'statusEnum' => StreamSessionStatus::Ongoing,
                 'idField' => 'streaming_id',
                 'sessionStatus' => 'stream',
+            ],
+            'selfie' => [
+                'logModel' => SelfieLog::class,
+                'sessionModel' => SelfieSession::class,
+                'statusEnum' => SelfieSessionStatus::Ongoing,
+                'idField' => 'selfie_id',
+                'sessionStatus' => 'selfie',
             ],
         };
     }

@@ -4,6 +4,8 @@ return [
  'scan-qr' => env('RATE_LIMIT_SCAN_QR', 100),
  'add-data-creator' => env('RATE_LIMIT_ADD_CREATOR', 100),
  'stop-record' => env('RATE_LIMIT_STOP_RECORD', 50),
+ 'stop-stream' => env('RATE_LIMIT_STOP_STREAM', 50),
+ 'stop-selfie' => env('RATE_LIMIT_STOP_SELFIE', 50),
  'share-video' => env('RATE_LIMIT_SHARE_VIDEO', 10),
  'download-video' => env('RATE_LIMIT_DOWNLOAD_VIDEO', 10),
 ];
