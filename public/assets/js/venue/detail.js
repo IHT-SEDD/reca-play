@@ -29,6 +29,10 @@ getDataDetailVenue = () => {
 
 populateDataDetail = (res) => {
     const venue = res.detailVenue;
+    $("#venue_logo").attr(
+        "src",
+        venue.logo_path ?? "/assets/img/logos/reca-black.png"
+    );
     $("#venue_name").text(venue.name ?? "Venue name not found!");
     $("#venue_address").text(venue.address ?? "Venue address not found!");
     $("#venue_type").text(
@@ -64,27 +68,31 @@ populateFieldList = (search = "", reset = true) => {
 
             fields.forEach((field) => {
                 let card = `
-                    <div class="bg-white dark:bg-christmas-silver dark:border-transparent border border-base-200 shadow-sm rounded-xl py-3 px-4 h-fit w-full">
-                        <div class="flex justify-start gap-4 items-center w-fit">
+                <a href="/field/detail/${
+                    field.hashed_id
+                }" target="_blank" rel="noopener noreferrer">
+                    <div class="bg-white dark:bg-christmas-silver dark:border-transparent border border-white-edgar shadow-sm rounded-xl p-4 h-fit w-full">
+                        <div class="flex flex-col justify-start items-center gap-3 w-full text-center">
                             <!-- Venue Logo -->
-                            <div class="flex items-center justify-center rounded-full p-2">
+                            <div class="flex items-center justify-center rounded-xl w-full p-2">
                                 ${
                                     field.pict_filename
-                                        ? `<img src="/storage/venue_logos/${field.pict_filename}" alt="${field.name}" class="w-10 h-10 rounded-full object-cover">`
-                                        : `<i data-lucide="images" class="w-6 h-6 text-hot-shot"></i>`
+                                        ? `<img src="${field.pict_filename}" alt="${field.name}" class="w-24 h-auto object-cover">`
+                                        : `<img src="/assets/img/logos/reca-black.png" alt="Default logo venue" class="w-24 h-auto object-cover">`
                                 }
                             </div>
                             <!-- Venue Desc -->
-                            <div class="flex flex-col justify-center items-start">
-                                <p class="text-sm font-medium text-after-midnight">${
+                            <div class="flex flex-col justify-center items-center w-full">
+                                <p class="text-lg font-semibold text-after-midnight">${
                                     field.name
                                 }</p>
-                                <p class="text-sm text-carbon">${
+                                <p class="text-xs font-medium text-carbon">${
                                     field.category.name
                                 }</p>
                             </div>
                         </div>
-                    </div>`;
+                    </div>
+                </a>`;
                 container.prepend(card);
             });
 

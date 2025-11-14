@@ -136,6 +136,6 @@
 
  @push('scripts')
  <script src="{{ asset('vendors/form-request/form.js') }}"></script>
- <script src="{{ asset('assets/js/creator/record/record2.js') }}"></script>
+ <script src="{{ asset('assets/js/creator/record/index.js') }}"></script>
  @endpush
 </x-app-layout>

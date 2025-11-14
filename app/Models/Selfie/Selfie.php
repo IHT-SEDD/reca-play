@@ -1,28 +1,26 @@
 <?php
 
-namespace App\Models\Record;
+namespace App\Models\Selfie;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
-
+use App\Enums\SelfieStatus;
 use App\Models\Master\Camera;
 use App\Models\Master\Field;
-use App\Models\Session\SessionCode;
 use App\Models\User;
-
-use App\Enums\RecordingStatus;
+use App\Models\Session\SessionCode;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Vinkla\Hashids\Facades\Hashids;
 
-class Recording extends Model
+class Selfie extends Model
 {
     protected $guarded = ['id'];
     protected $appends = ['duration_formatted', 'hashed_id'];
 
     protected $casts = [
-        'status' => RecordingStatus::class,
+        'status' => SelfieStatus::class,
     ];
 
-    public const Searchable = ['user_id', 'field_id', 'video_name', 'start_time', 'end_time'];
+    public const Searchable = ['user_id', 'field_id', 'pict_name', 'start_time', 'end_time'];
     public const Unsearchable = ['id', 'duration', 'created_at', 'updated_at'];
 
     public function user()
@@ -40,14 +38,14 @@ class Recording extends Model
         return $this->belongsTo(Camera::class);
     }
 
-    public function recordingLog()
+    public function selfieLog()
     {
-        return $this->hasMany(RecordingLog::class);
+        return $this->hasMany(SelfieLog::class);
     }
 
-    public function recordedVideo()
+    public function capturedSelfie()
     {
-        return $this->hasMany(RecordedVideo::class);
+        return $this->hasMany(CapturedSelfie::class);
     }
 
     public function sessionCode()

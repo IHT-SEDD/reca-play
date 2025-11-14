@@ -19,6 +19,7 @@ use App\Http\Controllers\{
     Watch\WatchController,
     ScanQrController
 };
+use App\Http\Controllers\Creator\SelfieController;
 use App\Http\Controllers\Creator\StreamController;
 use App\Http\Controllers\Creator\SupportController;
 
@@ -29,34 +30,39 @@ use App\Http\Controllers\Creator\SupportController;
 */
 
 Route::middleware(['check.maintenance'])->group(function () {
-
     /*
     |--------------------------------------------------------------------------
     | Home & Public Pages
     |--------------------------------------------------------------------------
     */
-    Route::get('/', [HomeController::class, 'index'])->name('home.index');
-    Route::get('/video-list', [HomeController::class, 'getVideos'])->name('home.data');
-    Route::get('/video/watch/{videoEncrypt}', [WatchController::class, 'index'])->name('watch.index');
-    Route::get('/video/watch/data/{videoEncrypt}', [WatchController::class, 'watchData'])->name('watch.data');
+    Route::controller(HomeController::class)->group(function () {
+        Route::get('/', 'index')->name('home.index');
+        Route::get('/video-list', 'getVideos')->name('home.data');
+    });
+
+    Route::prefix('video/watch')->name('watch.')->controller(WatchController::class)->group(function () {
+        Route::get('/{videoEncrypt}', 'index')->name('index');
+        Route::get('/data/{videoEncrypt}', 'watchData')->name('data');
+    });
 
     /*
     |--------------------------------------------------------------------------
     | Venue Routes (Public)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('venue')->group(function () {
-        Route::get('/', [VenueController::class, 'index'])->name('venue.index');
-        Route::get('/data', [VenueController::class, 'data'])->name('venue.data');
+    Route::prefix('venue')->name('venue.')->controller(VenueController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/data', 'data')->name('data');
     });
+
 
     /*
     |--------------------------------------------------------------------------
     | Event Routes (Public)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('event')->group(function () {
-        Route::get('/', [EventController::class, 'index'])->name('event.index');
+    Route::prefix('event')->name('event.')->controller(EventController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
     });
 
     /*
@@ -66,8 +72,10 @@ Route::middleware(['check.maintenance'])->group(function () {
     */
     Route::middleware('guest')->group(function () {
         // Google Auth
-        Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
-        Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+        Route::prefix('auth/google')->name('google.')->controller(GoogleController::class)->group(function () {
+            Route::get('/', 'redirectToGoogle')->name('login');
+            Route::get('/callback', 'handleGoogleCallback')->name('callback');
+        });
     });
 
     /*
@@ -98,10 +106,10 @@ Route::middleware(['check.maintenance'])->group(function () {
         | Venue Routes
         |--------------------------------------------------------------------------
         */
-        Route::prefix('venue')->group(function () {
-            Route::get('/detail/{hashedId}', [VenueController::class, 'detail'])->name('venue.detail');
-            Route::get('/detail/data/{hashedId}', [VenueController::class, 'dataDetailPage'])->name('venue.detail-data');
-            Route::get('/detail/field/{hashedId}', [VenueController::class, 'dataField'])->name('venue.field-data');
+        Route::prefix('venue')->name('venue.')->controller(VenueController::class)->group(function () {
+            Route::get('/detail/{hashedId}', 'detail')->name('detail');
+            Route::get('/detail/data/{hashedId}', 'dataDetailPage')->name('detail-data');
+            Route::get('/detail/field/{hashedId}', 'dataField')->name('field-data');
         });
 
         /*
@@ -109,10 +117,10 @@ Route::middleware(['check.maintenance'])->group(function () {
         | My Recording
         |--------------------------------------------------------------------------
         */
-        Route::prefix('my-recording')->group(function () {
-            Route::get('/', [RecordingController::class, 'index'])->name('recording.index');
-            Route::get('/recording-data', [RecordingController::class, 'getRecordings'])->name('recording.data');
-            Route::get('/watch/{hashedId}', [RecordingController::class, 'getRecordings'])->name('recording.watch');
+        Route::prefix('my-recording')->name('recording.')->controller(RecordingController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/recording-data', 'getRecordings')->name('data');
+            Route::get('/watch/{hashedId}', 'getRecordings')->name('watch');
         });
 
         /*
@@ -129,11 +137,11 @@ Route::middleware(['check.maintenance'])->group(function () {
             | Scan QR
             |--------------------------------------------------
             */
-            Route::prefix('scan-qr')->group(function () {
-                Route::get('/', [CreatorController::class, 'scanQrPage'])->name('creator.scan');
+            Route::prefix('scan-qr')->name('creator.')->controller(CreatorController::class)->group(function () {
+                Route::get('/', 'scanQrPage')->name('scan');
 
                 Route::middleware('throttle:scan-qr')->group(function () {
-                    Route::post('/process', [CreatorController::class, 'scanQrProcess'])->name('creator.qr-process');
+                    Route::get('/process', 'scanQrProcess')->name('qr-process');
                 });
             });
 
@@ -142,12 +150,12 @@ Route::middleware(['check.maintenance'])->group(function () {
             | Add New Data
             |--------------------------------------------------
             */
-            Route::prefix('new')->group(function () {
-                Route::get('/', [CreatorController::class, 'scanSuccessPage'])->name('creator.qr-success');
-                Route::get('/check', [CreatorController::class, 'checkScannedQr'])->name('creator.qr-check');
+            Route::prefix('new')->name('creator.')->controller(CreatorController::class)->group(function () {
+                Route::get('/', 'scanSuccessPage')->name('qr-success');
+                Route::get('/check', 'checkScannedQr')->name('qr-check');
 
                 Route::middleware('throttle:add-data-creator')->group(function () {
-                    Route::post('/add/{mode}', [CreatorController::class, 'addNewData'])->name('creator.add-new');
+                    Route::get('/add/{mode}', 'addNewData')->name('add-new');
                 });
             });
 
@@ -156,12 +164,12 @@ Route::middleware(['check.maintenance'])->group(function () {
             | Record Moment
             |--------------------------------------------------
             */
-            Route::prefix('record')->group(function () {
-                Route::get('/', [RecordController::class, 'recordPage'])->name('creator.record');
-                Route::get('/check', [RecordController::class, 'checkData'])->name('creator.record-check');
+            Route::prefix('record')->name('creator.')->controller(RecordController::class)->group(function () {
+                Route::get('/', 'recordPage')->name('record');
+                Route::get('/check', 'checkData')->name('record-check');
 
                 Route::middleware('throttle:stop-record')->group(function () {
-                    Route::post('/stop', [RecordController::class, 'stopRecording'])->name('creator.record-stop');
+                    Route::post('/stop', 'stopRecording')->name('record-stop');
                 });
             });
 
@@ -170,12 +178,26 @@ Route::middleware(['check.maintenance'])->group(function () {
             | Live Stream
             |--------------------------------------------------
             */
-            Route::prefix('live-stream')->group(function () {
-                Route::get('/', [StreamController::class, 'streamPage'])->name('creator.stream');
-                Route::get('/check', [StreamController::class, 'checkData'])->name('creator.stream-check');
+            Route::prefix('live-stream')->name('creator.')->controller(StreamController::class)->group(function () {
+                Route::get('/', 'streamPage')->name('stream');
+                Route::get('/check', 'checkData')->name('stream-check');
 
-                Route::middleware('throttle:stop-record')->group(function () {
-                    Route::post('/stop', [StreamController::class, 'stopStreaming'])->name('creator.stream-stop');
+                Route::middleware('throttle:stop-stream')->group(function () {
+                    Route::post('/stop', 'stopStreaming')->name('stream-stop');
+                });
+            });
+
+            /*
+            |--------------------------------------------------
+            | Selfie
+            |--------------------------------------------------
+            */
+            Route::prefix('selfie')->name('creator.')->controller(SelfieController::class)->group(function () {
+                Route::get('/', 'selfiePage')->name('selfie');
+                Route::get('/check', 'checkData')->name('selfie-check');
+
+                Route::middleware('throttle:stop-selfie')->group(function () {
+                    Route::post('/stop', 'stopSelfie')->name('selfie-stop');
                 });
             });
         });
@@ -185,11 +207,11 @@ Route::middleware(['check.maintenance'])->group(function () {
         | Profile Routes
         |--------------------------------------------------------------------------
         */
-        Route::prefix('profile')->group(function () {
-            Route::get('/', [ProfileController::class, 'index'])->name('profile.index');
-            Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-            Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
-            Route::delete('/delete', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/edit', 'edit')->name('edit');
+            Route::patch('/update', 'update')->name('update');
+            Route::delete('/delete', 'destroy')->name('destroy');
         });
 
         /*
@@ -198,26 +220,28 @@ Route::middleware(['check.maintenance'])->group(function () {
         |--------------------------------------------------------------------------
         */
         Route::middleware('role:superadmin')->group(function () {
-            // Master Data
             Route::prefix('master')->group(function () {
-                Route::get('/{type}', [MasterController::class, 'index'])->name('master.index');
-                Route::get('/{type}/data', [MasterController::class, 'datatable'])->name('master.data');
-                Route::get('/{type}/{id}/edit', [MasterController::class, 'edit'])->name('master.edit');
-                Route::post('/{type}/add-data', [MasterController::class, 'newData'])->name('master.add-data');
-                Route::put('/{type}/update-data', [MasterController::class, 'updateData'])->name('master.update-data');
-                Route::delete('/{type}/{id}/delete-data', [MasterController::class, 'deleteData'])->name('master.delete-data');
-
                 // QR Code Download
-                Route::prefix('qr_code')->group(function () {
-                    Route::get('/download/{filename}', [QrCodeController::class, 'download'])->name('qr_code.download');
+                Route::prefix('qr_code')->name('qr_code.')->controller(QrCodeController::class)->group(function () {
+                    Route::get('/download/{filename}', 'download')->name('download');
+                });
+
+                // Master Data
+                Route::controller(MasterController::class)->name('master.')->group(function () {
+                    Route::get('/{type}', 'index')->name('index');
+                    Route::get('/{type}/data', 'datatable')->name('data');
+                    Route::get('/{type}/{id}/edit', 'edit')->name('edit');
+                    Route::post('/{type}/add-data', 'newData')->name('add-data');
+                    Route::put('/{type}/update-data', 'updateData')->name('update-data');
+                    Route::delete('/{type}/{id}/delete-data', 'deleteData')->name('delete-data');
                 });
             });
 
             // User Management
-            Route::prefix('user-management')->group(function () {
-                Route::get('/', [UserManagementController::class, 'index'])->name('user-management.index');
-                Route::get('/users-data', [UserManagementController::class, 'usersData'])->name('user-management.data');
-                Route::post('/add-data', [UserManagementController::class, 'addData'])->name('user-management.add-data');
+            Route::prefix('user-management')->name('user-management.')->controller(UserManagementController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/users-data', 'usersData')->name('data');
+                Route::post('/add-data', 'addData')->name('add-data');
             });
         });
 
@@ -226,23 +250,24 @@ Route::middleware(['check.maintenance'])->group(function () {
         | Owner Routes
         |--------------------------------------------------------------------------
         */
-        Route::middleware('role:owner|cashier')->group(function () {
-            Route::prefix('venue-management')->group(function () {
-                Route::get('/', [VenueManagementController::class, 'index'])->name('venue-management.index');
-                Route::get('/field-data', [VenueManagementController::class, 'fieldList'])->name('venue-management.field-list');
-                Route::get('/data', [VenueManagementController::class, 'data'])->name('venue-management.statistic-data');
+        Route::middleware('role:owner|cashier')->prefix('venue-management')->name('venue-management.')->controller(VenueManagementController::class)->group(function () {
+            // --- Main pages ---
+            Route::get('/', 'index')->name('index');
+            Route::get('/field-data', 'fieldList')->name('field-list');
+            Route::get('/data', 'data')->name('statistic-data');
 
-                Route::prefix('detail')->group(function () {
-                    Route::get('/{hashedId}', [VenueManagementController::class, 'detailFieldPage'])->name('venue-management.detail-field');
-                    Route::get('/data/{hashedId}', [VenueManagementController::class, 'detailFieldData'])->name('venue-management.detail-field-data');
-                    Route::get('/last-activity/data/{hashedId}', [VenueManagementController::class, 'lastActivity'])->name('venue-management.last-activity');
-                    Route::get('/access-code/data/{hashedId}', [VenueManagementController::class, 'accessCode'])->name('venue-management.access-code');
-                    Route::post('/access-code/add/{hashedId}', [VenueManagementController::class, 'newAccessCode'])->name('venue-management.generate-access-code');
-                    Route::post('/status/update/{hashedId}', [VenueManagementController::class, 'updateStatusActive'])->name('venue-management.update-status');
+            // --- Detail section ---
+            Route::prefix('detail')->name('detail.')->group(function () {
+                Route::get('/{hashedId}', 'detailFieldPage')->name('index');
+                Route::get('/data/{hashedId}', 'detailFieldData')->name('data');
+                Route::get('/last-activity/data/{hashedId}', 'lastActivity')->name('last-activity');
+                Route::get('/access-code/data/{hashedId}', 'accessCode')->name('access-code');
+                Route::post('/access-code/add/{hashedId}', 'newAccessCode')->name('generate-access-code');
+                Route::post('/status/update/{hashedId}', 'updateStatusActive')->name('update-status');
 
-                    Route::prefix('handle')->group(function () {
-                        Route::post('start-record/{hashedId}', [VenueManagementController::class, 'startRecordingOrStreaming'])->name('venue-management.start');
-                    });
+                // --- Handle section ---
+                Route::prefix('handle')->name('handle.')->group(function () {
+                    Route::post('/start-record/{hashedId}', 'startRecordingOrStreaming')->name('start');
                 });
             });
         });

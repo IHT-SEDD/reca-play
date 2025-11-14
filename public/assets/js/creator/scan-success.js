@@ -12,12 +12,15 @@ formPanel.addClass("hidden").removeClass("inline-block");
 
 const formRecord = $("#formRecording");
 const formStreaming = $("#formStreaming");
+const formSelfie = $("#formSelfie");
 
 formRecord.addClass("hidden");
 formStreaming.addClass("hidden");
+formSelfie.addClass("hidden");
 
 const submitBtnRecord = $("#start_recording");
 const submitBtnStream = $("#start_streaming");
+const submitBtnSelfie = $("#start_selfie");
 
 // ======== Record or streaming btn handling ========
 modeBtnHandler = () => {
@@ -120,6 +123,17 @@ responseFormAndButton = () => {
             console.log("Start Streaming button clicked");
             setTimeout(() => {
                 window.location.href = "/creator/stream";
+                hideLoading();
+            }, 2500);
+        });
+    }
+
+    if (submitBtnSelfie.length) {
+        submitBtnSelfie.on("click", function (e) {
+            showLoading();
+            console.log("Start Selfie button clicked");
+            setTimeout(() => {
+                window.location.href = "/creator/selfie";
                 hideLoading();
             }, 2500);
         });

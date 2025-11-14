@@ -284,11 +284,10 @@ class VenueManagementController extends Controller
     {
         return $request->validate([
             'type' => ['required', 'string'],
-            'name' => ['required', 'string', 'max:255', 'min:3'],
+            'name' => ['nullable', 'string', 'max:255', 'min:3'],
             'start_time' => ['required'],
             'end_time' => ['required'],
         ], [
-            'name.required' => 'Name cannot be empty.',
             'name.max' => 'Name maximum is 255 characters.',
             'name.min' => 'Name minimum is 3 characters.',
             'type.required' => 'Type cannot be empty.',
