@@ -29,6 +29,10 @@ getDataDetailVenue = () => {
 
 populateDataDetail = (res) => {
     const venue = res.detailVenue;
+    $("#venue_logo").attr(
+        "src",
+        venue.logo_path ?? "/assets/img/logos/reca-black.png"
+    );
     $("#venue_name").text(venue.name ?? "Venue name not found!");
     $("#venue_address").text(venue.address ?? "Venue address not found!");
     $("#venue_type").text(

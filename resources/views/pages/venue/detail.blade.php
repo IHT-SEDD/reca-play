@@ -15,30 +15,23 @@
       <!-- Left Section: Venue Logo + Name and Address -->
       <div class="flex items-center gap-4">
         <!-- Venue Logo -->
-        <img src="/assets/img/logos/reca-black.png" alt="Default logo venue" class="w-20 h-20 object-cover"
-          id="venue_logo">
+        <img class="w-16 h-auto object-cover me-10" id="venue_logo">
         <!-- Venue Name and Address (stacked vertically) -->
         <div class="flex flex-col justify-center">
-          <h1 class="lg:text-4xl md:text-3xl text-2xl font-bold text-hot-shot leading-tight" id="venue_name">
-            Venue Name
-          </h1>
-          <h2 class="lg:text-2xl md:text-xl text-lg font-semibold text-carbon" id="venue_address">
-            Venue Address
-          </h2>
+          <h1 class="lg:text-4xl md:text-3xl text-2xl font-bold text-hot-shot leading-tight" id="venue_name"></h1>
+          <h2 class="lg:text-2xl md:text-xl text-lg font-semibold text-carbon" id="venue_address"></h2>
         </div>
       </div>
 
       <!-- Right Section: Venue Type and Total Court (aligned vertically) -->
       <div class="flex flex-col items-center justify-center text-center gap-1">
         <!-- Venue Type -->
-        <h1 class="lg:text-2xl md:text-xl text-lg font-bold text-after-midnight" id="venue_type">
-          Venue Type
-        </h1>
+        <h1 class="lg:text-2xl md:text-xl text-lg font-bold text-after-midnight" id="venue_type"></h1>
 
         <!-- Total Court Count -->
         <div class="flex items-center justify-end gap-2">
           <h1 class="lg:text-lg md:text-md text-sm font-bold text-after-midnight">TOTAL COURT</h1>
-          <span class="lg:text-lg md:text-md text-sm font-semibold text-hot-shot" id="total_court">3</span>
+          <span class="lg:text-lg md:text-md text-sm font-semibold text-hot-shot" id="total_court"></span>
         </div>
       </div>
     </div>

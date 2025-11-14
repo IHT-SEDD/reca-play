@@ -87,7 +87,7 @@ class CreatorController extends Controller
         $sessionToken = session('qr_session_token');
         $ipAddress = $request->ip();
 
-        Log::info('Scan Qr Info: ' . ($user?->id ?? 'guest') . ' - ' . $token . ' - ' . $sessionToken . ' - ' . $ipAddress);
+        Log::channel('creator')->info('Scan Qr Info: ' . ($user?->id ?? 'guest') . ' - ' . $token . ' - ' . $sessionToken . ' - ' . $ipAddress);
 
         if ($result['success']) {
             return $this->responseHelperService->successResponse(
@@ -129,6 +129,7 @@ class CreatorController extends Controller
     {
         if (!$this->isValidType($type)) {
             return $this->responseHelperService->errorResponse('Invalid type parameter.', 400);
+            Log::channel('creator')->error('Invalid type parameter');
         }
 
         $userId = Auth::id();
@@ -139,6 +140,7 @@ class CreatorController extends Controller
             return $this->responseHelperService->errorResponse(
                 'No active QR session found. Please scan a QR code first.'
             );
+            Log::channel('creator')->error('No active QR session found. Please scan a QR code first.');
         }
 
         $sessionToken = session('qr_session_token');
@@ -163,6 +165,7 @@ class CreatorController extends Controller
                     'Access code not found or inactive.',
                     404
                 );
+                Log::channel('creator')->error('Access code not found or inactive');
             }
 
             $modelClass = $this->getModelService->getData($type);
@@ -186,6 +189,7 @@ class CreatorController extends Controller
                     "Data {$type} for this session code not found.",
                     404
                 );
+                Log::channel('creator')->error(`Data {$type} for this session code not found.`);
             }
 
             $this->handleDataByType($type, $accessCode, $data, $scannedQrData, $sessionToken, $userId, $ip);
