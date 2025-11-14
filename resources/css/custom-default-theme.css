@@ -39,6 +39,11 @@
     @apply bg-white dark:bg-night rounded-xl shadow-inner border border-white-edgar p-1;
 }
 
+/* Venue Nav */
+.venue-nav-default {
+    @apply bg-white dark:bg-night rounded-xl shadow-inner border border-white-edgar p-1;
+}
+
 /* Footer */
 .main-footer-default {
     @apply bg-white dark:bg-night border border-white-edgar shadow-sm rounded-xl;
