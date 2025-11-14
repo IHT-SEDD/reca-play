@@ -45,11 +45,15 @@
 <body class="body-layout">
     <div data-simplebar style="height: 100vh;">
         <div class="min-h-[130vh] flex flex-col main-bg-default">
-            @include('layouts.navigation')
+            <div class="pt-3 px-3 pb-2">
+                @include('layouts.navigation')
+            </div>
 
             <!-- Super admin menu -->
             @if (Auth::user() && Auth::user()->isSuperAdmin())
-            @include('layouts.superadmin-navigation')
+            <div class="px-3 pb-2">
+                @include('layouts.superadmin-navigation')
+            </div>
             @endif
 
             <!-- Owner menu -->
