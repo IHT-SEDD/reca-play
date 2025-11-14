@@ -155,7 +155,7 @@ Route::middleware(['check.maintenance'])->group(function () {
                 Route::get('/check', 'checkScannedQr')->name('qr-check');
 
                 Route::middleware('throttle:add-data-creator')->group(function () {
-                    Route::get('/add/{mode}', 'addNewData')->name('add-new');
+                    Route::post('/add/{mode}', 'addNewData')->name('add-new');
                 });
             });
 
