@@ -25,10 +25,10 @@
 
 /* Nav */
 .main-nav-default {
-    @apply bg-white/50 dark:bg-night border-b border-white-edgar/50;
+    @apply bg-white dark:bg-night border-b border-white-edgar/50 rounded-xl shadow-sm border border-white-edgar;
 }
 .text-nav-active {
-    @apply text-sm font-semibold leading-4 bg-hot-shot/30 shadow-inner rounded-lg text-hot-shot;
+    @apply text-sm font-semibold leading-4 bg-hot-shot/20 shadow-inner rounded-lg text-hot-shot;
 }
 .text-nav-default {
     @apply text-sm font-semibold leading-4 text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
@@ -36,7 +36,7 @@
 
 /* Superadmin Nav */
 .superadmin-nav-default {
-    @apply bg-white/50 dark:bg-night;
+    @apply bg-white dark:bg-night rounded-xl shadow-inner border border-white-edgar p-1;
 }
 
 /* Footer */
