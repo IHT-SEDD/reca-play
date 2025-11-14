@@ -44,7 +44,7 @@
 
 <body class="body-layout">
     <div data-simplebar style="height: 100vh;">
-        <div class="min-h-screen flex flex-col main-bg-default">
+        <div class="min-h-[130vh] flex flex-col main-bg-default">
             @include('layouts.navigation')
 
             <!-- Super admin menu -->
@@ -58,12 +58,12 @@
             @endif
 
             <!-- Page Content -->
-            <main class="p-6 w-full mx-auto ">
+            <main class="p-6 mt-4 w-full mx-auto ">
                 <x-indicators.loading></x-indicators.loading>
                 {{ $slot }}
             </main>
 
-            <footer class="mt-auto">
+            <footer class="mt-auto p-5">
                 @include('layouts.footer')
             </footer>
         </div>

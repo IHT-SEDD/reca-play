@@ -39,9 +39,11 @@ renderList = (videos) => {
 
     if (!videos || videos.length === 0) {
         listContainer.innerHTML = `
-            <p class="col-span-5 text-center text-sm text-magnesium dark:text-white">
-                No videos found.
-            </p>`;
+            <div class="col-span-5 flex items-center justify-center h-64">
+                <p class="text-center text-sm text-carbon font-medium dark:text-white">
+                    No videos found.
+                </p>
+            </div>`;
         return;
     }
 

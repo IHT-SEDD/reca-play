@@ -115,6 +115,50 @@ class AppServiceProvider extends ServiceProvider
                 });
         });
 
+        // ---------- stop streaming ----------
+        RateLimiter::for('stop-stream', function ($request) {
+            return Limit::perMinute(config('ratelimiter.stop-stream'))
+                ->by($this->userOrIp($request))
+                ->response(function () use ($request) {
+                    $message = 'Too many stop streaming requests. Please try again in 1 minute.';
+
+                    if ($request->expectsJson()) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $message,
+                        ], 429);
+                    }
+
+                    return response()
+                        ->view('errors.429', [
+                            'title' => 'Rate Limit Exceeded',
+                            'message' => $message
+                        ], 429);
+                });
+        });
+
+        // ---------- stop selfie ----------
+        RateLimiter::for('stop-selfie', function ($request) {
+            return Limit::perMinute(config('ratelimiter.stop-selfie'))
+                ->by($this->userOrIp($request))
+                ->response(function () use ($request) {
+                    $message = 'Too many stop selfie requests. Please try again in 1 minute.';
+
+                    if ($request->expectsJson()) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $message,
+                        ], 429);
+                    }
+
+                    return response()
+                        ->view('errors.429', [
+                            'title' => 'Rate Limit Exceeded',
+                            'message' => $message
+                        ], 429);
+                });
+        });
+
         // ---------- share video ----------
         RateLimiter::for('share-video', function ($request) {
             return Limit::perMinute(config('ratelimiter.share-video'))

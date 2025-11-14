@@ -25,23 +25,23 @@
 
 /* Nav */
 .main-nav-default {
-    @apply bg-white dark:bg-night border-b border-white-owl;
+    @apply bg-white/50 dark:bg-night border-b border-white-edgar/50;
 }
 .text-nav-active {
-    @apply text-sm font-medium leading-4 text-hot-shot;
+    @apply text-sm font-semibold leading-4 bg-hot-shot/30 shadow-inner rounded-lg text-hot-shot;
 }
 .text-nav-default {
-    @apply text-sm font-medium leading-4 text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
+    @apply text-sm font-semibold leading-4 text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
 }
 
 /* Superadmin Nav */
 .superadmin-nav-default {
-    @apply bg-white dark:bg-night border-b border-white-owl shadow-sm;
+    @apply bg-white/50 dark:bg-night;
 }
 
 /* Footer */
 .main-footer-default {
-    @apply bg-white dark:bg-night border-t border-white-owl;
+    @apply bg-white dark:bg-night border border-white-edgar shadow-sm rounded-xl;
 }
 
 /* Dropdown */
@@ -49,10 +49,10 @@
     @apply focus:ring-0 focus:outline-none rounded-xl px-5 py-2.5 text-center inline-flex items-center transition-colors;
 }
 .text-dw-button-default {
-    @apply text-xs md:text-sm font-medium text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
+    @apply text-xs md:text-sm font-semibold text-eerie-black dark:text-white-owl hover:text-hot-shot dark:hover:text-hot-shot;
 }
 .text-dw-button-active {
-    @apply text-xs md:text-sm font-medium bg-white-owl text-hot-shot dark:text-eerie-black;
+    @apply text-xs md:text-sm font-semibold bg-hot-shot text-white dark:text-eerie-black;
 }
 .dw-menu {
     @apply absolute right-0 z-10 mt-3 origin-top-right rounded-lg w-full min-w-fit bg-white shadow-sm divide-y divide-eerie-black border border-base-200;

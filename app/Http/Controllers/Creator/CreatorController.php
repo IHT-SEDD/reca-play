@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Creator;
 
 use App\Enums\MasterStatus;
 use App\Enums\RecordSessionStatus;
+use App\Enums\SelfieSessionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Master\QrCode;
 use App\Models\Record\RecordingLog;
@@ -19,6 +20,8 @@ use App\Services\Support\SessionHelperService;
 use App\Enums\SessionCodeStatus;
 use App\Enums\SessionLogStatus;
 use App\Enums\StreamSessionStatus;
+use App\Models\Selfie\SelfieLog;
+use App\Models\Session\SelfieSession;
 use App\Models\Session\StreamSession;
 use App\Models\Stream\StreamingLog;
 use Carbon\Carbon;
@@ -73,14 +76,6 @@ class CreatorController extends Controller
     }
 
     // ============================================================
-    // Show view live stream
-    // ============================================================
-    public function liveStreamPage()
-    {
-        return view('pages.creator.live-stream.index');
-    }
-
-    // ============================================================
     // Handling process of scanned qr
     // ============================================================
     public function scanQrProcess(Request $request)
@@ -92,7 +87,7 @@ class CreatorController extends Controller
         $sessionToken = session('qr_session_token');
         $ipAddress = $request->ip();
 
-        Log::info('Scan Qr Info: ' . ($user?->id ?? 'guest') . ' - ' . $token . ' - ' . $sessionToken . ' - ' . $ipAddress);
+        Log::channel('creator')->info('Scan Qr Info: ' . ($user?->id ?? 'guest') . ' - ' . $token . ' - ' . $sessionToken . ' - ' . $ipAddress);
 
         if ($result['success']) {
             return $this->responseHelperService->successResponse(
@@ -134,6 +129,7 @@ class CreatorController extends Controller
     {
         if (!$this->isValidType($type)) {
             return $this->responseHelperService->errorResponse('Invalid type parameter.', 400);
+            Log::channel('creator')->error('Invalid type parameter');
         }
 
         $userId = Auth::id();
@@ -144,6 +140,7 @@ class CreatorController extends Controller
             return $this->responseHelperService->errorResponse(
                 'No active QR session found. Please scan a QR code first.'
             );
+            Log::channel('creator')->error('No active QR session found. Please scan a QR code first.');
         }
 
         $sessionToken = session('qr_session_token');
@@ -168,6 +165,7 @@ class CreatorController extends Controller
                     'Access code not found or inactive.',
                     404
                 );
+                Log::channel('creator')->error('Access code not found or inactive');
             }
 
             $modelClass = $this->getModelService->getData($type);
@@ -179,12 +177,19 @@ class CreatorController extends Controller
                 ->where('field_id', $sessionCode->field_id)
                 ->first();
 
+            if ($type === 'selfie') {
+                $data->update([
+                    'photo_name' => $request->pict_name,
+                ]);
+            }
+
             if (!$data) {
                 DB::rollBack();
                 return $this->responseHelperService->errorResponse(
                     "Data {$type} for this session code not found.",
                     404
                 );
+                Log::channel('creator')->error(`Data {$type} for this session code not found.`);
             }
 
             $this->handleDataByType($type, $accessCode, $data, $scannedQrData, $sessionToken, $userId, $ip);
@@ -224,7 +229,7 @@ class CreatorController extends Controller
     // ============================================================
     private function isValidType(?string $type): bool
     {
-        return in_array($type, ['record', 'stream']);
+        return in_array($type, ['record', 'stream', 'selfie']);
     }
 
     private function getConfigByType(string $type): array
@@ -243,6 +248,13 @@ class CreatorController extends Controller
                 'statusEnum' => StreamSessionStatus::Ongoing,
                 'idField' => 'streaming_id',
                 'sessionStatus' => 'stream',
+            ],
+            'selfie' => [
+                'logModel' => SelfieLog::class,
+                'sessionModel' => SelfieSession::class,
+                'statusEnum' => SelfieSessionStatus::Ongoing,
+                'idField' => 'selfie_id',
+                'sessionStatus' => 'selfie',
             ],
         };
     }
