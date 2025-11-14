@@ -1,5 +1,4 @@
-<nav x-data="{ open: false }"
-  class="bg-white dark:bg-thamar-black border-b border-base-200 dark:border-transparent py-3">
+<nav x-data="{ open: false }" class="venue-nav-default py-2">
   <!-- Primary Navigation Menu -->
   <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-end h-fit items-center">

@@ -58,7 +58,9 @@
 
             <!-- Owner menu -->
             @if (Auth::user() && Auth::user()->isVenueManagement())
-            @include('layouts.venue-navigation')
+            <div class="px-3 pb-2">
+                @include('layouts.venue-navigation')
+            </div>
             @endif
 
             <!-- Page Content -->
