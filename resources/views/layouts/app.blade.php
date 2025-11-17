@@ -45,31 +45,17 @@
 <body class="body-layout">
     <div data-simplebar style="height: 100vh;">
         <div class="min-h-[130vh] flex flex-col main-bg-default">
-            <div class="pt-3 px-3 pb-2">
+            <div class="fixed w-full left-0 top-0 z-50 p-3" id="navWrapper">
                 @include('layouts.navigation')
             </div>
 
-            <!-- Super admin menu -->
-            @if (Auth::user() && Auth::user()->isSuperAdmin())
-            <div class="px-3 pb-2">
-                @include('layouts.superadmin-navigation')
-            </div>
-            @endif
-
-            <!-- Owner menu -->
-            @if (Auth::user() && Auth::user()->isVenueManagement())
-            <div class="px-3 pb-2">
-                @include('layouts.venue-navigation')
-            </div>
-            @endif
-
             <!-- Page Content -->
-            <main class="p-6 mt-4 w-full mx-auto ">
+            <main class="p-6 pt-20 w-full mx-auto">
                 <x-indicators.loading></x-indicators.loading>
                 {{ $slot }}
             </main>
 
-            <footer class="mt-auto p-5">
+            <footer class="mt-auto p-3">
                 @include('layouts.footer')
             </footer>
         </div>
@@ -81,6 +67,14 @@
     <script src="{{ asset('vendors/flatpickr/flatpickr.js') }}"></script>
     <script src="{{ asset('vendors/simplebar/simplebar.min.js') }}"></script>
     <script src="{{ asset('assets/js/loading.js') }}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+        const nav = document.getElementById('navWrapper');
+        const main = document.querySelector('main');
+
+        main.style.paddingTop = nav.offsetHeight + 'px';
+    });
+    </script>
     @stack('scripts')
     <!-- Scripts JS :end -->
 </body>
