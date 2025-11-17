@@ -59,13 +59,65 @@ class GetPlaybackUrisJob implements ShouldQueue
                 'field_id' => $this->fieldId,
             ]);
 
+            // Init as usual
             $recordedSearch->initialize($this->fieldId, $this->startTime, $this->endTime);
+
+            // ======================================================
+            // 1. DETECT RTSP PER CAMERA
+            // ======================================================
+            $data = $prepareData->prepare($this->fieldId);
+            $host = $data['host'];
+            $user = $data['user'];
+            $pass = $data['pass'];
+            $channels = $data['manualChannel'];
+
+            $rtspDetection = $recordedSearch->DetectPlaybackRTSP($host, $user, $pass, $channels);
+
+            $hasRTSP = false;
+            foreach ($rtspDetection as $ch => $info) {
+                if ($info['success']) {
+                    $hasRTSP = true;
+
+                    Log::channel('camera-job')->info("[RTSP OK] Direct RTSP download for channel {$ch}", [
+                        'rtsp_url' => $info['rtsp_url']
+                    ]);
+
+                    // DISPATCH RTSP JOB
+                    DownloadVideoJob::dispatch(
+                        "camera_{$ch}",
+                        [], // URIs not needed for RTSP
+                        $this->fieldId,
+                        $this->userId,
+                        $this->videoName,
+                        $host,
+                        $user,
+                        $pass,
+                        $this->startTime,
+                        $this->endTime,
+                        $this->recordingId,
+                        true,
+                        $info['rtsp_url']
+                    )->onQueue('camera-record-video-download');
+                }
+            }
+
+            // If at least one RTSP OK → skip ISAPI
+            if ($hasRTSP) {
+                Log::channel('camera-job')->info("[JOB] RTSP available → ISAPI skipped");
+                return;
+            }
+
+            // ======================================================
+            // 2. NO RTSP → FALLBACK TO ISAPI
+            // ======================================================
+            Log::channel('camera-job')->warning("[RTSP FAIL] Fallback to ISAPI search");
+
             $uris = $recordedSearch->getAllPlaybackUris();
 
             if (empty($uris)) {
-                Log::channel('camera-job')->warning("[JOB] No playback URIs found for field {$this->fieldId}, user {$this->userId}", [
-                    'start_time' => $this->startTime,
-                    'end_time' => $this->endTime,
+                Log::channel('camera-job')->warning("[JOB] No ISAPI playback URIs found", [
+                    'start' => $this->startTime,
+                    'end' => $this->endTime
                 ]);
                 return;
             }
@@ -73,7 +125,7 @@ class GetPlaybackUrisJob implements ShouldQueue
             foreach ($uris as $cameraKey => $cameraUris) {
                 $cameraInfo = $recordedSearch->getCameraConnection($cameraKey);
 
-                Log::channel('camera-job')->info("[DEBUG] Dispatching DownloadVideoJob", [
+                Log::channel('camera-job')->info("[DEBUG] Dispatching ISAPI DownloadVideoJob", [
                     'camera_key' => $cameraKey,
                     'uri_count' => count($cameraUris),
                     'host' => $cameraInfo['host']
@@ -90,13 +142,10 @@ class GetPlaybackUrisJob implements ShouldQueue
                     $cameraInfo['pass'],
                     $this->startTime,
                     $this->endTime,
-                    $this->recordingId
+                    $this->recordingId,
+                    false,
+                    null
                 )->onQueue('camera-record-video-download');
-
-                Log::channel('camera-job')->info("[JOB] DownloadVideoJob dispatched", [
-                    'camera_key' => $cameraKey,
-                    'uri_count' => count($cameraUris),
-                ]);
             }
 
             Log::channel('camera-job')->info("[JOB] GetPlaybackUrisJob finished", [

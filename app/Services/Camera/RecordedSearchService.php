@@ -50,7 +50,277 @@ class RecordedSearchService
     }
 
     // =========================================================
-    // STEP 1: SEARCH ALL PLAYBACK URIS
+    // (RTSP METHOD) RTSP PLAYBACK DETECTION
+    // =========================================================
+    public function DetectPlaybackRTSP(string $host, string $user, string $pass, array $channels): array
+    {
+        $results = [];
+
+        foreach ($channels as $channel) {
+            $rtspUrl = "rtsp://{$user}:{$pass}@{$host}:554/Streaming/tracks/{$channel}/";
+
+            $cmd = [
+                'ffprobe',
+                '-v',
+                'error',
+                '-rtsp_transport',
+                'tcp',
+                '-i',
+                $rtspUrl
+            ];
+
+            try {
+                $process = new Process($cmd);
+                $process->setTimeout(8);
+                $process->run();
+
+                $success = $process->isSuccessful();
+
+                Log::channel('camera-record')->info("[RTSP DETECT]", [
+                    'channel' => $channel,
+                    'rtsp_url' => $rtspUrl,
+                    'success' => $success,
+                    'stderr' => $process->getErrorOutput()
+                ]);
+
+                $results[$channel] = [
+                    'success' => $success,
+                    'rtsp_url' => $rtspUrl
+                ];
+            } catch (\Throwable $e) {
+
+                Log::channel('camera-record')->error("[RTSP DETECT ERROR]", [
+                    'channel' => $channel,
+                    'rtsp_url' => $rtspUrl,
+                    'error' => $e->getMessage(),
+                ]);
+
+                $results[$channel] = [
+                    'success' => false,
+                    'rtsp_url' => $rtspUrl
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    // =========================================================
+    // (RTSP METHOD) RTSP DOWNLOAD PLAYBACK RANGE
+    // =========================================================
+    public function DownloadVideoViaRTSP(
+        string $rtspUrl,
+        string $savePath,
+        string $startTime,
+        string $endTime,
+        int $durationLimit = 0
+    ): bool {
+
+        @mkdir(dirname($savePath), 0777, true);
+
+        $start = new \DateTime($startTime, new \DateTimeZone('UTC'));
+        $end = new \DateTime($endTime, new \DateTimeZone('UTC'));
+        $duration = $end->getTimestamp() - $start->getTimestamp();
+
+        if ($duration <= 0) {
+            Log::channel('camera-record')->warning("[RTSP DOWNLOAD] Invalid time range", [
+                'start' => $startTime,
+                'end' => $endTime
+            ]);
+            return false;
+        }
+
+        // Build RTSP playback URL
+        $startStr = gmdate("Ymd\THis\Z", $start->getTimestamp());
+        $endStr   = gmdate("Ymd\THis\Z", $end->getTimestamp());
+        $url = "{$rtspUrl}?starttime={$startStr}&endtime={$endStr}";
+
+        Log::channel('camera-record')->info("[RTSP DOWNLOAD START]", [
+            'rtsp_url' => $url,
+            'save_to' => $savePath,
+            'duration' => $duration
+        ]);
+
+        // TEMPORARY RAW TS FILE
+        $rawTs = dirname($savePath) . "/tester_rtsp_raw.ts";
+
+        // Build ffmpeg command
+        $cmd = [
+            'ffmpeg',
+            '-y',
+            '-rtsp_transport',
+            'tcp',
+            '-i',
+            $url,
+            '-c',
+            'copy',
+            $rawTs
+        ];
+
+        if ($durationLimit > 0) {
+            $cmd = [
+                'ffmpeg',
+                '-y',
+                '-rtsp_transport',
+                'tcp',
+                '-i',
+                $url,
+                '-t',
+                (string)$durationLimit,
+                '-c',
+                'copy',
+                $rawTs
+            ];
+        }
+
+        try {
+            // Run ffmpeg
+            $process = new Process($cmd);
+            $process->setTimeout(0);
+            $process->run();
+
+            if (!$process->isSuccessful() || !file_exists($rawTs) || filesize($rawTs) < 1024) {
+                Log::channel('camera-record')->error("[RTSP DOWNLOAD FAIL]", [
+                    'stderr' => $process->getErrorOutput()
+                ]);
+                return false;
+            }
+
+            // =========================================================
+            // CHECK CODEC USING FFPROBE
+            // =========================================================
+
+            // Check Video Codec
+            $videoCodecProbe = new Process([
+                'ffprobe',
+                '-v',
+                'error',
+                '-select_streams',
+                'v:0',
+                '-show_entries',
+                'stream=codec_name',
+                '-of',
+                'default=noprint_wrappers=1:nokey=1',
+                $rawTs
+            ]);
+            $videoCodecProbe->run();
+            $videoCodec = trim($videoCodecProbe->getOutput());
+
+            // Check Audio Codec
+            $audioCodecProbe = new Process([
+                'ffprobe',
+                '-v',
+                'error',
+                '-select_streams',
+                'a:0',
+                '-show_entries',
+                'stream=codec_name',
+                '-of',
+                'default=noprint_wrappers=1:nokey=1',
+                $rawTs
+            ]);
+            $audioCodecProbe->run();
+            $audioCodec = trim($audioCodecProbe->getOutput());
+
+            Log::channel('camera-record')->info("[RTSP CODEC CHECK]", [
+                'video' => $videoCodec,
+                'audio' => $audioCodec,
+                'raw_file' => $rawTs,
+                'size' => filesize($rawTs),
+            ]);
+
+            // =========================================================
+            // IF CODEC OK → COPY DIRECT TO MP4
+            // =========================================================
+            if ($videoCodec === 'h264' && $audioCodec === 'aac') {
+
+                $cmdCopy = [
+                    'ffmpeg',
+                    '-y',
+                    '-i',
+                    $rawTs,
+                    '-c',
+                    'copy',
+                    '-movflags',
+                    '+faststart',
+                    $savePath
+                ];
+
+                $copyProcess = new Process($cmdCopy);
+                $copyProcess->setTimeout(0);
+                $copyProcess->run();
+
+                @unlink($rawTs);
+
+                if ($copyProcess->isSuccessful() && file_exists($savePath)) {
+                    Log::channel('camera-record')->info("[RTSP SAVE OK - DIRECT COPY]", [
+                        'file' => $savePath,
+                        'size' => filesize($savePath)
+                    ]);
+                    return true;
+                }
+
+                Log::channel('camera-record')->error("[RTSP DIRECT COPY FAIL]", [
+                    'stderr' => $copyProcess->getErrorOutput()
+                ]);
+
+                return false;
+            }
+
+            // =========================================================
+            // ELSE: RE-ENCODE (H264 + AAC)
+            // =========================================================
+            $cmdEncode = [
+                'ffmpeg',
+                '-y',
+                '-err_detect',
+                'ignore_err',
+                '-i',
+                $rawTs,
+                '-c:v',
+                'libx264',
+                '-preset',
+                'ultrafast',
+                '-crf',
+                '23',
+                '-c:a',
+                'aac',
+                '-b:a',
+                '128k',
+                '-movflags',
+                '+faststart',
+                $savePath
+            ];
+
+            $encodeProcess = new Process($cmdEncode);
+            $encodeProcess->setTimeout(0);
+            $encodeProcess->run();
+
+            @unlink($rawTs);
+
+            if (!$encodeProcess->isSuccessful() || !file_exists($savePath)) {
+                Log::channel('camera-record')->error("[RTSP ENCODE FAIL]", [
+                    'stderr' => $encodeProcess->getErrorOutput()
+                ]);
+                return false;
+            }
+
+            Log::channel('camera-record')->info("[RTSP SAVE OK - ENCODED]", [
+                'file' => $savePath,
+                'size' => filesize($savePath)
+            ]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::channel('camera-record')->error("[RTSP DOWNLOAD ERROR]", [
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    // =========================================================
+    // (ISAPI METHOD) SEARCH ALL PLAYBACK URIS
     // =========================================================
     public function getAllPlaybackUris(): array
     {
@@ -114,7 +384,7 @@ class RecordedSearchService
     }
 
     // =========================================================
-    // STEP 2: DOWNLOAD RAW VIDEO SEGMENTS (per camera)
+    // (ISAPI METHOD) DOWNLOAD RAW VIDEO SEGMENTS (per channel)
     // =========================================================
     public function downloadByPlaybackUris(
         array $allUris,
@@ -159,7 +429,7 @@ class RecordedSearchService
     }
 
     // =========================================================
-    // STEP 3: TRIM FINAL VIDEO
+    // TRIM FINAL VIDEO
     // =========================================================
     public function trimVideo(string $inputFile, int $startSec, int $duration, string $outputFile, bool $forceEncode = false): bool
     {
