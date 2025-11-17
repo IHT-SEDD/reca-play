@@ -25,7 +25,7 @@
 
 /* Nav */
 .main-nav-default {
-    @apply bg-white dark:bg-night border-b border-white-edgar/50 rounded-xl shadow-sm border border-white-edgar;
+    @apply bg-white dark:bg-night border-b border-white-edgar/50 rounded-xl border border-white-edgar;
 }
 .text-nav-active {
     @apply text-sm font-semibold leading-4 bg-hot-shot/20 shadow-inner rounded-lg text-hot-shot;
