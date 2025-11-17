@@ -20,6 +20,8 @@ class Recording extends Model
 
     protected $casts = [
         'status' => RecordingStatus::class,
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
     ];
 
     public const Searchable = ['user_id', 'field_id', 'video_name', 'start_time', 'end_time'];
