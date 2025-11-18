@@ -136,21 +136,16 @@ class RecordedSearchService
         $cameraKey = array_key_first($allUris);
         $uris = $allUris[$cameraKey] ?? [];
 
-        if (empty($uris)) {
-            Log::channel('camera-record')->warning("[DOWNLOAD] No URIs for {$cameraKey}");
-            return null;
-        }
+        if (empty($uris)) return null;
 
         $directSegment = collect($uris)->firstWhere('directUse', true);
+        $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
+        @mkdir($tmpDir, 0777, true);
+
         if ($directSegment) {
-            $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
-            @mkdir($tmpDir, 0777, true);
             $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, [$directSegment['uri']], $tmpDir);
             return $encodedSegments[0] ?? null;
         }
-
-        $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
-        @mkdir($tmpDir, 0777, true);
 
         $urisList = array_column($uris, 'uri');
         $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $urisList, $tmpDir);
@@ -252,21 +247,6 @@ class RecordedSearchService
 XML;
     }
 
-    protected function buildDownloadXmlPayload(string $playbackURI, string $userName = '', string $password = ''): string
-    {
-        $userXml = $userName ? "<userName>{$userName}</userName>" : '';
-        $passXml = $password ? "<password>{$password}</password>" : '';
-
-        return <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<downloadRequest version="1.0" xmlns="http://www.isapi.org/ver20/XMLSchema">
-<playbackURI>{$playbackURI}</playbackURI>
-{$userXml}
-{$passXml}
-</downloadRequest>
-XML;
-    }
-
     // =========================================================
     // CAM CONNECTION HELPERS
     // =========================================================
@@ -315,38 +295,29 @@ XML;
         );
 
         $encodedFiles = [];
-        $maxParallel = 4;
         $processes = [];
+        $maxParallel = 4;
         $seq = 1;
 
         foreach ($uris as $uri) {
             $rawTs = "{$tmpDir}/seg_{$seq}.ts";
             $encodedMp4 = "{$tmpDir}/seg_{$seq}.mp4";
 
-            Log::channel('camera-record')->info("[DOWNLOAD SEGMENT] Start (FFMPEG first)", [
+            Log::channel('camera-record')->info("[DOWNLOAD SEGMENT] Start ISAPI", [
                 'camera' => $cameraKey,
                 'segment' => $seq,
                 'uri' => $uri
             ]);
 
-            $downloadOk = $downloadService->downloadViaFFMPEG($uri, $rawTs);
-
-            if (!$downloadOk) {
-                Log::channel('camera-record')->warning("[DOWNLOAD FALLBACK] FFMPEG failed, trying ISAPI", [
-                    'segment' => $seq
-                ]);
-                $downloadOk = $downloadService->downloadViaISAPI($uri, $rawTs);
-            }
+            $downloadOk = $downloadService->downloadViaISAPI($uri, $rawTs);
 
             if (!$downloadOk || !file_exists($rawTs) || filesize($rawTs) < 1024) {
-                Log::channel('camera-record')->error("[DOWNLOAD SEG FAIL] All methods failed", [
-                    'segment' => $seq
-                ]);
+                Log::error("[DOWNLOAD SEG FAIL] seg {$seq}");
                 $seq++;
                 continue;
             }
 
-            $codecCheck = new Process([
+            $videoCodec = trim((new Process([
                 'ffprobe',
                 '-v',
                 'error',
@@ -357,11 +328,9 @@ XML;
                 '-of',
                 'default=noprint_wrappers=1:nokey=1',
                 $rawTs
-            ]);
-            $codecCheck->run();
-            $videoCodec = trim($codecCheck->getOutput());
+            ]))->mustRun()->getOutput());
 
-            $audioCheck = new Process([
+            $audioCodec = trim((new Process([
                 'ffprobe',
                 '-v',
                 'error',
@@ -372,25 +341,11 @@ XML;
                 '-of',
                 'default=noprint_wrappers=1:nokey=1',
                 $rawTs
-            ]);
-            $audioCheck->run();
-            $audioCodec = trim($audioCheck->getOutput());
+            ]))->mustRun()->getOutput());
 
             if ($videoCodec === 'h264' && $audioCodec === 'aac') {
                 $encodedFiles[] = $rawTs;
-
-                Log::channel('camera-record')->info("[SEG COPY OK] Codec matched, no encode", [
-                    'segment' => $seq,
-                    'size' => filesize($rawTs)
-                ]);
             } else {
-
-                Log::channel('camera-record')->info("[SEG ENCODE] Encoding due to codec mismatch", [
-                    'segment' => $seq,
-                    'videoCodec' => $videoCodec,
-                    'audioCodec' => $audioCodec
-                ]);
-
                 $process = new Process([
                     'ffmpeg',
                     '-y',
@@ -427,13 +382,6 @@ XML;
                     if (!$p['process']->isRunning()) {
                         if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
                             $encodedFiles[] = $p['mp4'];
-                            Log::channel('camera-record')->info("[SEG ENCODE OK]", [
-                                'file' => $p['mp4']
-                            ]);
-                        } else {
-                            Log::channel('camera-record')->error("[SEG ENCODE FAIL]", [
-                                'stderr' => $p['process']->getErrorOutput()
-                            ]);
                         }
                         @unlink($p['raw']);
                         unset($processes[$key]);
@@ -449,140 +397,11 @@ XML;
             $p['process']->wait();
             if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
                 $encodedFiles[] = $p['mp4'];
-                Log::channel('camera-record')->info("[SEG ENCODE OK FINAL]", [
-                    'file' => $p['mp4']
-                ]);
             }
             @unlink($p['raw']);
         }
 
         return $encodedFiles;
-        // $client = new \GuzzleHttp\Client([
-        //     'verify' => false,
-        //     'auth' => [$this->user, $this->pass, 'digest'],
-        //     'timeout' => 0,
-        // ]);
-
-        // $downloadUrl = "https://{$this->host}/ISAPI/ContentMgmt/download";
-        // $encodedFiles = [];
-        // $maxParallel = 4;
-        // $processes = [];
-        // $seq = 1;
-
-        // foreach ($uris as $uri) {
-        //     $rawTs = "{$tmpDir}/seg_{$seq}.ts";
-        //     $encodedMp4 = "{$tmpDir}/seg_{$seq}.mp4";
-        //     $xml = $this->buildDownloadXmlPayload($uri, $this->user, $this->pass);
-
-        //     try {
-        //         Log::channel('camera-record')->info("[DOWNLOAD SEGMENT] Start", [
-        //             'camera' => $cameraKey,
-        //             'segment' => $seq,
-        //         ]);
-
-        //         $client->post($downloadUrl, [
-        //             'headers' => ['Content-Type' => 'application/xml'],
-        //             'body' => $xml,
-        //             'sink' => $rawTs,
-        //         ]);
-
-        //         if (!file_exists($rawTs) || filesize($rawTs) < 1024) {
-        //             Log::channel('camera-record')->warning("[DOWNLOAD SEG FAIL] seg_{$seq}");
-        //             continue;
-        //         }
-
-        //         $codecCheck = new Process([
-        //             'ffprobe',
-        //             '-v',
-        //             'error',
-        //             '-select_streams',
-        //             'v:0',
-        //             '-show_entries',
-        //             'stream=codec_name',
-        //             '-of',
-        //             'default=noprint_wrappers=1:nokey=1',
-        //             $rawTs
-        //         ]);
-        //         $codecCheck->run();
-        //         $videoCodec = trim($codecCheck->getOutput());
-
-        //         $audioCheck = new Process([
-        //             'ffprobe',
-        //             '-v',
-        //             'error',
-        //             '-select_streams',
-        //             'a:0',
-        //             '-show_entries',
-        //             'stream=codec_name',
-        //             '-of',
-        //             'default=noprint_wrappers=1:nokey=1',
-        //             $rawTs
-        //         ]);
-        //         $audioCheck->run();
-        //         $audioCodec = trim($audioCheck->getOutput());
-
-        //         if ($videoCodec === 'h264' && $audioCodec === 'aac') {
-        //             $encodedFiles[] = $rawTs;
-        //             Log::channel('camera-record')->info("[SEG COPY OK] seg_{$seq}", ['size' => filesize($rawTs)]);
-        //         } else {
-        //             $process = new Process([
-        //                 'ffmpeg',
-        //                 '-y',
-        //                 '-err_detect',
-        //                 'ignore_err',
-        //                 '-i',
-        //                 $rawTs,
-        //                 '-c:v',
-        //                 'libx264',
-        //                 '-preset',
-        //                 'ultrafast',
-        //                 '-crf',
-        //                 '23',
-        //                 '-c:a',
-        //                 'aac',
-        //                 '-b:a',
-        //                 '128k',
-        //                 '-movflags',
-        //                 '+faststart',
-        //                 $encodedMp4
-        //             ]);
-        //             $process->setTimeout(0)->start();
-        //             $processes[] = ['process' => $process, 'raw' => $rawTs, 'mp4' => $encodedMp4];
-        //         }
-        //     } catch (\Throwable $e) {
-        //         Log::channel('camera-record')->error("[DOWNLOAD ERROR] seg_{$seq}", ['error' => $e->getMessage()]);
-        //     }
-
-        //     while (count($processes) >= $maxParallel) {
-        //         foreach ($processes as $key => $p) {
-        //             if (!$p['process']->isRunning()) {
-        //                 if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
-        //                     $encodedFiles[] = $p['mp4'];
-        //                     Log::channel('camera-record')->info("[SEG ENCODE OK] seg_{$seq}", ['size' => filesize($p['mp4'])]);
-        //                 } else {
-        //                     Log::channel('camera-record')->error("[SEG ENCODE FAIL] seg_{$seq}", [
-        //                         'stderr' => $p['process']->getErrorOutput()
-        //                     ]);
-        //                 }
-        //                 @unlink($p['raw']);
-        //                 unset($processes[$key]);
-        //             }
-        //         }
-        //         usleep(100000);
-        //     }
-        //     $seq++;
-        // }
-
-        // foreach ($processes as $p) {
-        //     $p['process']->wait();
-        //     if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
-        //         $encodedFiles[] = $p['mp4'];
-        //         Log::channel('camera-record')->info("[SEG ENCODE OK FINAL]", ['size' => filesize($p['mp4'])]);
-        //     }
-        //     @unlink($p['raw']);
-        // }
-
-        // return $encodedFiles;
     }
 
     // =========================================================
