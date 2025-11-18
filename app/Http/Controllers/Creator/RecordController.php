@@ -89,7 +89,7 @@ class RecordController extends Controller
                 );
             }
 
-            $fieldId = $data->field_id;
+            $fieldId = $sessionCode->field_id;
             $recordingId = $data->id;
 
             if (!$recordingId) {
@@ -221,6 +221,36 @@ class RecordController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
             return $this->responseHelperService->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    // ============================================================
+    // Change cam live preview
+    // ============================================================
+    public function changeCam(Request $request)
+    {
+        $userId = Auth::id();
+        $type = $request->query('type');
+        $fieldId = $request->query('field_id');
+        $camCode = $request->query('camera_code');
+        try {
+            $streamUrl = $this->utilityService->changeCamLivePreview($fieldId, $camCode);
+
+            return $this->responseHelperService->successResponse(
+                message: 'Change cam successfully.',
+                data: [
+                    'streamUrl' => $streamUrl,
+                ]
+            );
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::channel('camera-record')->error('[CHANGE CAM LIVE PREVIEW] Error', [
+                'error' => $e->getMessage()
+            ]);
+            return $this->responseHelperService->errorResponse(
+                $e->getMessage(),
+                500
+            );
         }
     }
 }

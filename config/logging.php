@@ -155,49 +155,48 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/creator/creator.log'),
             'level' => 'debug',
-            // 'tap' => [App\Logging\SpaceLineFormatter::class],
         ],
 
         'camera-record' => [
             'driver' => 'single',
             'path' => storage_path('logs/camera/record.log'),
             'level' => 'debug',
-            // 'tap' => [App\Logging\SpaceLineFormatter::class],
         ],
 
         'camera-stream' => [
             'driver' => 'single',
             'path' => storage_path('logs/camera/stream.log'),
             'level' => 'debug',
-            // 'tap' => [App\Logging\SpaceLineFormatter::class],
         ],
 
         'camera-selfie' => [
             'driver' => 'single',
             'path' => storage_path('logs/camera/selfie.log'),
             'level' => 'debug',
-            // 'tap' => [App\Logging\SpaceLineFormatter::class],
         ],
 
         'camera-control' => [
             'driver' => 'single',
             'path' => storage_path('logs/camera/control.log'),
             'level' => 'debug',
-            // 'tap' => [App\Logging\SpaceLineFormatter::class],
         ],
 
         'camera-job' => [
             'driver' => 'single',
             'path' => storage_path('logs/camera/job.log'),
             'level' => 'debug',
-            // 'tap' => [App\Logging\SpaceLineFormatter::class],
         ],
 
         'expired-session' => [
             'driver' => 'single',
             'path' => storage_path('logs/session/expired-session.log'),
             'level' => 'info',
-            // 'tap' => [App\Logging\SpaceLineFormatter::class],
+        ],
+
+        'utility-service' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/utility-service.log'),
+            'level' => 'info',
         ],
     ],
 

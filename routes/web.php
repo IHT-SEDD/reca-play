@@ -167,6 +167,7 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::prefix('record')->name('creator.')->controller(RecordController::class)->group(function () {
                 Route::get('/', 'recordPage')->name('record');
                 Route::get('/check', 'checkData')->name('record-check');
+                Route::get('/change-cam', 'changeCam')->name('record-change-cam');
 
                 Route::middleware('throttle:stop-record')->group(function () {
                     Route::post('/stop', 'stopRecording')->name('record-stop');

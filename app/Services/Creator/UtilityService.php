@@ -57,14 +57,30 @@ class UtilityService
   public function livePreview(int $fieldId)
   {
     try {
-      $cameraCode = request()->query('camera_code');
       $service = app(LivePreviewService::class);
 
-      return $cameraCode
-        ? $service->getLivePreviewUrlByCode($fieldId, $cameraCode)
-        : $service->getLivePreviewUrl($fieldId);
+      return $service->getLivePreviewUrl($fieldId);
     } catch (\Throwable $e) {
-      Log::warning('[UtilityService] livePreview error: ' . $e->getMessage());
+      Log::channel('utility-service')->error('[LIVE PREVIEW] Error', [
+        'error' => $e->getMessage()
+      ]);
+      return null;
+    }
+  }
+
+  // ============================================================
+  // Get URL live preview change camera
+  // ============================================================
+  public function changeCamLivePreview(int $fieldId, string $camCode)
+  {
+    try {
+      $service = app(LivePreviewService::class);
+
+      return $service->getLivePreviewUrlByCode($fieldId, $camCode);
+    } catch (\Throwable $e) {
+      Log::channel('utility-service')->error('[CHANGE CAM LIVE PREVIEW] Error', [
+        'error' => $e->getMessage()
+      ]);
       return null;
     }
   }
