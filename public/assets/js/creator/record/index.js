@@ -398,7 +398,7 @@ changeCamera = () => {
         const nextCam = cameraList[currentCamIndex];
 
         $.ajax({
-            url: `/creator/record/check?type=record&field_id=${nextCam.field_id}&camera_code=${nextCam.code}`,
+            url: `/creator/record/change-cam?type=record&field_id=${nextCam.field_id}&camera_code=${nextCam.code}`,
             method: "GET",
             headers: {
                 "X-Requested-With": "XMLHttpRequest",
@@ -430,7 +430,7 @@ changeCamera = () => {
                     const firstCam = cameraList[0];
 
                     $.ajax({
-                        url: `/creator/record/check?type=record&field_id=${firstCam.field_id}&camera_code=${firstCam.code}`,
+                        url: `/creator/record/change-cam?type=record&field_id=${firstCam.field_id}&camera_code=${firstCam.code}`,
                         method: "GET",
                         headers: {
                             "X-Requested-With": "XMLHttpRequest",
