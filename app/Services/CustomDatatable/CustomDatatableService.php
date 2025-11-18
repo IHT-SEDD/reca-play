@@ -30,7 +30,8 @@ class CustomDatatableService
   Builder $baseQuery,
   Request $request,
   ?array $customSearchable = null,
-  ?\Closure $customize = null
+  ?\Closure $customize = null,
+  ?string $dateColumn = 'created_at'
  ): JsonResponse {
   // Model basequery
   $model = $baseQuery->getModel();
@@ -63,6 +64,14 @@ class CustomDatatableService
      $q->orWhere($column, 'like', "%{$keyword}%");
     }
    });
+  }
+
+  // --- Apply date filter ---
+  if ($request->filled('date_start') && $request->filled('date_end')) {
+   $start = $request->date_start . " 00:00:00";
+   $end = $request->date_end . " 23:59:59";
+
+   $query->whereBetween($dateColumn, [$start, $end]);
   }
 
   // --- Build datatable ---

@@ -169,6 +169,7 @@ class VenueManagementController extends Controller
             $request,
             null,
             null,
+            'start_time'
         );
     }
 
@@ -301,21 +302,23 @@ class VenueManagementController extends Controller
     // ===============================
     private function calculateDuration(string $startTime, string $endTime): array
     {
-        $today = Carbon::today();
+        $start = Carbon::hasFormat($startTime, 'Y-m-d H:i')
+            ? Carbon::parse($startTime)
+            : Carbon::parse(Carbon::today()->format('Y-m-d') . ' ' . $startTime);
 
-        $start = Carbon::parse($today->format('Y-m-d') . ' ' . $startTime);
-        $end = Carbon::parse($today->format('Y-m-d') . ' ' . $endTime);
+        $end = Carbon::hasFormat($endTime, 'Y-m-d H:i')
+            ? Carbon::parse($endTime)
+            : Carbon::parse(Carbon::today()->format('Y-m-d') . ' ' . $endTime);
 
         if ($end->lessThan($start)) {
             $end->addDay();
         }
 
-        $duration = (int) $start->diffInMinutes($end);
-        $expiredAt = $end->toDateTimeString();
+        $duration = (int)$start->diffInMinutes($end);
 
         return [
             'duration' => $duration,
-            'expired_at' => $expiredAt,
+            'expired_at' => $end->toDateTimeString(),
             'start_time' => $start->toDateTimeString(),
             'end_time' => $end->toDateTimeString(),
         ];

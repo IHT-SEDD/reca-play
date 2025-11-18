@@ -1,5 +1,6 @@
 <div class="lg:col-span-4 md:col-span-2 col-span-1">
- <x-datatable-layout idTable="access-code-table" placeholderSearch="Search access code...">
+ <x-datatable-layout idTable="access-code-table" placeholderSearch="Search access code..." dateFilter="true"
+  placeholderDateFilter="Select date range">
   <th>No</th>
   <th>User</th>
   <th>QR Code</th>
