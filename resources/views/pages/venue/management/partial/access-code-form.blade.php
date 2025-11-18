@@ -8,15 +8,15 @@
   @csrf
 
   <x-input-label for="type" :value="__('Type')" :required="true" />
-  <div class="flex lg:flex-row flex-col justify-start gap-2 lg:items-center items-start w-full mt-2">
+  <div class="flex lg:flex-row md:flex-col flex-col justify-start gap-2 lg:items-center items-start w-full mt-2">
    <x-inputs.radio-input id="type" name="type" value="record">Record</x-inputs.radio-input>
    <x-inputs.radio-input id="type" name="type" value="stream">Stream</x-inputs.radio-input>
    <x-inputs.radio-input id="type" name="type" value="selfie">Selfie</x-inputs.radio-input>
   </div>
 
   <div class="mt-4">
-   <x-input-label id="name_label" for="name" :value="__('Video Name')" required />
-   <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')" required
+   <x-input-label id="name_label" for="name" :value="__('Video Name')" />
+   <x-inputs.text-input id="name" class="block mt-2 w-full" type="text" name="name" :value="old('name')"
     placeholder="Video name" autocomplete="off" />
    <x-input-error id="input-name-error"></x-input-error>
   </div>

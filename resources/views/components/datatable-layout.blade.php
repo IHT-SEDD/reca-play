@@ -7,6 +7,8 @@ Props for parsing value from page blade
 'idTable' => 'table-reca',
 'wrapperClass' => '',
 'tableClass' => '',
+'placeholderDateFilter' => '',
+'dateFilter' => false
 ])
 
 <div class="bg-white rounded-xl shadow-sm w-full p-4" id="datatable-custom-wrapper">
@@ -15,6 +17,10 @@ Props for parsing value from page blade
         <!-- Search box -->
         <x-inputs.text-input id="search-data-{{ $idTable }}" type="text" class="block w-full max-w-xs text-sm"
             placeholder="{{ $placeholderSearch }}" />
+        @if ($dateFilter == true)
+        <x-inputs.time-picker id="date-filter-{{ $idTable }}" class="block max-w-xs text-sm w-full" type="text"
+            placeholder="{{ $placeholderDateFilter }}" />
+        @endif
     </div>
 
     <!-- Table wrapper :begin -->

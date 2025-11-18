@@ -4,6 +4,7 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
     // Global variables
     const $table = $(`#${tableId}`);
     const $search = $(`#search-data-${tableId}`);
+    const $dateFilter = $(`#date-filter-${tableId}`);
     const $loader = $(`#table-loader-${tableId}`);
     const $empty = $(`#data-empty-${tableId}`);
     const $notFound = $(`#data-not-found-${tableId}`);
@@ -60,6 +61,22 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
         });
     }
 
+    if ($dateFilter.length) {
+        flatpickr(`#date-filter-${tableId}`, {
+            enableTime: false,
+            noCalendar: false,
+            dateFormat: "Y-m-d",
+            mode: "range",
+            minDate: "today",
+
+            onClose: function (selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    table.ajax.reload();
+                }
+            },
+        });
+    }
+
     const table = $table.DataTable({
         processing: true,
         serverSide: true,
@@ -67,6 +84,19 @@ function initCustomDatatable({ tableId, tableDataUrl, tableColumns }) {
             url: tableDataUrl,
             data: function (d) {
                 d.search = $search.val();
+
+                const rawRange = $dateFilter.val();
+                let start = null;
+                let end = null;
+
+                if (rawRange && rawRange.includes("to")) {
+                    const parts = rawRange.split(" to ").map((s) => s.trim());
+                    start = parts[0];
+                    end = parts[1];
+                }
+
+                d.date_start = start;
+                d.date_end = end;
                 d.with = withData;
             },
         },

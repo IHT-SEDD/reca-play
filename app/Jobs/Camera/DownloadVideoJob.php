@@ -26,8 +26,6 @@ class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
     protected string $startTime;
     protected string $endTime;
     protected int $recordingId;
-    protected bool $useRTSP;
-    protected ?string $rtspUrl;
 
     public $tries = 3;
     public $timeout = 0;
@@ -53,9 +51,7 @@ class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
         string $pass,
         string $startTime,
         string $endTime,
-        int $recordingId,
-        bool $useRTSP = false,
-        ?string $rtspUrl = null
+        int $recordingId
     ) {
         $this->cameraKey = $cameraKey;
         $this->uris = $uris;
@@ -68,8 +64,6 @@ class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
         $this->startTime = $startTime;
         $this->endTime = $endTime;
         $this->recordingId = $recordingId;
-        $this->useRTSP = $useRTSP;
-        $this->rtspUrl = $rtspUrl;
     }
 
     /**
@@ -81,46 +75,8 @@ class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
             Log::channel('camera-job')->info('[JOB] DownloadVideoJob started', [
                 'recording_id' => $this->recordingId,
                 'camera_key' => $this->cameraKey,
-                'rtsp_mode' => $this->useRTSP
             ]);
 
-            // ======================================================
-            // 1. RTSP MODE
-            // ======================================================
-            if ($this->useRTSP && $this->rtspUrl) {
-
-                $savePath = storage_path("app/public/recordings/{$this->videoName}_{$this->cameraKey}.mp4");
-
-                $ok = $recordedSearch->DownloadVideoViaRTSP(
-                    $this->rtspUrl,
-                    $savePath,
-                    $this->startTime,
-                    $this->endTime
-                );
-
-                if ($ok) {
-                    Log::channel('camera-job')->info('[JOB] RTSP download complete', [
-                        'file' => $savePath,
-                    ]);
-
-                    TrimVideoJob::dispatch(
-                        $savePath,
-                        $this->startTime,
-                        $this->endTime,
-                        $this->cameraKey,
-                        $this->videoName,
-                        $this->recordingId
-                    )->onQueue('camera-record-video-trim');
-
-                    return;
-                }
-
-                Log::channel('camera-job')->warning("[JOB] RTSP download failed, fallback to ISAPI");
-            }
-
-            // ======================================================
-            // 2. FALLBACK → ISAPI
-            // ======================================================
             $file = $recordedSearch->downloadByPlaybackUris(
                 [$this->cameraKey => $this->uris],
                 $this->fieldId,
@@ -133,18 +89,43 @@ class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
                 $this->endTime
             );
 
-            if ($file && file_exists($file)) {
-                TrimVideoJob::dispatch(
-                    $file,
-                    $this->startTime,
-                    $this->endTime,
-                    $this->cameraKey,
-                    $this->videoName,
-                    $this->recordingId
-                )->onQueue('camera-record-video-trim');
+            Log::channel('camera-job')->info('[DEBUG] DownloadVideoJob output file', [
+                'file' => $file,
+                'exists' => $file ? file_exists($file) : false,
+                'size' => $file && file_exists($file) ? filesize($file) : 0
+            ]);
+
+            if ($file && file_exists($file) && filesize($file) > 0) {
+                $flagPath = storage_path("app/tmp_recordings/{$this->cameraKey}_{$this->recordingId}_trim.lock");
+
+                if (!file_exists($flagPath)) {
+                    file_put_contents($flagPath, now()->toDateTimeString());
+                    TrimVideoJob::dispatch(
+                        $file,
+                        $this->startTime,
+                        $this->endTime,
+                        $this->cameraKey,
+                        $this->videoName,
+                        $this->recordingId
+                    )->onQueue('camera-record-video-trim');
+
+                    Log::channel('camera-job')->info('[JOB] TrimVideoJob dispatched (first time)', [
+                        'camera_key' => $this->cameraKey,
+                        'flag' => basename($flagPath)
+                    ]);
+                } else {
+                    Log::channel('camera-job')->warning('[JOB] TrimVideoJob skipped (already dispatched)', [
+                        'camera_key' => $this->cameraKey,
+                        'flag' => basename($flagPath)
+                    ]);
+                }
             }
 
-            Log::channel('camera-job')->info('[JOB] DownloadVideoJob finished');
+            Log::channel('camera-job')->info('[JOB] DownloadVideoJob finished', [
+                'camera_key' => $this->cameraKey,
+                'recording_id' => $this->recordingId,
+            ]);
+            return;
         } catch (\Throwable $e) {
             Log::channel('camera-job')->error('[JOB ERROR] DownloadVideoJob failed', [
                 'error' => $e->getMessage(),

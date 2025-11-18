@@ -399,10 +399,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 300);
     });
 
-    const startTimePicker = flatpickr(".timepicker, #start_time", {
+    const startTimePicker = flatpickr("#start_time", {
         enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
+        noCalendar: false,
+        dateFormat: "Y-m-d H:i",
         time_24hr: true,
         minTime: dayjs().format("HH:mm"),
         onChange: function (selectedDates) {
@@ -429,22 +429,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const endTimePicker = flatpickr("#end_time", {
         enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
+        noCalendar: false,
+        dateFormat: "Y-m-d H:i",
         time_24hr: true,
         minTime: dayjs().add(5, "minute").format("HH:mm"),
     });
 
     FormValidation.init({
         rules: {
-            name: { required: true, min: 3 },
+            name: { min: 3 },
             type: { required: true },
             start_time: { required: true },
             end_time: { required: true },
         },
         messages: {
             name: {
-                required: "Name cannot be empty.",
                 min: "Name must be at least 3 characters.",
             },
             type: {
