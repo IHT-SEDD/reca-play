@@ -231,6 +231,18 @@ accessCodeTable = (hashedId) => {
                             colorClass = "text-paradise-green";
                             break;
 
+                        case "record_start":
+                            icon =
+                                '<i data-lucide="video" class="w-4 h-auto me-2"></i>';
+                            colorClass = "text-paradise-green";
+                            break;
+
+                        case "stream_start":
+                            icon =
+                                '<i data-lucide="airplay" class="w-4 h-auto me-2"></i>';
+                            colorClass = "text-paradise-green";
+                            break;
+
                         case "in_use":
                             icon =
                                 '<i data-lucide="hand" class="w-4 h-auto me-2"></i>';
