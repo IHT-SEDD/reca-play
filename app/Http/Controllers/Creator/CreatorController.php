@@ -21,6 +21,7 @@ use App\Enums\SessionCodeStatus;
 use App\Enums\SessionLogStatus;
 use App\Enums\StreamSessionStatus;
 use App\Models\Selfie\SelfieLog;
+use App\Models\Session\QrSession;
 use App\Models\Session\SelfieSession;
 use App\Models\Session\StreamSession;
 use App\Models\Stream\StreamingLog;
@@ -290,6 +291,15 @@ class CreatorController extends Controller
             'status' => $config['statusEnum'],
             'ip_address' => $ip,
         ]);
+
+        $expireQrSession = Carbon::parse($data->end_time)->addMinutes(5);
+
+        QrSession::where('session_token', $sessionToken)
+            ->where('user_id', $userId)
+            ->where('qr_code_id', $scannedQrData->qr_code_id)
+            ->update([
+                'expired_at' => $expireQrSession
+            ]);
 
         // Update session code
         $sessionCode->update([
