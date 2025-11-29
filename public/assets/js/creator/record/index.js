@@ -488,8 +488,4 @@ document.addEventListener("DOMContentLoaded", () => {
     getDataRecord();
     fullScreenVideo();
     stopRecordingManual();
-
-    setInterval(() => {
-        getDataRecord();
-    }, 10000);
 });
