@@ -375,11 +375,27 @@ startRecording = (hashedId) => {
                     hideLoading();
                     notyf.success(res.message);
                     $btn.addClass("disabled opacity-50 cursor-not-allowed");
+                    if (
+                        $("#access-code-table").length &&
+                        $.fn.DataTable.isDataTable("#access-code-table")
+                    ) {
+                        $("#access-code-table")
+                            .DataTable()
+                            .ajax.reload(null, false);
+                    }
                 },
                 error: function (xhr, status, error) {
                     hideLoading();
                     notyf.error("Failed to start recording. Please try again.");
                     $btn.removeClass("disabled opacity-50 cursor-not-allowed");
+                    if (
+                        $("#access-code-table").length &&
+                        $.fn.DataTable.isDataTable("#access-code-table")
+                    ) {
+                        $("#access-code-table")
+                            .DataTable()
+                            .ajax.reload(null, false);
+                    }
                 },
             });
         }, 300);
