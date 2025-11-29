@@ -5,6 +5,8 @@ namespace App\Enums;
 enum SessionCodeStatus: string
 {
     case Active = 'active';
+    case RecordStart = 'record_start';
+    case StreamStart = 'stream_start';
     case InUse = 'in_use';
     case Done = 'done';
     case Expired = 'expired';
@@ -13,6 +15,8 @@ enum SessionCodeStatus: string
     {
         return match ($this) {
             self::Active => 'Active',
+            self::RecordStart => 'Record Start',
+            self::StreamStart => 'Stream Start',
             self::InUse => 'In Use',
             self::Done => 'Done',
             self::Expired => 'Expired',
