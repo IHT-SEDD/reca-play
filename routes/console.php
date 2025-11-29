@@ -19,7 +19,7 @@ Schedule::command('app:expire-session-codes')
         Log::channel('expired-session')->error('[Scheduler] ExpireSessionCodes failed at ' . now());
     });
 
-Schedule::command('recording:auto-stop')->everyThreeMinutes();
+Schedule::command('recording:auto-stop')->everyTwoMinutes();
 
 Artisan::command('logs:clear-camera', function () {
     $logFiles = [
