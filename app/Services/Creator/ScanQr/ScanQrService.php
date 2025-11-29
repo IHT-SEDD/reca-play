@@ -27,7 +27,7 @@ class ScanQrService
       $qrCode = QrCode::select(['id', 'field_id', 'venue_id', 'code', 'name', 'type', 'qr_token', 'is_active'])
         ->with([
           'venue:id,name',
-          'field:id,venue_id,name',
+          'field:id,venue_id,name,is_active',
           'field.venue:id,name'
         ])
         ->where('qr_token', $token)
@@ -35,6 +35,11 @@ class ScanQrService
 
       if (!$qrCode) {
         DB::rollBack();
+        Log::channel('creator')->warning('QR code not found or invalid token.', [
+          'token' => $token,
+          'user' => Auth::id(),
+        ]);
+
         return [
           'success' => false,
           'title' => 'QR code not found',
@@ -42,8 +47,30 @@ class ScanQrService
         ];
       }
 
+      if ($qrCode->field && $qrCode->field->is_active == 0) {
+        DB::rollBack();
+        Log::channel('creator')->warning('This field is currently not active. Please contact the administrator.', [
+          'token' => $token,
+          'field_id' => $qrCode->field_id,
+          'qr_code_id' => $qrCode->id,
+          'user' => Auth::id(),
+        ]);
+
+        return [
+          'success' => false,
+          'title' => 'Field inactive',
+          'message' => 'This field is currently not active. Please contact the administrator.',
+        ];
+      }
+
       if ($qrCode->is_active == 0) {
         DB::rollBack();
+        Log::channel('creator')->warning('QR code not active, please contact the administrator', [
+          'token' => $token,
+          'qr_code_id' => $qrCode->id,
+          'user' => Auth::id(),
+        ]);
+
         return [
           'success' => false,
           'title' => 'QR code inactive',
@@ -59,6 +86,13 @@ class ScanQrService
 
       if ($existingSession) {
         DB::rollBack();
+        Log::channel('creator')->warning('Field in use', [
+          'token' => $token,
+          'qr_code_id' => $qrCode->id,
+          'active_user_id' => $existingSession->user_id,
+          'current_user_id' => Auth::id(),
+        ]);
+
         return [
           'success' => false,
           'title' => 'Field in use',
@@ -67,12 +101,10 @@ class ScanQrService
       }
 
       $user = Auth::user();
-      $userId = $user?->id;
-
       $sessionToken = Str::uuid()->toString();
 
       QrSession::create([
-        'user_id' => $userId,
+        'user_id' => $user?->id,
         'session_token' => $sessionToken,
         'qr_token' => $token,
         'qr_code_id' => $qrCode->id,
