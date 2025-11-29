@@ -403,6 +403,12 @@ class VenueManagementController extends Controller
                     'status' => RecordingLogStatus::RecordStart,
                 ]);
 
+                SessionCode::where('id', $sessionCode->id)
+                    ->update([
+                        'recording_id' => $record->id,
+                        'status' => SessionCodeStatus::RecordStart,
+                    ]);
+
                 if ($cameraService->startRecording()) {
                     Log::channel('camera-record')->info('[RECORD] Recording started', [
                         'recording_id' => $record->id,
@@ -432,6 +438,12 @@ class VenueManagementController extends Controller
                     'streaming_id' => $stream->id,
                     'status' => StreamingLogStatus::StreamStart,
                 ]);
+
+                SessionCode::where('id', $sessionCode->id)
+                    ->update([
+                        'streaming_id' => $stream->id,
+                        'status' => SessionCodeStatus::StreamStart,
+                    ]);
 
                 if ($cameraService->startRecording()) {
                     Log::channel('camera-stream')->info('[STREAM] Streaming & Recording started', [

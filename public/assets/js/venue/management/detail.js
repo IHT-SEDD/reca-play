@@ -318,7 +318,9 @@ accessCodeTable = (hashedId) => {
                     const disabled =
                         status === "done" ||
                         status === "expired" ||
-                        status === "in_use"
+                        status === "in_use" ||
+                        status === "record_start" ||
+                        status === "stream_start"
                             ? "disabled opacity-50 cursor-not-allowed"
                             : "";
 

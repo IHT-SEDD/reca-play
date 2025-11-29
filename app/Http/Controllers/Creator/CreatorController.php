@@ -305,7 +305,7 @@ class CreatorController extends Controller
         $sessionCode->update([
             'user_id' => $userId,
             'qr_code_id' => $scannedQrData->qr_code_id,
-            $config['idField'] => $data->id,
+            // $config['idField'] => $data->id,
             'session_token' => $sessionToken,
             'status' => SessionCodeStatus::InUse,
             'used_at' => now(),
