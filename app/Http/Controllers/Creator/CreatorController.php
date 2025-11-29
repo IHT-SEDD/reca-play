@@ -156,8 +156,11 @@ class CreatorController extends Controller
                 ->first();
 
             $sessionCode = SessionCode::where('generated_code', $accessCode)
-                ->where('status', SessionCodeStatus::Active)
                 ->where('field_id', $qrCodeData->field_id)
+                ->where(function ($q) {
+                    $q->where('status', SessionCodeStatus::Active)
+                        ->orWhere('status', SessionCodeStatus::RecordStart);
+                })
                 ->first();
 
             if (!$sessionCode) {
