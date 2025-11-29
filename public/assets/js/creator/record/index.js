@@ -138,8 +138,12 @@ getDataRecord = () => {
 
             populateDataPanel(scannedQrData, recordData);
 
-            if (recordData?.start_time && recordData?.duration) {
-                autoStopRecording(recordData.start_time, recordData.duration);
+            if (recordData?.start_time && recordData?.end_time) {
+                autoStopRecording(
+                    recordData.start_time,
+                    recordData.duration,
+                    recordData.end_time
+                );
             }
         },
         error: function (xhr, status, error) {
@@ -150,9 +154,9 @@ getDataRecord = () => {
 };
 
 // ======== Auto stop recording function ========
-function autoStopRecording(startTime, durationMinutes) {
+function autoStopRecording(startTime, durationMinutes, endTime) {
     const start = new Date(startTime.replace(" ", "T"));
-    const end = new Date(start.getTime() + durationMinutes * 60000);
+    const end = new Date(endTime.replace(" ", "T"));
 
     function updateTimer() {
         const now = new Date();
@@ -484,4 +488,8 @@ document.addEventListener("DOMContentLoaded", () => {
     getDataRecord();
     fullScreenVideo();
     stopRecordingManual();
+
+    setInterval(() => {
+        getDataRecord();
+    }, 10000);
 });
