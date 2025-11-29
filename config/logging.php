@@ -162,6 +162,12 @@ return [
             'path' => storage_path('logs/camera/record.log'),
             'level' => 'debug',
         ],
+        
+        'camera-record-auto-stop-cron' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/camera/auto-stop-cron.log'),
+            'level' => 'debug',
+        ],
 
         'camera-stream' => [
             'driver' => 'single',
