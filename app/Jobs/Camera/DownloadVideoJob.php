@@ -18,7 +18,7 @@ class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
     protected string $cameraKey;
     protected array $uris;
     protected int $fieldId;
-    protected int $userId;
+    protected ?int $userId;
     protected string $videoName;
     protected string $host;
     protected string $user;
@@ -44,7 +44,7 @@ class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
         string $cameraKey,
         array $uris,
         int $fieldId,
-        int $userId,
+        ?int $userId,
         string $videoName,
         string $host,
         string $user,
