@@ -6,7 +6,9 @@ let renderList,
     formatDate,
     flattenVideos,
     shareVideo,
-    showShareModal;
+    showShareModal,
+    showGetVideosModal,
+    getVideo;
 
 const perPage = 10;
 let currentPage = 1;
@@ -21,6 +23,7 @@ const pageNumbers = document.querySelector("#pageNumbers");
 const prevBtn = document.querySelector("#prevPage");
 const nextBtn = document.querySelector("#nextPage");
 const modal = document.getElementById("shareModal");
+const modalGetVideo = document.getElementById("getVideoModal");
 const input = document.getElementById("shareLinkInput");
 const copyBtn = document.getElementById("copyShareLink");
 
@@ -248,6 +251,48 @@ downloadVideo = (videoId) => {
     });
 };
 
+// ==== Get Video ==== //
+getVideo = () => {
+    document
+        .getElementById("submitAccessCode")
+        ?.addEventListener("click", () => {
+            const accessCode = document
+                .getElementById("access_code")
+                .value.trim();
+
+            if (!accessCode) {
+                notyf.error("Access code cannot be empty.");
+                return;
+            }
+
+            $.ajax({
+                url: `/my-recording/get-video`,
+                method: "POST",
+                data: { access_code: accessCode },
+                success: (response) => {
+                    if (response.success) {
+                        notyf.success("Access granted!");
+
+                        modalGetVideo.classList.remove("show");
+                        modalGetVideo.close();
+
+                        if (response.url) {
+                            window.location.href = response.url;
+                        }
+                    } else {
+                        notyf.error(response.message || "Invalid access code.");
+                    }
+                },
+                error: (xhr) => {
+                    notyf.error(
+                        xhr.responseJSON?.message ||
+                            "Failed to verify access code."
+                    );
+                },
+            });
+        });
+};
+
 // ==== Show Share Modal ==== //
 showShareModal = (shareUrl) => {
     if (!modal || !input) return;
@@ -256,6 +301,14 @@ showShareModal = (shareUrl) => {
 
     modal.showModal();
     requestAnimationFrame(() => modal.classList.add("show"));
+};
+
+// ==== Show Share Modal ==== //
+showGetVideosModal = () => {
+    if (!modalGetVideo) return;
+
+    modalGetVideo.showModal();
+    requestAnimationFrame(() => modalGetVideo.classList.add("show"));
 };
 
 // ==== Modal Events ==== //
@@ -286,9 +339,13 @@ document.addEventListener("click", (e) => {
         const videoId = e.target.closest(".download-btn").dataset.id;
         downloadVideo(videoId);
     }
+    if (e.target.closest(".get-videos")) {
+        showGetVideosModal();
+    }
 });
 
 // ==== Init ==== //
 document.addEventListener("DOMContentLoaded", () => {
     fetchRecordings();
+    getVideo();
 });

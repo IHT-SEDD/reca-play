@@ -14,6 +14,11 @@
      <i data-lucide="plus" class="w-4 h-4"></i>
      <p class="text-sm font-semibold md:block hidden">Start New Recording</p>
     </a>
+
+    <button class="get-videos p-2.5 rounded-full bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition flex justify-center items-center gap-1">
+     <i data-lucide="video" class="w-4 h-4"></i>
+     <p class="text-sm font-semibold md:block hidden">Get Videos</p>
+    </button>
    </div>
    <!-- Search Bar -->
    <div class="w-full max-w-xs">
@@ -49,6 +54,7 @@
  </div>
 
  @include('pages.partials.share-modal')
+ @include('pages.recording.partials.get-videos-modal')
 
  @push('styles')
  <link rel="stylesheet" href="{{ asset('assets/css/recording/index.css') }}">
