@@ -16,7 +16,6 @@ class GoogleAuthService
     public function authCheck()
     {
         try {
-
             $googleUser = Socialite::driver('google')->user();
 
             $user = User::where('email', $googleUser->getEmail())->first();
