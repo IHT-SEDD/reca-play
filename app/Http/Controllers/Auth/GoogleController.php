@@ -44,7 +44,9 @@ class GoogleController extends Controller
 
             Auth::login($user);
 
-            return redirect()->intended(route('home.index', absolute: false));
+            // return redirect()->intended(route('home.index', absolute: false));
+            return app(\App\Http\Controllers\Auth\AuthenticatedSessionController::class)
+                ->afterLoginSessionHandling(request());
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Failed to authenticate with Google.');
         }
