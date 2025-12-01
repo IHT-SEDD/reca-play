@@ -100,6 +100,26 @@ class ScanQrService
         ];
       }
 
+      $userExistingSession = QrSession::where('user_id', Auth::id())
+        ->where('qr_code_id', $qrCode->id)
+        ->whereNotNull('session_token')
+        ->first();
+
+      if ($userExistingSession) {
+        session([
+          'qr_token' => $token,
+          'qr_session_token' => $userExistingSession->session_token
+        ]);
+
+        DB::commit();
+        return [
+          'success' => true,
+          'message' => 'Session already active.',
+          'data'    => $qrCode,
+          'session' => $userExistingSession,
+        ];
+      }
+
       $user = Auth::user();
       $sessionToken = Str::uuid()->toString();
 
@@ -139,13 +159,5 @@ class ScanQrService
         'message' => 'An error occurred while processing the QR code.',
       ];
     }
-  }
-
-  public function getUserActiveSession(int $userId): ?QrSession
-  {
-    return QrSession::where('user_id', $userId)
-      ->whereNotNull('session_token')
-      ->latest('last_active_at')
-      ->first();
   }
 }

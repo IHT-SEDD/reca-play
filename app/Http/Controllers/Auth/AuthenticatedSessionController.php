@@ -82,6 +82,59 @@ class AuthenticatedSessionController extends Controller
         return redirect()->to($redirectUrl);
     }
 
+    public function afterLoginSessionHandling(Request $request)
+    {
+        $sessionToken = session('qr_session_token');
+
+        if ($sessionToken) {
+            QrSession::where('session_token', $sessionToken)
+                ->update([
+                    'user_id' => Auth::user()->id,
+                    'last_active_at' => now(),
+                ]);
+
+            SessionCode::where('session_token', $sessionToken)
+                ->update(['user_id' => Auth::user()->id]);
+
+            SessionLog::where('session_token', $sessionToken)
+                ->update(['user_id' => Auth::user()->id]);
+        }
+
+        $userId = Auth::id();
+        $qrSession = QrSession::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->first();
+
+        $recordSession = RecordSession::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->first();
+
+        $codeSession = SessionCode::where('user_id', $userId)
+            ->where('session_token', $sessionToken)
+            ->latest()
+            ->first();
+
+        $redirectUrl = route('home.index', absolute: false);
+        if ($recordSession && $qrSession && $codeSession) {
+            $redirectUrl = route('creator.redirect');
+        } elseif ($qrSession && !$recordSession) {
+            $redirectUrl = route('creator.qr-success');
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Login successful!',
+                'redirect' => $redirectUrl
+            ]);
+        }
+
+        return redirect()->to($redirectUrl);
+    }
+
+
     // ============================================================
     // Destroy an authenticated session.
     // ============================================================
