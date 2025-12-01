@@ -87,6 +87,8 @@ class ScanQrService
         ];
       }
 
+      $user = Auth::user();
+
       $existingSession = QrSession::whereNotNull('user_id')
         ->where('qr_code_id', $qrCode->id)
         ->whereNotNull('session_token')
@@ -109,15 +111,21 @@ class ScanQrService
         ];
       }
 
+      $sessionToken = session('qr_session_token');
+      if (!$sessionToken) {
+        $sessionToken = Str::uuid()->toString();
+        session(['qr_session_token' => $sessionToken]);
+      }
+
       $userExistingSession = QrSession::where('user_id', Auth::id())
         ->where('qr_code_id', $qrCode->id)
-        ->whereNotNull('session_token')
+        ->where('session_token', $sessionToken)
         ->first();
 
       if ($userExistingSession) {
         session([
           'qr_token' => $token,
-          'qr_session_token' => $userExistingSession->session_token
+          'qr_session_token' => $sessionToken
         ]);
 
         DB::commit();
@@ -128,9 +136,6 @@ class ScanQrService
           'session' => $userExistingSession,
         ];
       }
-
-      $user = Auth::user();
-      $sessionToken = Str::uuid()->toString();
 
       QrSession::create([
         'user_id' => $user?->id,
