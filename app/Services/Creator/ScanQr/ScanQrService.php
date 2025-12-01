@@ -24,7 +24,7 @@ class ScanQrService
     DB::beginTransaction();
 
     try {
-      $qrCode = QrCode::select(['id', 'field_id', 'venue_id', 'code', 'name', 'type', 'qr_token', 'is_active'])
+      $qrCode = QrCode::select(['id', 'field_id', 'venue_id', 'code', 'name', 'type', 'qr_file', 'qr_token', 'is_active'])
         ->with([
           'venue:id,name',
           'field:id,venue_id,name,is_active',
@@ -39,6 +39,7 @@ class ScanQrService
         'token' => $qrCode->qr_token,
         'file' => $qrCode->qr_file,
         'user' => Auth::id(),
+        'session_token' => session('qr_session_token'),
       ]);
 
       if (!$qrCode) {
