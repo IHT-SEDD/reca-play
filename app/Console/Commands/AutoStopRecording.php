@@ -54,7 +54,7 @@ class AutoStopRecording extends Command
         foreach ($recordings as $record) {
             Log::channel('camera-record-auto-stop-cron')->info("[CRON] Processing auto-stop", [
                 'recording_id' => $record->id,
-                'user_id' => $record->user_id,
+                'user_id' => $record->user_id ?? null,
                 'field_id' => $record->field_id,
                 'end_time' => $record->end_time,
             ]);
@@ -72,7 +72,7 @@ class AutoStopRecording extends Command
                 $result = $this->utilityService->finalizeRecording(
                     $record,
                     $record->field_id,
-                    $record->user_id,
+                    $record->user_id ?? null,
                     $sessionCode->id,
                     $sessionCode->session_token,
                     true,
