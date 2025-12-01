@@ -33,15 +33,6 @@ class ScanQrService
         ->where('qr_token', $token)
         ->first();
 
-      Log::channel('creator')->info('QR code scanned', [
-        'qr_id' => $qrCode->id,
-        'field' => $qrCode->field->name,
-        'token' => $qrCode->qr_token,
-        'file' => $qrCode->qr_file,
-        'user' => Auth::id(),
-        'session_token' => session('qr_session_token'),
-      ]);
-
       if (!$qrCode) {
         DB::rollBack();
         Log::channel('creator')->warning('QR code not found or invalid token.', [
@@ -117,12 +108,20 @@ class ScanQrService
         session(['qr_session_token' => $sessionToken]);
       }
 
-      $userExistingSession = QrSession::where('user_id', Auth::id())
+      $userExistingSession = QrSession::where('session_token', $sessionToken)
         ->where('qr_code_id', $qrCode->id)
-        ->where('session_token', $sessionToken)
+        ->where('user_id', $user?->id)
         ->first();
 
       if ($userExistingSession) {
+        $userExistingSession->update([
+          'qr_token' => $token,
+          'qr_code_id' => $qrCode->id,
+          'type' => $qrCode->type,
+          'last_active_at' => now(),
+          'updated_at' => now(),
+        ]);
+
         session([
           'qr_token' => $token,
           'qr_session_token' => $sessionToken
@@ -137,7 +136,7 @@ class ScanQrService
         ];
       }
 
-      QrSession::create([
+      $newSession = QrSession::create([
         'user_id' => $user?->id,
         'session_token' => $sessionToken,
         'qr_token' => $token,
@@ -153,10 +152,20 @@ class ScanQrService
 
       DB::commit();
 
+      Log::channel('creator')->info('QR code scanned', [
+        'qr_id' => $qrCode->id,
+        'field' => $qrCode->field->name,
+        'token' => $qrCode->qr_token,
+        'file' => $qrCode->qr_file,
+        'user' => Auth::id(),
+        'session_token' => session('qr_session_token') ?? $sessionToken,
+      ]);
+
       return [
         'success' => true,
         'message' => 'QR code valid.',
         'data' => $qrCode,
+        'session' => $newSession,
       ];
     } catch (\Throwable $e) {
       DB::rollBack();
