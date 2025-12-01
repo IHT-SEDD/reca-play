@@ -17,7 +17,7 @@ class GetPlaybackUrisJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected int $fieldId;
-    protected int $userId;
+    protected ?int $userId;
     protected string $videoName;
     protected string $startTime;
     protected string $endTime;
@@ -36,7 +36,7 @@ class GetPlaybackUrisJob implements ShouldQueue
         int $fieldId,
         string $startTime,
         string $endTime,
-        int $userId,
+        ?int $userId,
         string $videoName,
         int $recordingId
     ) {
@@ -63,7 +63,9 @@ class GetPlaybackUrisJob implements ShouldQueue
             $uris = $recordedSearch->getAllPlaybackUris();
 
             if (empty($uris)) {
-                Log::channel('camera-job')->warning("[JOB] No playback URIs found for field {$this->fieldId}, user {$this->userId}", [
+                Log::channel('camera-job')->warning("[JOB] No playback URIs found", [
+                    'field_id' => $this->fieldId,
+                    'user_id' => $this->userId ?? null,
                     'start_time' => $this->startTime,
                     'end_time' => $this->endTime,
                 ]);
@@ -76,7 +78,8 @@ class GetPlaybackUrisJob implements ShouldQueue
                 Log::channel('camera-job')->info("[DEBUG] Dispatching DownloadVideoJob", [
                     'camera_key' => $cameraKey,
                     'uri_count' => count($cameraUris),
-                    'host' => $cameraInfo['host']
+                    'host' => $cameraInfo['host'],
+                    'user_id' => $this->userId ?? null,
                 ]);
 
                 DownloadVideoJob::dispatch(

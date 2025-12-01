@@ -34,7 +34,7 @@ class UtilityService
   // ============================================================
   // Get data by type
   // ============================================================
-  public function getDataByType(string $type, SessionCode $sessionCode, int $userId)
+  public function getDataByType(string $type, SessionCode $sessionCode, ?int $userId)
   {
     $modelClass = app(GetModelService::class)->getData($type);
 
@@ -45,7 +45,7 @@ class UtilityService
     $idField = $type === 'record' ? 'recording_id' : 'streaming_id';
 
     return $modelClass::where('id', $sessionCode->$idField)
-      ->where('user_id', $userId)
+      ->when($userId, fn($q) => $q->where('user_id', $userId))
       ->where('field_id', $sessionCode->field_id)
       ->where('session_code_id', $sessionCode->id)
       ->first();
@@ -99,7 +99,7 @@ class UtilityService
       return $this->finalizeRecording(
         $data,
         $fieldId,
-        $data->user_id,
+        $data->user_id ?? null,
         $data->session_code_id,
         session('qr_session_token'),
         true,
@@ -130,14 +130,16 @@ class UtilityService
       $data->update(['status' => $config['statusEnum']]);
       $this->updateRecordingStop($data, $sessionToken, $sessionCodeId, $type);
 
-      $config['sessionModel']::where('user_id', $userId)
-        ->where('session_token', $sessionToken)
-        ->where($config['idField'], $data->id)
-        ->delete();
+      if ($userId) {
+        $config['sessionModel']::where('user_id', $userId)
+          ->where('session_token', $sessionToken)
+          ->where($config['idField'], $data->id)
+          ->delete();
 
-      QrSession::where('user_id', $userId)
-        ->where('session_token', $sessionToken)
-        ->delete();
+        QrSession::where('user_id', $userId)
+          ->where('session_token', $sessionToken)
+          ->delete();
+      }
 
       $videoName = str_replace(' ', '', $data->video_name ?? $config['videoName']);
 
