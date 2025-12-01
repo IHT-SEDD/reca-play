@@ -21,12 +21,15 @@ Schedule::command('app:expire-session-codes')
 
 Schedule::command('recording:auto-stop')->everyTwoMinutes();
 
+Schedule::command('sessions:clean-orphan')->everyMinute();
+
 Artisan::command('logs:clear-camera', function () {
     $logFiles = [
         'storage/logs/camera/control.log',
         'storage/logs/camera/record.log',
         'storage/logs/camera/stream.log',
         'storage/logs/camera/job.log',
+        'storage/logs/camera/auto-stop-cron.log',
     ];
 
     foreach ($logFiles as $file) {
