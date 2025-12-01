@@ -33,6 +33,14 @@ class ScanQrService
         ->where('qr_token', $token)
         ->first();
 
+      Log::channel('creator')->info('QR code scanned', [
+        'qr_id' => $qrCode->id,
+        'field' => $qrCode->field->name,
+        'token' => $qrCode->qr_token,
+        'file' => $qrCode->qr_file,
+        'user' => Auth::id(),
+      ]);
+
       if (!$qrCode) {
         DB::rollBack();
         Log::channel('creator')->warning('QR code not found or invalid token.', [
