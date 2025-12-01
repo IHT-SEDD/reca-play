@@ -109,7 +109,6 @@ class ScanQrService
       }
 
       $userExistingSession = QrSession::where('session_token', $sessionToken)
-        ->where('qr_code_id', $qrCode->id)
         ->where('user_id', $user?->id)
         ->first();
 
