@@ -121,6 +121,7 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/recording-data', 'getRecordings')->name('data');
             Route::get('/watch/{hashedId}', 'getRecordings')->name('watch');
+            Route::post('/get-video', 'getVideos')->name('get-video');
         });
 
         /*
