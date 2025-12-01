@@ -119,7 +119,7 @@ class RecordedSearchService
     public function downloadByPlaybackUris(
         array $allUris,
         int $fieldId,
-        int $userId,
+        ?int $userId,
         string $videoName,
         string $host,
         string $user,
