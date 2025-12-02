@@ -96,62 +96,6 @@ class DownloadVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
             ]);
 
             if ($file && file_exists($file) && filesize($file) > 0) {
-                $watermarkedFile = str_replace('.mp4', '_wm.mp4', $file);
-
-                try {
-                    Log::channel('camera-job')->info('[JOB] Adding watermark...', [
-                        'source' => $file,
-                        'target' => $watermarkedFile
-                    ]);
-
-                    $watermarkFile = public_path('assets/img/logos/reca-white.png');
-
-                    Log::channel('camera-job')->info('[DEBUG] Watermark file path', [
-                        'watermark_file' => $watermarkFile,
-                        'exists' => file_exists($watermarkFile)
-                    ]);
-                    
-                    if (!file_exists($watermarkFile)) {
-                        Log::channel('camera-job')->warning('[JOB] Watermark file missing. Skipping watermark.');
-                    } else {
-                        $process = new \Symfony\Component\Process\Process([
-                            'ffmpeg',
-                            '-y',
-                            '-i',
-                            $file,
-                            '-i',
-                            $watermarkFile,
-                            '-filter_complex',
-                            "[1]scale=150:-1,format=rgba,colorchannelmixer=aa=0.35[wm];[0][wm]overlay=W-w-10:H-h-10",
-                            '-c:v',
-                            'libx264',
-                            '-preset',
-                            'ultrafast',
-                            '-crf',
-                            '23',
-                            '-c:a',
-                            'copy',
-                            $watermarkedFile
-                        ]);
-
-                        $process->setTimeout(0);
-                        $process->run();
-
-                        if ($process->isSuccessful() && file_exists($watermarkedFile) && filesize($watermarkedFile) > 0) {
-                            Log::channel('camera-job')->info('[JOB] Watermark success, replacing source file');
-                            $file = $watermarkedFile;
-                        } else {
-                            Log::channel('camera-job')->warning('[JOB] Watermark failed, using original video', [
-                                'error' => $process->getErrorOutput()
-                            ]);
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    Log::channel('camera-job')->error('[JOB ERROR] Watermark exception', [
-                        'error' => $e->getMessage()
-                    ]);
-                }
-
                 $flagPath = storage_path("app/tmp_recordings/{$this->cameraKey}_{$this->recordingId}_trim.lock");
 
                 if (!file_exists($flagPath)) {
