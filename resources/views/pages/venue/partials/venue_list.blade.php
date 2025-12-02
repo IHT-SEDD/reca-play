@@ -3,7 +3,7 @@
 </div>
 
 <div
- class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 transition-all duration-500 ease-in-out"
+ class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch transition-all duration-500 ease-in-out"
  id="container_venue_list">
  <!-- See more btn -->
  <div class="items-center flex justify-center md:col-span-6 w-full mt-8">
