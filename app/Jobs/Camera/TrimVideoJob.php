@@ -177,7 +177,7 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
                         '-i',
                         $watermarkFile,
                         '-filter_complex',
-                        "[1]scale=120:-1[wm];[0][wm]overlay=W-w-20:H-h-20:format=auto:alpha=0.5",
+                        "[1]scale=120:-1[wm];[0][wm]overlay=W-w-20:H-h-20:format=auto:alpha=0.35",
                         '-c:v',
                         'libx264',
                         '-preset',
