@@ -34,7 +34,7 @@ populateData = (search = "", reset = true) => {
                     venue.hashed_id
                 }" target="_blank" rel="noopener noreferrer">
                     <div class="bg-white dark:bg-christmas-silver dark:border-transparent border border-white-edgar shadow-sm rounded-xl p-4 h-full w-full">
-                        <div class="flex flex-col justify-start items-center gap-3 w-full text-center">
+                        <div class="flex flex-col justify-between items-center gap-3 w-full text-center h-full">
                             <!-- Venue Logo -->
                             <div class="flex items-center justify-center rounded-xl w-full p-2">
                                 ${
