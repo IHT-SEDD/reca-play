@@ -23,6 +23,8 @@ Schedule::command('recording:auto-stop')->everyTwoMinutes();
 
 Schedule::command('sessions:clean-orphan')->everyMinute();
 
+Schedule::command('recordings:check-videos')->everyThirtyMinutes();
+
 Artisan::command('logs:clear-camera', function () {
     $logFiles = [
         'storage/logs/camera/control.log',
