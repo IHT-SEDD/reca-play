@@ -413,7 +413,8 @@ XML;
 
         $listFile = "{$tmpDir}/list.txt";
         file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $encodedFiles)));
-        $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
+        // $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
+        $concatFile = "{$tmpDir}/concat_{$cameraKey}.mp4";
 
         $concat = new Process([
             'ffmpeg',
@@ -428,7 +429,8 @@ XML;
             'copy',
             '-movflags',
             '+faststart',
-            $finalFile
+            // $finalFile
+            $concatFile
         ]);
         $concat->setTimeout(0)->run();
 
@@ -437,17 +439,74 @@ XML;
         }
         @unlink($listFile);
 
-        if (!$concat->isSuccessful() || !file_exists($finalFile) || filesize($finalFile) < 1024) {
+        if (!$concat->isSuccessful() || !file_exists($concatFile) || filesize($concatFile) < 1024) {
             Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL]", [
                 'stderr' => $concat->getErrorOutput()
             ]);
             return null;
         }
 
+        // if (!$concat->isSuccessful() || !file_exists($finalFile) || filesize($finalFile) < 1024) {
+        //     Log::channel('camera-record')->error("[FFMPEG CONCAT FAIL]", [
+        //         'stderr' => $concat->getErrorOutput()
+        //     ]);
+        //     return null;
+        // }
+
+        // Log::channel('camera-record')->info('[CONCAT OK]', [
+        //     'file' => basename($finalFile),
+        //     'size' => filesize($finalFile)
+        // ]);
+
         Log::channel('camera-record')->info('[CONCAT OK]', [
+            'file' => basename($concatFile),
+            'size' => filesize($concatFile)
+        ]);
+
+        $watermarkFile = public_path('assets/img/logos/reca-white.png');
+        $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
+
+        $watermark = new Process([
+            'ffmpeg',
+            '-y',
+            '-i',
+            $concatFile,
+            '-i',
+            $watermarkFile,
+            '-filter_complex',
+            "[1]scale=150:-1,format=rgba,colorchannelmixer=aa=0.35[wm];[0][wm]overlay=W-w-10:H-h-10",
+            '-c:v',
+            'libx264',
+            '-preset',
+            'ultrafast',
+            '-crf',
+            '23',
+            '-c:a',
+            'copy',
+            $finalFile
+        ]);
+        $watermark->setTimeout(0)->run();
+
+        if (!$watermark->isSuccessful() || !file_exists($finalFile) || filesize($finalFile) < 1024) {
+            if (file_exists($finalFile)) {
+                @unlink($finalFile);
+            }
+            Log::channel('camera-record')->error("[FFMPEG WATERMARK FAIL] Returning concat file without watermark", [
+                'stderr' => $watermark->getErrorOutput(),
+                'concat_file' => basename($concatFile),
+                'concat_size' => file_exists($concatFile) ? filesize($concatFile) : 0
+            ]);
+            return $concatFile;
+        }
+
+        Log::channel('camera-record')->info('[WATERMARK OK]', [
             'file' => basename($finalFile),
             'size' => filesize($finalFile)
         ]);
+
+        if (file_exists($concatFile)) {
+            @unlink($concatFile);
+        }
 
         return $finalFile;
     }
