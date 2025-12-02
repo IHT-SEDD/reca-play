@@ -45,9 +45,19 @@ function videoPlayer() {
             videoNameEl.text(data.recording?.video_name ?? "Unknown Title");
             ownerEl.text(data.recording?.user?.name ?? "Unknown Owner");
             dateEl.text(
-                data.created_at
-                    ? dayjs(data.created_at).format("YYYY-MM-DD HH:mm:ss")
-                    : "Unknown Date"
+                `${
+                    data.recording?.start_time
+                        ? dayjs(data.recording.start_time).format(
+                              "YYYY-MM-DD HH:mm:ss"
+                          )
+                        : "Unknown Date"
+                } - ${
+                    data.recording?.end_time
+                        ? dayjs(data.recording.end_time).format(
+                              "YYYY-MM-DD HH:mm:ss"
+                          )
+                        : "Unknown Date"
+                }`
             );
 
             $(".share-btn").attr("data-id", data.id);
