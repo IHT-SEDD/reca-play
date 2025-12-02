@@ -24,7 +24,7 @@
 
   <!-- Field List -->
   <div class="mb-6 w-full flex justify-center items-center">
-   @include('pages.event.partials.event_list')
+   {{-- @include('pages.event.partials.event_list') --}}
   </div>
  </div>
 </x-app-layout>
