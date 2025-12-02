@@ -9,7 +9,7 @@ venueTable = () => {
     buttonActionIndex = 9;
     hasAction = true; // Set to true if action buttons are needed
     withData = []; // Set with relationship if needed
-    
+
     initCustomDatatable({
         tableId: "venue-table",
         tableDataUrl: "/master/venue/data",
@@ -42,7 +42,9 @@ venueTable = () => {
                 render: function (data, type, row) {
                     if (!data)
                         return '<span class="text-gray-400">No Image</span>';
-                    return `<img src="${row.logo_path}" alt="${data}" width="250" height="250" class="rounded">`;
+
+                    let path = "/" + row.logo_path.replace(/^\/+/, "");
+                    return `<img src="${path}" alt="${data}" width="250" height="250" class="rounded">`;
                 },
             },
             {
