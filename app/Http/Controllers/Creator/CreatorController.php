@@ -159,7 +159,8 @@ class CreatorController extends Controller
                 ->where('field_id', $qrCodeData->field_id)
                 ->where(function ($q) {
                     $q->where('status', SessionCodeStatus::Active)
-                        ->orWhere('status', SessionCodeStatus::RecordStart);
+                        ->orWhere('status', SessionCodeStatus::RecordStart)
+                        ->orWhere('status', SessionCodeStatus::InUse);
                 })
                 ->first();
 
