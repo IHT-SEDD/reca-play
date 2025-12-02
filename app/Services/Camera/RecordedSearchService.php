@@ -514,6 +514,7 @@ XML;
 
             preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $s);
             preg_match('/endtime=(\d{8}T\d{6})Z?/', $uri, $e);
+
             if (isset($s[1], $e[1])) {
                 $uriStart = max(\DateTime::createFromFormat('Ymd\THis', $s[1], new \DateTimeZone('UTC'))->getTimestamp(), $startTs);
                 $uriEnd   = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $endTs);
@@ -524,16 +525,30 @@ XML;
                 $recordingDuration = $endTs - $startTs;
                 $uriCoverage = $uriEnd - $uriStart;
                 $coverageRatio = $uriCoverage / max($recordingDuration, 1);
+
                 $startDiff = abs($uriStart - $startTs);
                 $endDiff = abs($uriEnd - $endTs);
+                $totalDeviation = $startDiff + $endDiff;
 
-                $directUse = (($startDiff <= $tolerance * 3 || $endDiff <= $tolerance * 3) || $coverageRatio >= 0.90);
+                // $directUse = (($startDiff <= $tolerance * 3 || $endDiff <= $tolerance * 3) || $coverageRatio >= 0.90);
+                $directUse = $coverageRatio >= 0.8;
+
+                // $uris[] = [
+                //     'uri' => $uri,
+                //     'start' => $uriStart,
+                //     'end' => $uriEnd,
+                //     'directUse' => $directUse
+                // ];
 
                 $uris[] = [
                     'uri' => $uri,
                     'start' => $uriStart,
                     'end' => $uriEnd,
-                    'directUse' => $directUse
+                    'coverageRatio' => $coverageRatio,
+                    'startDiff' => $startDiff,
+                    'endDiff' => $endDiff,
+                    'totalDeviation' => $totalDeviation,
+                    'directUse' => $directUse,
                 ];
 
                 $coveredRanges[] = [$uriStart, $uriEnd];
@@ -544,6 +559,7 @@ XML;
                     'uriStart' => gmdate('Y-m-d H:i:s', $uriStart),
                     'uriEnd' => gmdate('Y-m-d H:i:s', $uriEnd),
                     'coverageRatio' => round($coverageRatio, 2),
+                    'totalDeviation' => $totalDeviation,
                     'directUse' => $directUse
                 ]);
             }
@@ -551,14 +567,22 @@ XML;
 
         usort($uris, fn($a, $b) => $a['start'] <=> $b['start']);
 
-        $directUri = collect($uris)->first(fn($u) => $u['directUse']);
-        if ($directUri) {
-            Log::channel('camera-record')->info("[URI SELECT] Direct use URI found", [
-                'uri' => $directUri['uri'],
-                'start' => gmdate('Y-m-d H:i:s', $directUri['start']),
-                'end' => gmdate('Y-m-d H:i:s', $directUri['end'])
+        $directCandidates = collect($uris)->filter(fn($u) => $u['directUse']);
+
+        if ($directCandidates->isNotEmpty()) {
+            $best = $directCandidates
+                ->sortBy('totalDeviation')
+                ->first();
+
+            Log::channel('camera-record')->info("[URI SELECT] Direct use URI chosen", [
+                'uri' => $best['uri'],
+                'start' => gmdate('Y-m-d H:i:s', $best['start']),
+                'end' => gmdate('Y-m-d H:i:s', $best['end']),
+                'coverageRatio' => round($best['coverageRatio'], 2),
+                'totalDeviation' => $best['totalDeviation']
             ]);
-            return [$directUri];
+
+            return [$best];
         }
 
         if (!empty($uris)) {
@@ -572,7 +596,6 @@ XML;
                 'end' => gmdate('Y-m-d H:i:s', $best['end']),
                 'coverageRatio' => $coverageRatio
             ]);
-
             return [$best];
         }
 
