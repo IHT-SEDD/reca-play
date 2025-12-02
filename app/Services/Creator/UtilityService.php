@@ -139,6 +139,9 @@ class UtilityService
         QrSession::where('user_id', $userId)
           ->where('session_token', $sessionToken)
           ->delete();
+
+        session()->forget('qr_session_token');
+        session()->forget('qr_token');
       }
 
       $videoName = str_replace(' ', '', $data->video_name ?? $config['videoName']);
