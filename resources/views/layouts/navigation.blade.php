@@ -260,6 +260,12 @@
                     :active="request()->routeIs('user-management.*')">
                     {{ __('User Management') }}
                 </x-nav-link>
+
+                <!-- Download Video -->
+                <x-nav-link class="text-sm" :href="url('/download-video')"
+                    :active="request()->routeIs('download-video.*')">
+                    {{ __('Download Video') }}
+                </x-nav-link>
             </div>
 
             <!-- Hamburger -->
