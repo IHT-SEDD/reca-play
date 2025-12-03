@@ -18,6 +18,10 @@ class DownloadVideoController extends Controller
 
     public function addData(Request $request)
     {
+        set_time_limit(0);
+        ini_set('max_execution_time', 0);
+        ini_set('memory_limit', '-1');
+
         $validated = $request->validate([
             'host' => 'required|string',
             'username' => 'required|string',
@@ -150,16 +154,29 @@ class DownloadVideoController extends Controller
 
     public function downloadFile($filename)
     {
+        set_time_limit(0);
+        ini_set('max_execution_time', 0);
+        ini_set('memory_limit', '-1');
+
         $filePath = storage_path('app/temp_downloads/' . $filename);
 
         if (!file_exists($filePath)) {
             return abort(404, 'File not found');
         }
 
-        return response()->download(
-            $filePath,
-            $filename,
-            ['Content-Type' => 'video/mp4']
-        )->deleteFileAfterSend(true);
+        return response()->streamDownload(function () use ($filePath) {
+            $fp = fopen($filePath, 'rb');
+
+            while (!feof($fp)) {
+                echo fread($fp, 1024 * 1024);
+                flush();
+                @ob_flush();
+            }
+
+            fclose($fp);
+        }, $filename, [
+            'Content-Type' => 'video/mp4',
+            'Content-Length' => filesize($filePath),
+        ]);
     }
 }
