@@ -25,6 +25,8 @@ Schedule::command('sessions:clean-orphan')->everyMinute();
 
 Schedule::command('recordings:check-videos')->everyThirtyMinutes();
 
+Schedule::command('temp-recordings:clean')->days(3);
+
 Artisan::command('logs:clear-camera', function () {
     $logFiles = [
         'storage/logs/camera/control.log',

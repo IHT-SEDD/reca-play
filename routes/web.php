@@ -21,7 +21,6 @@ use App\Http\Controllers\{
 };
 use App\Http\Controllers\Creator\SelfieController;
 use App\Http\Controllers\Creator\StreamController;
-use App\Http\Controllers\Creator\SupportController;
 
 /*
 |--------------------------------------------------------------------------
