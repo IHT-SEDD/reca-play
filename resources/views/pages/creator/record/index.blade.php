@@ -74,11 +74,11 @@
         <!-- Timer Section :end -->
 
         <!-- Stop Button -->
-        <button id="stop_record"
+        {{-- <button id="stop_record"
          class="flex items-center justify-center rounded-full p-3 bg-hot-shot text-white hover:bg-hot-shot/80 transition tooltip tooltip-bottom"
          data-tip="Stop recording">
          <i data-lucide="square" class="w-4 h-4"></i>
-        </button>
+        </button> --}}
        </div>
        <!-- Timer Panel :end -->
 
