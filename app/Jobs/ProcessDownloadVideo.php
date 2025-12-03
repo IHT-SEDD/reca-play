@@ -13,7 +13,6 @@ class ProcessDownloadVideo implements ShouldQueue
 {
     use Queueable;
 
-    public $queue = 'video-download';
     public $timeout = 0;
     public $tries = 1;
 
