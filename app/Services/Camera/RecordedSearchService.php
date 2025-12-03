@@ -571,7 +571,11 @@ XML;
 
         if ($directCandidates->isNotEmpty()) {
             $best = $directCandidates
-                ->sortBy('totalDeviation')
+                // ->sortBy('totalDeviation')
+                ->sortBy([
+                    ['totalDeviation', 'asc'],
+                    ['coverageRatio', 'desc'],
+                ])
                 ->first();
 
             Log::channel('camera-record')->info("[URI SELECT] Direct use URI chosen", [
@@ -585,19 +589,39 @@ XML;
             return [$best];
         }
 
-        if (!empty($uris)) {
-            usort($uris, fn($a, $b) => ($b['end'] - $b['start']) <=> ($a['end'] - $a['start']));
-            $best = $uris[0];
-            $coverageRatio = round(($best['end'] - $best['start']) / max($endTs - $startTs, 1), 2);
+        $filtered = array_filter($uris, function ($u) use ($startTs, $endTs) {
+            return $u['start'] >= $startTs && $u['end'] <= $endTs;
+        });
 
-            Log::channel('camera-record')->info("[URI SELECT] Best coverage URI selected", [
-                'uri' => $best['uri'],
-                'start' => gmdate('Y-m-d H:i:s', $best['start']),
-                'end' => gmdate('Y-m-d H:i:s', $best['end']),
-                'coverageRatio' => $coverageRatio
+        if (!empty($filtered)) {
+            Log::channel('camera-record')->info("[URI SELECT] No directUse, returning ALL valid URIs in range", [
+                'request_start' => gmdate('Y-m-d H:i:s', $startTs),
+                'request_end' => gmdate('Y-m-d H:i:s', $endTs),
+                'uri_count' => count($filtered)
             ]);
-            return [$best];
+
+            return array_values($filtered);
         }
+
+        Log::channel('camera-record')->warning("[URI SELECT] No URIs fully in range, returning all possible URIs", [
+            'request_start' => gmdate('Y-m-d H:i:s', $startTs),
+            'request_end' => gmdate('Y-m-d H:i:s', $endTs),
+            'uri_count' => count($uris)
+        ]);
+
+        // if (!empty($uris)) {
+        //     usort($uris, fn($a, $b) => ($b['end'] - $b['start']) <=> ($a['end'] - $a['start']));
+        //     $best = $uris[0];
+        //     $coverageRatio = round(($best['end'] - $best['start']) / max($endTs - $startTs, 1), 2);
+
+        //     Log::channel('camera-record')->info("[URI SELECT] Best coverage URI selected", [
+        //         'uri' => $best['uri'],
+        //         'start' => gmdate('Y-m-d H:i:s', $best['start']),
+        //         'end' => gmdate('Y-m-d H:i:s', $best['end']),
+        //         'coverageRatio' => $coverageRatio
+        //     ]);
+        //     return [$best];
+        // }
 
         Log::channel('camera-record')->warning("[URI SELECT] No URI exactly covers range, taking all available URIs", [
             'request_start' => gmdate('Y-m-d H:i:s', $startTs),

@@ -280,6 +280,9 @@ accessCodeTable = (hashedId) => {
                 data: "generated_code",
                 name: "generated_code",
                 orderable: false,
+                render: function (data) {
+                    return `<span class="flex items-center font-semibold text-sm">${data}</span>`;
+                },
             },
             {
                 data: "start_time",
