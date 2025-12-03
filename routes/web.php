@@ -21,6 +21,7 @@ use App\Http\Controllers\{
 };
 use App\Http\Controllers\Creator\SelfieController;
 use App\Http\Controllers\Creator\StreamController;
+use App\Http\Controllers\SuperAdmin\DownloadVideoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -242,6 +243,12 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::prefix('user-management')->name('user-management.')->controller(UserManagementController::class)->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::get('/users-data', 'usersData')->name('data');
+                Route::post('/add-data', 'addData')->name('add-data');
+            });
+
+            // Download Video
+            Route::prefix('download-video')->name('download-video.')->controller(DownloadVideoController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
                 Route::post('/add-data', 'addData')->name('add-data');
             });
         });
