@@ -41,7 +41,8 @@ class DownloadVideoController extends Controller
         )))->onQueue('video-download');
 
         return response()->json([
-            'status' => 'processing',
+            'status' => 'success',
+            'message' => 'Processing the video...',
             'job_id' => $jobId
         ]);
     }
