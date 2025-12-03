@@ -32,13 +32,13 @@ class DownloadVideoController extends Controller
             'status' => 'processing'
         ], 3600);
 
-        dispatch(new ProcessDownloadVideo(
+        dispatch((new ProcessDownloadVideo(
             $validated['host'],
             $validated['username'],
             $validated['password'],
             $validated['uri'],
             $jobId
-        ));
+        )))->onQueue('video-download');
 
         return response()->json([
             'status' => 'processing',
