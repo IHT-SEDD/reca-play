@@ -250,6 +250,7 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::prefix('download-video')->name('download-video.')->controller(DownloadVideoController::class)->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/add-data', 'addData')->name('add-data');
+                Route::get('/file/{filename}', 'index')->name('file');
             });
         });
 
