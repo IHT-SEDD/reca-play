@@ -144,7 +144,7 @@ class DownloadVideoController extends Controller
             'status' => 'success',
             'message' => 'Video ready for download',
             'file_name' => $fileName,
-            'redirect' => route('download.video.file', ['filename' => $fileName])
+            'redirect' => route('download-video.file', ['filename' => $fileName])
         ]);
     }
 
