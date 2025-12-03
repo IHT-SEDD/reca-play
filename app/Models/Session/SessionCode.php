@@ -23,6 +23,9 @@ class SessionCode extends Model
         'expired_at' => 'datetime',
     ];
 
+    public const Searchable = ['type', 'status', 'generated_code', 'name', 'start_time', 'end_time', 'used_at', 'created_at'];
+    public const Unsearchable = ['id', 'user_id', 'qr_code_id', 'venue_id', 'field_id', 'recording_id', 'streaming_id', 'generated_by_user_id', 'session_token', 'expired_at', 'updated_at'];
+
     public function user()
     {
         return $this->belongsTo(User::class);

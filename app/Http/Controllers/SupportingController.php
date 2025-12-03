@@ -19,6 +19,7 @@ class SupportingController extends Controller
         $this->selectOptionService = $selectOptionService;
     }
 
+    // ==== Options service for tom-select ==== //
     public function selectOptions($option, Request $request)
     {
         $with = $request->get('with') ? explode(',', $request->get('with')) : [];
@@ -74,5 +75,35 @@ class SupportingController extends Controller
             'success' => true,
             'url' => $publicUrl,
         ]);
+    }
+
+    // ==== Write JS log to File ==== //
+    public function scanQrJsLogStore(Request $request)
+    {
+        $folder = 'logs/js-logs';
+        $fileName = 'scan-qr-log.json';
+        $path = storage_path("{$folder}/{$fileName}");
+
+        if (!file_exists(storage_path($folder))) {
+            mkdir(storage_path($folder), 0777, true);
+        }
+
+        $logEntry = [
+            'timestamp' => now()->toDateTimeString(),
+            'message' => $request->message,
+            'data' => json_decode($request->data, true),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ];
+
+        if (!file_exists($path)) {
+            file_put_contents($path, json_encode([$logEntry], JSON_PRETTY_PRINT));
+        } else {
+            $existing = json_decode(file_get_contents($path), true);
+            $existing[] = $logEntry;
+            file_put_contents($path, json_encode($existing, JSON_PRETTY_PRINT));
+        }
+
+        return response()->json(['status' => 'logged']);
     }
 }
