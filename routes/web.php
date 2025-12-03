@@ -251,6 +251,7 @@ Route::middleware(['check.maintenance'])->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/add-data', 'addData')->name('add-data');
                 Route::get('/file/{filename}', 'downloadFile')->name('file');
+                Route::get('/status/{jobId}', 'status')->name('status');
             });
         });
 
