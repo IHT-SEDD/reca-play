@@ -39,7 +39,7 @@ class MasterDatatableService
   */
  public function getData(string $type): ?string
  {
-  $normalized = Str::of($type)->replace('-', '_')->lower();
+  $normalized = Str::of($type)->replace('-', '_')->lower()->toString();
 
   return $this->availableData[$normalized] ?? null;
  }

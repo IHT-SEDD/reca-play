@@ -12,7 +12,7 @@ export default {
     adhesion: "#9e9ea9",
     "evening-inparis": "#93939f",
     carbon: "#7d7d8c",
-    
+
     // Shades of black
     "after-midnight": "#38383F",
     "eerie-black": "#1C1C1C",
