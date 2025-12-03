@@ -26,10 +26,8 @@ class DownloadVideoController extends Controller
         ]);
 
         $saveDir = storage_path('app/temp_downloads');
-
         if (!is_dir($saveDir)) {
             mkdir($saveDir, 0777, true);
-            Log::info("[DownloadVideo] Folder created: {$saveDir}");
         }
 
         $randomIndex = Str::upper(Str::random(6));
@@ -54,10 +52,9 @@ class DownloadVideoController extends Controller
         );
 
         if (!$isDownloaded) {
-            Log::error("[DownloadVideo] Failed to download from NVR");
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to download video from NVR'
+                'message' => 'Failed to download video'
             ], 500);
         }
 
@@ -92,13 +89,7 @@ class DownloadVideoController extends Controller
                 'default=noprint_wrappers=1:nokey=1',
                 $rawFile
             ]))->mustRun()->getOutput());
-
-            Log::info("[DownloadVideo] Codec detected", [
-                'videoCodec' => $videoCodec,
-                'audioCodec' => $audioCodec
-            ]);
         } catch (\Throwable $e) {
-            Log::error("[DownloadVideo] ffprobe error: " . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to analyze codecs'
@@ -108,12 +99,9 @@ class DownloadVideoController extends Controller
         $isCorrectFormat = ($videoCodec === 'h264' && $audioCodec === 'aac');
 
         if (!$isCorrectFormat) {
-            $encodedFile = $saveDir . '/encoded_' . time() . '.mp4';
 
-            Log::info("[DownloadVideo] Start encoding", [
-                'source' => $rawFile,
-                'output' => $encodedFile
-            ]);
+            $encodedFileName = "encoded_" . time() . "_{$randomIndex}.mp4";
+            $encodedFile = $saveDir . '/' . $encodedFileName;
 
             try {
                 $process = new Process([
@@ -141,52 +129,37 @@ class DownloadVideoController extends Controller
                 $process->setTimeout(0);
                 $process->mustRun();
 
-                Log::info("[DownloadVideo] Encoding finished", [
-                    'output' => $encodedFile
-                ]);
-
                 unlink($rawFile);
                 $rawFile = $encodedFile;
-                $fileName = basename($encodedFile);
+                $fileName = $encodedFileName;
             } catch (\Throwable $e) {
-                Log::error("[DownloadVideo] ffmpeg error: " . $e->getMessage());
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Failed to encode video'
                 ], 500);
             }
-        } else {
-            Log::info("[DownloadVideo] No encoding needed, codec already correct");
         }
 
-        Log::info("[DownloadVideo] Sending file to browser", [
-            'file' => $rawFile
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Video ready for download',
+            'file_name' => $fileName,
+            'redirect' => route('download.video.file', ['filename' => $fileName])
         ]);
+    }
+
+    public function downloadFile($filename)
+    {
+        $filePath = storage_path('app/temp_downloads/' . $filename);
+
+        if (!file_exists($filePath)) {
+            return abort(404, 'File not found');
+        }
 
         return response()->download(
-            $rawFile,
-            $fileName,
+            $filePath,
+            $filename,
             ['Content-Type' => 'video/mp4']
         )->deleteFileAfterSend(true);
-
-        // $publicUrl = asset("storage/recordings/" . $fileName);
-
-        // Log::info("[DownloadVideo] Process complete", [
-        //     'file' => $rawFile,
-        //     'url' => $publicUrl
-        // ]);
-
-        // return response()->json([
-        //     'status' => 'success',
-        //     'message' => $isCorrectFormat
-        //         ? 'Video downloaded successfully (already H264 + AAC)'
-        //         : 'Video downloaded & converted to H264 + AAC',
-        //     'file_name' => $fileName,
-        //     'file_path' => $rawFile,
-        //     'public_url' => $publicUrl,
-        //     'video_codec' => $videoCodec,
-        //     'audio_codec' => $audioCodec,
-        //     'converted' => !$isCorrectFormat
-        // ]);
     }
 }
