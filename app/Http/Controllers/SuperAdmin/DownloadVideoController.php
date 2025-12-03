@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Camera\DownloadVideoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
 
 class DownloadVideoController extends Controller
@@ -24,14 +25,15 @@ class DownloadVideoController extends Controller
             'uri' => 'required|string',
         ]);
 
-        $saveDir = storage_path('app/public/recordings');
+        $saveDir = storage_path('app/temp_downloads');
 
         if (!is_dir($saveDir)) {
             mkdir($saveDir, 0777, true);
             Log::info("[DownloadVideo] Folder created: {$saveDir}");
         }
 
-        $fileName = 'video_' . time() . '.mp4';
+        $randomIndex = Str::upper(Str::random(6));
+        $fileName = "video_" . time() . "_{$randomIndex}.mp4";
         $rawFile = $saveDir . '/' . $fileName;
 
         Log::info("[DownloadVideo] Start download", [
@@ -157,24 +159,34 @@ class DownloadVideoController extends Controller
             Log::info("[DownloadVideo] No encoding needed, codec already correct");
         }
 
-        $publicUrl = asset("storage/recordings/" . $fileName);
-
-        Log::info("[DownloadVideo] Process complete", [
-            'file' => $rawFile,
-            'url' => $publicUrl
+        Log::info("[DownloadVideo] Sending file to browser", [
+            'file' => $rawFile
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => $isCorrectFormat
-                ? 'Video downloaded successfully (already H264 + AAC)'
-                : 'Video downloaded & converted to H264 + AAC',
-            'file_name' => $fileName,
-            'file_path' => $rawFile,
-            'public_url' => $publicUrl,
-            'video_codec' => $videoCodec,
-            'audio_codec' => $audioCodec,
-            'converted' => !$isCorrectFormat
-        ]);
+        return response()->download(
+            $rawFile,
+            $fileName,
+            ['Content-Type' => 'video/mp4']
+        )->deleteFileAfterSend(true);
+
+        // $publicUrl = asset("storage/recordings/" . $fileName);
+
+        // Log::info("[DownloadVideo] Process complete", [
+        //     'file' => $rawFile,
+        //     'url' => $publicUrl
+        // ]);
+
+        // return response()->json([
+        //     'status' => 'success',
+        //     'message' => $isCorrectFormat
+        //         ? 'Video downloaded successfully (already H264 + AAC)'
+        //         : 'Video downloaded & converted to H264 + AAC',
+        //     'file_name' => $fileName,
+        //     'file_path' => $rawFile,
+        //     'public_url' => $publicUrl,
+        //     'video_codec' => $videoCodec,
+        //     'audio_codec' => $audioCodec,
+        //     'converted' => !$isCorrectFormat
+        // ]);
     }
 }
