@@ -44,6 +44,8 @@ class GoogleController extends Controller
 
             Auth::login($user);
 
+            User::where('id', Auth::id())->update(['last_login_at' => now()]);
+
             // return redirect()->intended(route('home.index', absolute: false));
             return app(\App\Http\Controllers\Auth\AuthenticatedSessionController::class)
                 ->afterLoginSessionHandling(request());

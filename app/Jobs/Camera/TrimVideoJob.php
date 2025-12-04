@@ -219,34 +219,12 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
                 'size' => filesize($outputFile)
             ]);
 
-            WatermarkVideoJob::dispatch($outputFile)
-                ->onQueue('camera-record-video-watermark');
-
-            $thumbnailDir = storage_path('app/public/thumbnails');
-            @mkdir($thumbnailDir, 0777, true);
-            $thumbnailFile = "{$thumbnailDir}/{$this->videoName}_{$this->cameraKey}_{$date}_thumb.jpg";
-
-            if (file_exists($outputFile) && filesize($outputFile) > 0) {
-                ThumbnailVideoJob::dispatch($outputFile, $thumbnailFile)
-                    ->onQueue('camera-record-video-thumb');
-            } else {
-                Log::channel('camera-job')->warning("[TRIM WARN] Invalid MP4 file, skipping thumbnail.", [
-                    'file' => $outputFile
-                ]);
-            }
-
-            if (!\App\Models\Record\RecordedVideo::where('recording_id', $this->recordingId)
-                ->where('video_filename', basename($outputFile))
-                ->exists()) {
-
-                InsertRecordedVideoJob::dispatch(
-                    (int) $this->recordingId,
-                    $outputFile,
-                    basename($outputFile),
-                    $thumbnailFile,
-                    basename($thumbnailFile)
-                )->onQueue('camera-record-video-insert');
-            }
+             WatermarkVideoJob::dispatch(
+                $this->recordingId,
+                $outputFile,
+                $this->videoName,
+                $this->cameraKey,
+            )->onQueue('camera-record-video-watermark');
 
             Log::channel('camera-job')->info('[JOB] TrimVideoJob finished (completed)', [
                 'camera_key' => $this->cameraKey,
