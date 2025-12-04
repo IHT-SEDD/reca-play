@@ -124,8 +124,8 @@ class UtilityService
         $ownTransaction = true;
       }
 
-      $cameraService = $this->initializeCameraService($fieldId);
-      $cameraService->stopRecording();
+      // $cameraService = $this->initializeCameraService($fieldId);
+      // $cameraService->stopRecording();
 
       $data->update(['status' => $config['statusEnum']]);
       $this->updateRecordingStop($data, $sessionToken, $sessionCodeId, $type);
