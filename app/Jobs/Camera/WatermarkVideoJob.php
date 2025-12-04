@@ -79,14 +79,31 @@ class WatermarkVideoJob implements ShouldQueue
             $process->setTimeout(0);
             $process->run();
 
-            if ($process->isSuccessful() && file_exists($wmOutput) && filesize($wmOutput) > 0) {
-                Log::channel('camera-job')->info('[WM] Watermark success, replacing original');
+            sleep(1);
+            clearstatcache();
+
+            // if ($process->isSuccessful() && file_exists($wmOutput) && filesize($wmOutput) > 0) {
+            //     Log::channel('camera-job')->info('[WM] Watermark success, replacing original');
+
+            //     @unlink($this->videoFile);
+            //     rename($wmOutput, $this->videoFile);
+            // } else {
+            //     Log::channel('camera-job')->warning('[WM] FAILED: using original file', [
+            //         'error' => $process->getErrorOutput()
+            //     ]);
+            // }
+            if (file_exists($wmOutput) && filesize($wmOutput) > 50000) {
+                Log::channel('camera-job')->info('[WM] Watermark success, replacing original', [
+                    'exit_code' => $process->getExitCode()
+                ]);
 
                 @unlink($this->videoFile);
                 rename($wmOutput, $this->videoFile);
             } else {
                 Log::channel('camera-job')->warning('[WM] FAILED: using original file', [
-                    'error' => $process->getErrorOutput()
+                    'exit_code' => $process->getExitCode(),
+                    'stderr' => $process->getErrorOutput(),
+                    'stdout' => $process->getOutput(),
                 ]);
             }
         } catch (\Throwable $e) {
