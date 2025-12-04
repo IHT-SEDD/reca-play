@@ -444,7 +444,15 @@ XML;
         if (empty($encodedFiles)) return null;
 
         $listFile = "{$tmpDir}/list.txt";
-        file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $encodedFiles)));
+
+        // file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $encodedFiles)));
+        $lines = array_map(
+            fn($f) => "file '{$f['file']}'",
+            $encodedFiles
+        );
+
+        file_put_contents($listFile, implode("\n", $lines));
+        
         $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
 
         $concat = new Process([
