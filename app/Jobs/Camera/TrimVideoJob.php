@@ -28,7 +28,6 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
     public $backoff = [60, 120];
 
     public $uniqueFor = 900;
-
     public function uniqueId(): string
     {
         return $this->cameraKey . '_' . $this->recordingId;
@@ -58,22 +57,18 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
      */
     public function handle(RecordedSearchService $recordedSearch): void
     {
-        // ==== VALIDASI FILE ====
-        if (!file_exists($this->inputFile) || filesize($this->inputFile) < 1024) {
+        if (!file_exists($this->inputFile)) {
             Log::channel('camera-job')->warning("[TRIM FAIL] Input file not found", [
                 'inputFile' => $this->inputFile
             ]);
             return;
         }
 
-        // ==== STABILISASI FILE ====
         $prevSize = filesize($this->inputFile);
         $stable = false;
-        $maxRetries = 12;
-        $sleepSec = 5;
 
-        for ($i = 0; $i < $maxRetries; $i++) {
-            sleep($sleepSec);
+        for ($i = 0; $i < 3; $i++) {
+            sleep(5);
             clearstatcache(true, $this->inputFile);
             $currentSize = filesize($this->inputFile);
 
@@ -109,78 +104,46 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 
             $startDT = new \DateTime($this->startTime);
             $endDT = new \DateTime($this->endTime);
+            $duration = $endDT->getTimestamp() - $startDT->getTimestamp();
 
-            $firstSegmentStart = $recordedSearch->firstSegmentStart ?? 0;
-
-            $startSec = max(0, $startDT->getTimestamp() - $firstSegmentStart);
-            $duration = max(1, $endDT->getTimestamp() - $startDT->getTimestamp());
-
-            try {
-                $videoLength = (int) trim((new Process([
-                    'ffprobe',
-                    '-v',
-                    'error',
-                    '-show_entries',
-                    'format=duration',
-                    '-of',
-                    'default=noprint_wrappers=1:nokey=1',
-                    $this->inputFile
-                ]))->mustRun()->getOutput());
-            } catch (\Throwable $e) {
-                Log::channel('camera-job')->error("[TRIM FAIL] ffprobe failed", [
-                    'inputFile' => $this->inputFile,
-                    'error' => $e->getMessage()
-                ]);
-                return;
-            }
-
-            if ($startSec >= $videoLength) {
-                Log::channel('camera-job')->warning("[TRIM WARN] startSec exceeds video length", [
-                    'startSec' => $startSec,
-                    'videoLength' => $videoLength
-                ]);
-                return;
-            }
-
-            $duration = min($duration, $videoLength - $startSec);
+            Log::channel('camera-job')->info("[TRIM DEBUG] Calculated duration", [
+                'start' => $this->startTime,
+                'end' => $this->endTime,
+                'duration' => $duration
+            ]);
 
             if ($duration <= 0) {
                 Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration, skipping trim", [
-                    'duration' => $duration
+                    'start' => $this->startTime,
+                    'end' => $this->endTime
                 ]);
                 return;
             }
 
-            // $duration = $endDT->getTimestamp() - $startDT->getTimestamp();
+            $ffprobe = new Process([
+                'ffprobe',
+                '-v',
+                'error',
+                '-show_entries',
+                'format=duration',
+                '-of',
+                'default=noprint_wrappers=1:nokey=1',
+                $this->inputFile
+            ]);
+            $ffprobe->setTimeout(0)->run();
 
-            // Log::channel('camera-job')->info("[TRIM DEBUG] Calculated duration", [
-            //     'start' => $this->startTime,
-            //     'end' => $this->endTime,
-            //     'duration' => $duration
-            // ]);
+            $receivedDuration = null;
+            if ($ffprobe->isSuccessful()) {
+                $receivedDuration = floatval(trim($ffprobe->getOutput()));
+            } else {
+                Log::channel('camera-job')->warning("[TRIM WARN] ffprobe failed to get duration, proceeding with fallback behavior", [
+                    'stderr' => $ffprobe->getErrorOutput()
+                ]);
+            }
 
-            // Log::channel('camera-job')->info("[TRIM DEBUG] Calculated startSec & duration", [
-            //     'startTime' => $this->startTime,
-            //     'endTime' => $this->endTime,
-            //     'firstSegmentStart' => $firstSegmentStart,
-            //     'startSec' => $startSec,
-            //     'duration' => $duration
-            // ]);
-
-            // if ($duration <= 0) {
-            //     Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration, skipping trim", [
-            //         'start' => $this->startTime,
-            //         'end' => $this->endTime
-            //     ]);
-            //     return;
-            // }
-            // if ($duration <= 0 || $startSec < 0) {
-            //     Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration or startSec, skipping trim", [
-            //         'startSec' => $startSec,
-            //         'duration' => $duration
-            //     ]);
-            //     return;
-            // }
+            Log::channel('camera-job')->info("[TRIM DEBUG] receivedDuration (seconds)", [
+                'received_duration' => $receivedDuration
+            ]);
 
             $date = now()->format('dmy');
             $outputDir = storage_path('app/public/recordings');
@@ -188,25 +151,67 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 
             $outputFile = "{$outputDir}/{$this->videoName}_{$this->cameraKey}_{$date}.mp4";
 
-            // $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, false);
-            $success = $recordedSearch->trimVideo($this->inputFile, $startSec, $duration, $outputFile, false);
+            if ($receivedDuration !== null) {
+                if ($duration < $receivedDuration) {
+                    Log::channel('camera-job')->info("[TRIM ACTION] Requested duration is smaller than received duration -> perform trim", [
+                        'requested' => $duration,
+                        'received' => $receivedDuration
+                    ]);
 
-            if (! $success || ! file_exists($outputFile) || filesize($outputFile) < 1024) {
-                Log::channel('camera-job')->warning('[TRIM WARN] Fast trim failed, fallback to re-encode.', [
-                    'camera_key' => $this->cameraKey,
-                    'outputFile' => $outputFile
+                    $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, false);
+
+                    if (! $success || ! file_exists($outputFile) || filesize($outputFile) < 1024) {
+                        Log::channel('camera-job')->warning('[TRIM WARN] Fast trim failed, fallback to re-encode.', [
+                            'camera_key' => $this->cameraKey,
+                            'outputFile' => $outputFile
+                        ]);
+
+                        $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
+                    }
+
+                    if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
+                        Log::channel('camera-job')->warning('[TRIM WARN] Trim totally failed or the output is null', [
+                            'camera_key' => $this->cameraKey,
+                            'outputFile' => $outputFile
+                        ]);
+                        return;
+                    }
+                } else {
+                    Log::channel('camera-job')->info("[TRIM SKIP] Requested duration is equal/longer than received duration -> skip trimming and use original file", [
+                        'requested' => $duration,
+                        'received' => $receivedDuration
+                    ]);
+                    if (!@copy($this->inputFile, $outputFile)) {
+                        Log::channel('camera-job')->warning("[TRIM WARN] Failed to copy input file to output location, using input file directly", [
+                            'input' => $this->inputFile,
+                            'output' => $outputFile
+                        ]);
+                        $outputFile = $this->inputFile;
+                    }
+                }
+            } else {
+                Log::channel('camera-job')->info("[TRIM UNKNOWN] ffprobe unknown -> attempt trim as before", [
+                    'requested' => $duration
                 ]);
 
-                // $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
-                $success = $recordedSearch->trimVideo($this->inputFile, $startSec, $duration, $outputFile, true);
-            }
+                $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, false);
 
-            if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
-                Log::channel('camera-job')->warning('[TRIM WARN] Trim totally failed or the output is null', [
-                    'camera_key' => $this->cameraKey,
-                    'outputFile' => $outputFile
-                ]);
-                return;
+                if (! $success || ! file_exists($outputFile) || filesize($outputFile) < 1024) {
+                    Log::channel('camera-job')->warning('[TRIM WARN] Fast trim failed, fallback to re-encode.', [
+                        'camera_key' => $this->cameraKey,
+                        'outputFile' => $outputFile
+                    ]);
+
+                    $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
+                }
+
+                if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
+                    Log::channel('camera-job')->warning('[TRIM WARN] Trim totally failed or the output is null', [
+                        'camera_key' => $this->cameraKey,
+                        'outputFile' => $outputFile
+                    ]);
+                    return;
+                }
             }
 
             Log::channel('camera-job')->info('[JOB] TrimVideoJob finished successfully', [
