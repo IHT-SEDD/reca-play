@@ -40,7 +40,7 @@ class CleanOrphanSessions extends Command
             $deleted = DB::table($table)
                 ->whereNull('user_id')
                 ->whereNotNull('session_token')
-                ->whereNotNull('qr_token')
+                // ->whereNotNull('qr_token')
                 ->where('last_active_at', '<', $cutoff)
                 ->delete();
 
