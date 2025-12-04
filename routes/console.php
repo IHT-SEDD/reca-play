@@ -34,6 +34,8 @@ Artisan::command('logs:clear-camera', function () {
         'storage/logs/camera/stream.log',
         'storage/logs/camera/job.log',
         'storage/logs/camera/auto-stop-cron.log',
+        'storage/logs/worker/camera_download.log',
+        'storage/logs/worker/camera_record_process.log',
     ];
 
     foreach ($logFiles as $file) {
