@@ -20,6 +20,8 @@ class RecordedSearchService
 
     protected PrepareDataService $prepareData;
 
+    public ?int $firstSegmentStart = null;
+
     public function __construct(PrepareDataService $prepareData)
     {
         $this->prepareData = $prepareData;
@@ -142,15 +144,38 @@ class RecordedSearchService
         $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
         @mkdir($tmpDir, 0777, true);
 
+        $concatFile = null;
+        $firstSegmentStart = false;
+
         if ($directSegment) {
-            $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, [$directSegment['uri']], $tmpDir);
-            return $encodedSegments[0] ?? null;
+            $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, [$directSegment], $tmpDir);
+
+            if (!empty($encodedSegments)) {
+                $concatFile = $encodedSegments[0]['file'] ?? null;
+                $firstSegmentStart = $encodedSegments[0]['startTime'] ?? null;
+            }
+        } else {
+            $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $uris, $tmpDir);
+
+            if (!empty($encodedSegments)) {
+                $concatFile = $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
+                $firstSegmentStart = $encodedSegments[0]['startTime'] ?? null;
+            }
         }
 
-        $urisList = array_column($uris, 'uri');
-        $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $urisList, $tmpDir);
+        $this->firstSegmentStart = $firstSegmentStart;
 
-        return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
+        return $concatFile;
+
+        // if ($directSegment) {
+        //     $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, [$directSegment['uri']], $tmpDir);
+        //     return $encodedSegments[0] ?? null;
+        // }
+
+        // $urisList = array_column($uris, 'uri');
+        // $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $urisList, $tmpDir);
+
+        // return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
     }
 
     // =========================================================
@@ -299,7 +324,10 @@ XML;
         $maxParallel = 4;
         $seq = 1;
 
-        foreach ($uris as $uri) {
+        foreach ($uris as $u) {
+            $uri = $u['uri'];
+            $segStartTime = $u['start'] ?? null;
+
             $rawTs = "{$tmpDir}/seg_{$seq}.ts";
             $encodedMp4 = "{$tmpDir}/seg_{$seq}.mp4";
 
@@ -344,7 +372,8 @@ XML;
             ]))->mustRun()->getOutput());
 
             if ($videoCodec === 'h264' && $audioCodec === 'aac') {
-                $encodedFiles[] = $rawTs;
+                // $encodedFiles[] = $rawTs;
+                $encodedFiles[] = ['file' => $rawTs, 'startTime' => $segStartTime];
             } else {
                 $process = new Process([
                     'ffmpeg',
@@ -373,7 +402,8 @@ XML;
                 $processes[] = [
                     'process' => $process,
                     'raw' => $rawTs,
-                    'mp4' => $encodedMp4
+                    'mp4' => $encodedMp4,
+                    'startTime' => $segStartTime
                 ];
             }
 
@@ -381,7 +411,8 @@ XML;
                 foreach ($processes as $key => $p) {
                     if (!$p['process']->isRunning()) {
                         if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
-                            $encodedFiles[] = $p['mp4'];
+                            // $encodedFiles[] = $p['mp4'];
+                            $encodedFiles[] = ['file' => $p['mp4'], 'startTime' => $p['startTime']];
                         }
                         @unlink($p['raw']);
                         unset($processes[$key]);
@@ -396,7 +427,8 @@ XML;
         foreach ($processes as $p) {
             $p['process']->wait();
             if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
-                $encodedFiles[] = $p['mp4'];
+                // $encodedFiles[] = $p['mp4'];
+                $encodedFiles[] = ['file' => $p['mp4'], 'startTime' => $p['startTime']];
             }
             @unlink($p['raw']);
         }
