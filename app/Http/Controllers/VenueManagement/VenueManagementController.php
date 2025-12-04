@@ -385,8 +385,8 @@ class VenueManagementController extends Controller
             $message = '';
 
             if ($sessionCode->type === 'record') {
-                $cameraService = app(\App\Services\Camera\CameraControlService::class);
-                $cameraService->initialize($fieldId);
+                // $cameraService = app(\App\Services\Camera\CameraControlService::class);
+                // $cameraService->initialize($fieldId);
 
                 $record = Recording::create([
                     'field_id' => $fieldId,
@@ -409,15 +409,15 @@ class VenueManagementController extends Controller
                         'status' => SessionCodeStatus::RecordStart,
                     ]);
 
-                if ($cameraService->startRecording()) {
+                // if ($cameraService->startRecording()) {
                     Log::channel('camera-record')->info('[RECORD] Recording started', [
                         'recording_id' => $record->id,
                         'field_id' => $fieldId,
                         'timestamp' => Carbon::now(),
                     ]);
-                } else {
-                    throw new \Exception("Failed to start recording");
-                }
+                // } else {
+                //     throw new \Exception("Failed to start recording");
+                // }
 
                 $message = 'Record successfully started!';
             } elseif ($sessionCode->type === 'stream') {

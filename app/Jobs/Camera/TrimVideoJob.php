@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
+use Symfony\Component\Process\Process;
 
 class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 {
@@ -110,8 +111,45 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
             $endDT = new \DateTime($this->endTime);
 
             $firstSegmentStart = $recordedSearch->firstSegmentStart ?? 0;
-            $startSec = $startDT->getTimestamp() - $firstSegmentStart;
-            $duration = $endDT->getTimestamp() - $startDT->getTimestamp();
+
+            $startSec = max(0, $startDT->getTimestamp() - $firstSegmentStart);
+            $duration = max(1, $endDT->getTimestamp() - $startDT->getTimestamp());
+
+            try {
+                $videoLength = (int) trim((new Process([
+                    'ffprobe',
+                    '-v',
+                    'error',
+                    '-show_entries',
+                    'format=duration',
+                    '-of',
+                    'default=noprint_wrappers=1:nokey=1',
+                    $this->inputFile
+                ]))->mustRun()->getOutput());
+            } catch (\Throwable $e) {
+                Log::channel('camera-job')->error("[TRIM FAIL] ffprobe failed", [
+                    'inputFile' => $this->inputFile,
+                    'error' => $e->getMessage()
+                ]);
+                return;
+            }
+
+            if ($startSec >= $videoLength) {
+                Log::channel('camera-job')->warning("[TRIM WARN] startSec exceeds video length", [
+                    'startSec' => $startSec,
+                    'videoLength' => $videoLength
+                ]);
+                return;
+            }
+
+            $duration = min($duration, $videoLength - $startSec);
+
+            if ($duration <= 0) {
+                Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration, skipping trim", [
+                    'duration' => $duration
+                ]);
+                return;
+            }
 
             // $duration = $endDT->getTimestamp() - $startDT->getTimestamp();
 
@@ -121,13 +159,13 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
             //     'duration' => $duration
             // ]);
 
-            Log::channel('camera-job')->info("[TRIM DEBUG] Calculated startSec & duration", [
-                'startTime' => $this->startTime,
-                'endTime' => $this->endTime,
-                'firstSegmentStart' => $firstSegmentStart,
-                'startSec' => $startSec,
-                'duration' => $duration
-            ]);
+            // Log::channel('camera-job')->info("[TRIM DEBUG] Calculated startSec & duration", [
+            //     'startTime' => $this->startTime,
+            //     'endTime' => $this->endTime,
+            //     'firstSegmentStart' => $firstSegmentStart,
+            //     'startSec' => $startSec,
+            //     'duration' => $duration
+            // ]);
 
             // if ($duration <= 0) {
             //     Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration, skipping trim", [
@@ -136,13 +174,13 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
             //     ]);
             //     return;
             // }
-            if ($duration <= 0 || $startSec < 0) {
-                Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration or startSec, skipping trim", [
-                    'startSec' => $startSec,
-                    'duration' => $duration
-                ]);
-                return;
-            }
+            // if ($duration <= 0 || $startSec < 0) {
+            //     Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration or startSec, skipping trim", [
+            //         'startSec' => $startSec,
+            //         'duration' => $duration
+            //     ]);
+            //     return;
+            // }
 
             $date = now()->format('dmy');
             $outputDir = storage_path('app/public/recordings');
