@@ -21,11 +21,11 @@ Schedule::command('app:expire-session-codes')
 
 Schedule::command('recording:auto-stop')->everyTwoMinutes();
 
-// Schedule::command('sessions:clean-orphan')->everyMinute();
+Schedule::command('sessions:clean-orphan')->everyThreeMinutes();
 
-Schedule::command('recordings:check-videos')->everyThirtyMinutes();
+Schedule::command('recordings:check-videos')->everyTwoHours();
 
-// Schedule::command('temp-recordings:clean')->days(3);
+Schedule::command('temp-recordings:clean')->days(2)->at('01:00');
 
 Artisan::command('logs:clear-camera', function () {
     $logFiles = [
