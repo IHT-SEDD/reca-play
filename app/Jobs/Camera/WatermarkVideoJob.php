@@ -14,7 +14,10 @@ class WatermarkVideoJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected int $recordingId;
     protected string $videoFile;
+    protected string $videoName;
+    protected string $cameraKey;
 
     public $tries = 2;
     public $timeout = 0;
@@ -23,9 +26,12 @@ class WatermarkVideoJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(string $videoFile)
+    public function __construct(int $recordingId, string $videoFile, string $videoName, string $cameraKey)
     {
+        $this->recordingId = $recordingId;
         $this->videoFile = $videoFile;
+        $this->videoName = $videoName;
+        $this->cameraKey = $cameraKey;
     }
 
     /**
@@ -82,30 +88,26 @@ class WatermarkVideoJob implements ShouldQueue
             sleep(1);
             clearstatcache();
 
-            // if ($process->isSuccessful() && file_exists($wmOutput) && filesize($wmOutput) > 0) {
-            //     Log::channel('camera-job')->info('[WM] Watermark success, replacing original');
-
-            //     @unlink($this->videoFile);
-            //     rename($wmOutput, $this->videoFile);
-            // } else {
-            //     Log::channel('camera-job')->warning('[WM] FAILED: using original file', [
-            //         'error' => $process->getErrorOutput()
-            //     ]);
-            // }
-            if (file_exists($wmOutput) && filesize($wmOutput) > 50000) {
-                Log::channel('camera-job')->info('[WM] Watermark success, replacing original', [
-                    'exit_code' => $process->getExitCode()
+            if (!file_exists($wmOutput) || filesize($wmOutput) < 20000) {
+                Log::channel('camera-job')->warning('[WM] Watermark FAILED.', [
+                    'stderr' => $process->getErrorOutput()
                 ]);
-
-                @unlink($this->videoFile);
-                rename($wmOutput, $this->videoFile);
-            } else {
-                Log::channel('camera-job')->warning('[WM] FAILED: using original file', [
-                    'exit_code' => $process->getExitCode(),
-                    'stderr' => $process->getErrorOutput(),
-                    'stdout' => $process->getOutput(),
-                ]);
+                return;
             }
+
+            @unlink($this->videoFile);
+            rename($wmOutput, $this->videoFile);
+
+            $date = now()->format('dmy');
+            $thumbnailDir = storage_path('app/public/thumbnails');
+            @mkdir($thumbnailDir, 0777, true);
+            $thumbnailFile = "{$thumbnailDir}/{$this->videoName}_{$this->cameraKey}_{$date}_thumb.jpg";
+
+            ThumbnailVideoJob::dispatch(
+                $this->recordingId,
+                $this->videoFile,
+                $thumbnailFile
+            )->onQueue('camera-record-video-thumb');
         } catch (\Throwable $e) {
             Log::channel('camera-job')->error('[WM ERROR] Watermark error', [
                 'error' => $e->getMessage()
