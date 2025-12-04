@@ -27,6 +27,7 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
     public $backoff = [60, 120];
 
     public $uniqueFor = 900;
+
     public function uniqueId(): string
     {
         return $this->cameraKey . '_' . $this->recordingId;
@@ -56,18 +57,22 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
      */
     public function handle(RecordedSearchService $recordedSearch): void
     {
-        if (!file_exists($this->inputFile)) {
+        // ==== VALIDASI FILE ====
+        if (!file_exists($this->inputFile) || filesize($this->inputFile) < 1024) {
             Log::channel('camera-job')->warning("[TRIM FAIL] Input file not found", [
                 'inputFile' => $this->inputFile
             ]);
             return;
         }
 
+        // ==== STABILISASI FILE ====
         $prevSize = filesize($this->inputFile);
         $stable = false;
+        $maxRetries = 12;
+        $sleepSec = 5;
 
-        for ($i = 0; $i < 3; $i++) {
-            sleep(5);
+        for ($i = 0; $i < $maxRetries; $i++) {
+            sleep($sleepSec);
             clearstatcache(true, $this->inputFile);
             $currentSize = filesize($this->inputFile);
 
@@ -103,18 +108,38 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 
             $startDT = new \DateTime($this->startTime);
             $endDT = new \DateTime($this->endTime);
+
+            $firstSegmentStart = $recordedSearch->firstSegmentStart ?? 0;
+            $startSec = $startDT->getTimestamp() - $firstSegmentStart;
             $duration = $endDT->getTimestamp() - $startDT->getTimestamp();
 
-            Log::channel('camera-job')->info("[TRIM DEBUG] Calculated duration", [
-                'start' => $this->startTime,
-                'end' => $this->endTime,
+            // $duration = $endDT->getTimestamp() - $startDT->getTimestamp();
+
+            // Log::channel('camera-job')->info("[TRIM DEBUG] Calculated duration", [
+            //     'start' => $this->startTime,
+            //     'end' => $this->endTime,
+            //     'duration' => $duration
+            // ]);
+
+            Log::channel('camera-job')->info("[TRIM DEBUG] Calculated startSec & duration", [
+                'startTime' => $this->startTime,
+                'endTime' => $this->endTime,
+                'firstSegmentStart' => $firstSegmentStart,
+                'startSec' => $startSec,
                 'duration' => $duration
             ]);
 
-            if ($duration <= 0) {
-                Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration, skipping trim", [
-                    'start' => $this->startTime,
-                    'end' => $this->endTime
+            // if ($duration <= 0) {
+            //     Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration, skipping trim", [
+            //         'start' => $this->startTime,
+            //         'end' => $this->endTime
+            //     ]);
+            //     return;
+            // }
+            if ($duration <= 0 || $startSec < 0) {
+                Log::channel('camera-job')->warning("[TRIM WARN] Invalid duration or startSec, skipping trim", [
+                    'startSec' => $startSec,
+                    'duration' => $duration
                 ]);
                 return;
             }
@@ -125,7 +150,8 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 
             $outputFile = "{$outputDir}/{$this->videoName}_{$this->cameraKey}_{$date}.mp4";
 
-            $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, false);
+            // $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, false);
+            $success = $recordedSearch->trimVideo($this->inputFile, $startSec, $duration, $outputFile, false);
 
             if (! $success || ! file_exists($outputFile) || filesize($outputFile) < 1024) {
                 Log::channel('camera-job')->warning('[TRIM WARN] Fast trim failed, fallback to re-encode.', [
@@ -133,7 +159,8 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
                     'outputFile' => $outputFile
                 ]);
 
-                $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
+                // $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
+                $success = $recordedSearch->trimVideo($this->inputFile, $startSec, $duration, $outputFile, true);
             }
 
             if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
@@ -149,68 +176,8 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
                 'size' => filesize($outputFile)
             ]);
 
-            try {
-                $watermarkFile = public_path('assets/img/logos/reca-white.png');
-
-                Log::channel('camera-job')->info('[WM] Checking watermark file', [
-                    'file' => $watermarkFile,
-                    'exists' => file_exists($watermarkFile)
-                ]);
-
-                if (file_exists($watermarkFile)) {
-                    $wmOutput = str_replace('.mp4', '_wm.mp4', $outputFile);
-
-                    if ($wmOutput === $outputFile) {
-                        $wmOutput = $outputFile . "_wm.mp4";
-                    }
-
-                    Log::channel('camera-job')->info('[WM] Applying watermark...', [
-                        'source' => $outputFile,
-                        'target' => $wmOutput
-                    ]);
-
-                    $process = new \Symfony\Component\Process\Process([
-                        'ffmpeg',
-                        '-y',
-                        '-i',
-                        $outputFile,
-                        '-i',
-                        $watermarkFile,
-                        '-filter_complex',
-                        "[1]scale=120:-1[wm];[0][wm]overlay=W-w-20:H-h-20:format=auto:alpha=0.35",
-                        '-c:v',
-                        'libx264',
-                        '-preset',
-                        'ultrafast',
-                        '-crf',
-                        '23',
-                        '-c:a',
-                        'copy',
-                        $wmOutput
-                    ]);
-
-                    $process->setTimeout(0);
-                    $process->run();
-
-                    if ($process->isSuccessful() && file_exists($wmOutput) && filesize($wmOutput) > 0) {
-
-                        Log::channel('camera-job')->info('[WM] Watermark success, replacing original');
-
-                        @unlink($outputFile);
-                        rename($wmOutput, $outputFile);
-                    } else {
-                        Log::channel('camera-job')->warning('[WM] FAILED: using original file', [
-                            'error' => $process->getErrorOutput()
-                        ]);
-                    }
-                } else {
-                    Log::channel('camera-job')->warning('[WM] Watermark file missing, skipped.');
-                }
-            } catch (\Throwable $e) {
-                Log::channel('camera-job')->error('[WM ERROR] Watermark error', [
-                    'error' => $e->getMessage()
-                ]);
-            }
+            WatermarkVideoJob::dispatch($outputFile)
+                ->onQueue('camera-record-video-watermark');
 
             $thumbnailDir = storage_path('app/public/thumbnails');
             @mkdir($thumbnailDir, 0777, true);

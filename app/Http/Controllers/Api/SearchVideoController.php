@@ -13,12 +13,12 @@ class SearchVideoController extends Controller
     public function search(Request $req)
     {
         $req->validate([
-            'host'       => 'required|string',
-            'user'       => 'required|string',
-            'pass'       => 'required|string',
-            'channel'    => 'required|string',
+            'host' => 'required|string',
+            'user' => 'required|string',
+            'pass' => 'required|string',
+            'channel' => 'required|string',
             'start_time' => 'required|date',
-            'end_time'   => 'required|date',
+            'end_time' => 'required|date',
         ]);
 
         $host = $req->host;
@@ -119,13 +119,14 @@ XML;
             $segStart -= $tolerance;
             $segEnd   += $tolerance;
 
-            // Must overlap request
-            $isOverlap = $segStart <= $endTs && $segEnd >= $startTs;
-            if (!$isOverlap) continue;
+            if (!($segStart <= $endTs && $segEnd >= $startTs)) {
+                continue;
+            }
 
             $uri = (string) $item->mediaSegmentDescriptor->playbackURI;
             if (!$uri) continue;
 
+            // Extract timestamps
             preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $s);
             preg_match('/endtime=(\d{8}T\d{6})Z?/', $uri, $e);
 
@@ -151,10 +152,21 @@ XML;
             $startDiff = abs($uriStart - $startTs);
             $endDiff   = abs($uriEnd   - $endTs);
 
+            // Format waktu
+            $startIso = gmdate('Y-m-d\TH:i:s\Z', $uriStart);
+            $endIso   = gmdate('Y-m-d\TH:i:s\Z', $uriEnd);
+
             $uris[] = [
                 'uri' => $uri,
-                'start' => $uriStart,
-                'end' => $uriEnd,
+
+                // timestamp asli
+                'start_ts' => $uriStart,
+                'end_ts'   => $uriEnd,
+
+                // waktu terformat
+                'start' => $startIso,
+                'end'   => $endIso,
+
                 'coverageRatio' => $coverageRatio,
                 'startDiff' => $startDiff,
                 'endDiff' => $endDiff,
@@ -163,8 +175,7 @@ XML;
             ];
         }
 
-        // Sort by closest startDiff
-        usort($uris, fn($a, $b) => $a['startDiff'] <=> $b['startDiff']);
+        usort($uris, fn($a, $b) => $a['start_ts'] <=> $b['start_ts']);
 
         return $uris;
     }
