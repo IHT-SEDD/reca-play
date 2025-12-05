@@ -2,12 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
-    ProfileController,
-    TestingController,
-    SupportingController,
     Auth\GoogleController,
     Creator\CreatorController,
     Creator\RecordController,
+    Creator\SelfieController,
+    Creator\StreamController,
     Recording\RecordingController,
     Event\EventController,
     Master\MasterController,
@@ -17,11 +16,11 @@ use App\Http\Controllers\{
     VenueManagement\VenueManagementController,
     Home\HomeController,
     Watch\WatchController,
+    MyProfile\MyProfileController,
+    SuperAdmin\DownloadVideoController,
+    SupportingController,
     ScanQrController
 };
-use App\Http\Controllers\Creator\SelfieController;
-use App\Http\Controllers\Creator\StreamController;
-use App\Http\Controllers\SuperAdmin\DownloadVideoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -209,11 +208,10 @@ Route::middleware(['check.maintenance'])->group(function () {
         | Profile Routes
         |--------------------------------------------------------------------------
         */
-        Route::prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {
+        Route::prefix('my-profile')->name('my-profile.')->controller(MyProfileController::class)->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/edit', 'edit')->name('edit');
-            Route::patch('/update', 'update')->name('update');
-            Route::delete('/delete', 'destroy')->name('destroy');
+            Route::get('/user-data', 'userData')->name('user-data');
+            Route::post('/{userId}/edit', 'editUser')->name('user-edit');
         });
 
         /*

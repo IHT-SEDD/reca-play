@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
+use Symfony\Component\Process\Process;
 
 class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 {
@@ -119,29 +120,98 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
                 return;
             }
 
+            $ffprobe = new Process([
+                'ffprobe',
+                '-v',
+                'error',
+                '-show_entries',
+                'format=duration',
+                '-of',
+                'default=noprint_wrappers=1:nokey=1',
+                $this->inputFile
+            ]);
+            $ffprobe->setTimeout(0)->run();
+
+            $receivedDuration = null;
+            if ($ffprobe->isSuccessful()) {
+                $receivedDuration = floatval(trim($ffprobe->getOutput()));
+            } else {
+                Log::channel('camera-job')->warning("[TRIM WARN] ffprobe failed to get duration, proceeding with fallback behavior", [
+                    'stderr' => $ffprobe->getErrorOutput()
+                ]);
+            }
+
+            Log::channel('camera-job')->info("[TRIM DEBUG] receivedDuration (seconds)", [
+                'received_duration' => $receivedDuration
+            ]);
+
             $date = now()->format('dmy');
             $outputDir = storage_path('app/public/recordings');
             @mkdir($outputDir, 0777, true);
 
             $outputFile = "{$outputDir}/{$this->videoName}_{$this->cameraKey}_{$date}.mp4";
 
-            $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, false);
+            if ($receivedDuration !== null) {
+                if ($duration < $receivedDuration) {
+                    Log::channel('camera-job')->info("[TRIM ACTION] Requested duration is smaller than received duration -> perform trim", [
+                        'requested' => $duration,
+                        'received' => $receivedDuration
+                    ]);
 
-            if (! $success || ! file_exists($outputFile) || filesize($outputFile) < 1024) {
-                Log::channel('camera-job')->warning('[TRIM WARN] Fast trim failed, fallback to re-encode.', [
-                    'camera_key' => $this->cameraKey,
-                    'outputFile' => $outputFile
+                    $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, false);
+
+                    if (! $success || ! file_exists($outputFile) || filesize($outputFile) < 1024) {
+                        Log::channel('camera-job')->warning('[TRIM WARN] Fast trim failed, fallback to re-encode.', [
+                            'camera_key' => $this->cameraKey,
+                            'outputFile' => $outputFile
+                        ]);
+
+                        $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
+                    }
+
+                    if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
+                        Log::channel('camera-job')->warning('[TRIM WARN] Trim totally failed or the output is null', [
+                            'camera_key' => $this->cameraKey,
+                            'outputFile' => $outputFile
+                        ]);
+                        return;
+                    }
+                } else {
+                    Log::channel('camera-job')->info("[TRIM SKIP] Requested duration is equal/longer than received duration -> skip trimming and use original file", [
+                        'requested' => $duration,
+                        'received' => $receivedDuration
+                    ]);
+                    if (!@copy($this->inputFile, $outputFile)) {
+                        Log::channel('camera-job')->warning("[TRIM WARN] Failed to copy input file to output location, using input file directly", [
+                            'input' => $this->inputFile,
+                            'output' => $outputFile
+                        ]);
+                        $outputFile = $this->inputFile;
+                    }
+                }
+            } else {
+                Log::channel('camera-job')->info("[TRIM UNKNOWN] ffprobe unknown -> attempt trim as before", [
+                    'requested' => $duration
                 ]);
 
-                $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
-            }
+                $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, false);
 
-            if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
-                Log::channel('camera-job')->warning('[TRIM WARN] Trim totally failed or the output is null', [
-                    'camera_key' => $this->cameraKey,
-                    'outputFile' => $outputFile
-                ]);
-                return;
+                if (! $success || ! file_exists($outputFile) || filesize($outputFile) < 1024) {
+                    Log::channel('camera-job')->warning('[TRIM WARN] Fast trim failed, fallback to re-encode.', [
+                        'camera_key' => $this->cameraKey,
+                        'outputFile' => $outputFile
+                    ]);
+
+                    $success = $recordedSearch->trimVideo($this->inputFile, 0, $duration, $outputFile, true);
+                }
+
+                if (! $success || ! file_exists($outputFile) || filesize($outputFile) === 0) {
+                    Log::channel('camera-job')->warning('[TRIM WARN] Trim totally failed or the output is null', [
+                        'camera_key' => $this->cameraKey,
+                        'outputFile' => $outputFile
+                    ]);
+                    return;
+                }
             }
 
             Log::channel('camera-job')->info('[JOB] TrimVideoJob finished successfully', [
@@ -149,94 +219,12 @@ class TrimVideoJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
                 'size' => filesize($outputFile)
             ]);
 
-            try {
-                $watermarkFile = public_path('assets/img/logos/reca-white.png');
-
-                Log::channel('camera-job')->info('[WM] Checking watermark file', [
-                    'file' => $watermarkFile,
-                    'exists' => file_exists($watermarkFile)
-                ]);
-
-                if (file_exists($watermarkFile)) {
-                    $wmOutput = str_replace('.mp4', '_wm.mp4', $outputFile);
-
-                    if ($wmOutput === $outputFile) {
-                        $wmOutput = $outputFile . "_wm.mp4";
-                    }
-
-                    Log::channel('camera-job')->info('[WM] Applying watermark...', [
-                        'source' => $outputFile,
-                        'target' => $wmOutput
-                    ]);
-
-                    $process = new \Symfony\Component\Process\Process([
-                        'ffmpeg',
-                        '-y',
-                        '-i',
-                        $outputFile,
-                        '-i',
-                        $watermarkFile,
-                        '-filter_complex',
-                        "[1]scale=120:-1[wm];[0][wm]overlay=W-w-20:H-h-20:format=auto:alpha=0.35",
-                        '-c:v',
-                        'libx264',
-                        '-preset',
-                        'ultrafast',
-                        '-crf',
-                        '23',
-                        '-c:a',
-                        'copy',
-                        $wmOutput
-                    ]);
-
-                    $process->setTimeout(0);
-                    $process->run();
-
-                    if ($process->isSuccessful() && file_exists($wmOutput) && filesize($wmOutput) > 0) {
-
-                        Log::channel('camera-job')->info('[WM] Watermark success, replacing original');
-
-                        @unlink($outputFile);
-                        rename($wmOutput, $outputFile);
-                    } else {
-                        Log::channel('camera-job')->warning('[WM] FAILED: using original file', [
-                            'error' => $process->getErrorOutput()
-                        ]);
-                    }
-                } else {
-                    Log::channel('camera-job')->warning('[WM] Watermark file missing, skipped.');
-                }
-            } catch (\Throwable $e) {
-                Log::channel('camera-job')->error('[WM ERROR] Watermark error', [
-                    'error' => $e->getMessage()
-                ]);
-            }
-
-            $thumbnailDir = storage_path('app/public/thumbnails');
-            @mkdir($thumbnailDir, 0777, true);
-            $thumbnailFile = "{$thumbnailDir}/{$this->videoName}_{$this->cameraKey}_{$date}_thumb.jpg";
-
-            if (file_exists($outputFile) && filesize($outputFile) > 0) {
-                ThumbnailVideoJob::dispatch($outputFile, $thumbnailFile)
-                    ->onQueue('camera-record-video-thumb');
-            } else {
-                Log::channel('camera-job')->warning("[TRIM WARN] Invalid MP4 file, skipping thumbnail.", [
-                    'file' => $outputFile
-                ]);
-            }
-
-            if (!\App\Models\Record\RecordedVideo::where('recording_id', $this->recordingId)
-                ->where('video_filename', basename($outputFile))
-                ->exists()) {
-
-                InsertRecordedVideoJob::dispatch(
-                    (int) $this->recordingId,
-                    $outputFile,
-                    basename($outputFile),
-                    $thumbnailFile,
-                    basename($thumbnailFile)
-                )->onQueue('camera-record-video-insert');
-            }
+             WatermarkVideoJob::dispatch(
+                $this->recordingId,
+                $outputFile,
+                $this->videoName,
+                $this->cameraKey,
+            )->onQueue('camera-record-video-watermark');
 
             Log::channel('camera-job')->info('[JOB] TrimVideoJob finished (completed)', [
                 'camera_key' => $this->cameraKey,

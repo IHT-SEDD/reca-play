@@ -12,6 +12,7 @@ use App\Models\Session\QrSession;
 use App\Models\Session\RecordSession;
 use App\Models\Session\SessionCode;
 use App\Models\Session\SessionLog;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 class AuthenticatedSessionController extends Controller
@@ -31,6 +32,8 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+
+        User::where('id', Auth::id())->update(['last_login_at' => now()]);
 
         $sessionToken = session('qr_session_token');
 

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use App\Services\Camera\SupportUtilitiesService;
 
 class RecordedSearchService
 {
@@ -19,6 +20,8 @@ class RecordedSearchService
     private array $cameras = [];
 
     protected PrepareDataService $prepareData;
+
+    public ?int $firstSegmentStart = null;
 
     public function __construct(PrepareDataService $prepareData)
     {
@@ -94,7 +97,7 @@ class RecordedSearchService
                 $xml = @simplexml_load_string($response->body());
                 if (!$xml || !isset($xml->matchList)) continue;
 
-                $uris = $this->extractUrisFromXml($xml, $startTs, $endTs);
+                $uris = SupportUtilitiesService::extractUrisFromXml($xml, $startTs, $endTs);
 
                 if ($uris) {
                     $allUris["camera_{$channel}"] = $uris;
@@ -142,15 +145,28 @@ class RecordedSearchService
         $tmpDir = storage_path("app/tmp_recordings/" . uniqid("{$cameraKey}_"));
         @mkdir($tmpDir, 0777, true);
 
+        $concatFile = null;
+        $firstSegmentStart = false;
+
         if ($directSegment) {
-            $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, [$directSegment['uri']], $tmpDir);
-            return $encodedSegments[0] ?? null;
+            $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, [$directSegment], $tmpDir);
+
+            if (!empty($encodedSegments)) {
+                $concatFile = $encodedSegments[0]['file'] ?? null;
+                $firstSegmentStart = $encodedSegments[0]['startTime'] ?? null;
+            }
+        } else {
+            $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $uris, $tmpDir);
+
+            if (!empty($encodedSegments)) {
+                $concatFile = $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
+                $firstSegmentStart = $encodedSegments[0]['startTime'] ?? null;
+            }
         }
 
-        $urisList = array_column($uris, 'uri');
-        $encodedSegments = $this->downloadAndEncodeSegments($cameraKey, $urisList, $tmpDir);
+        $this->firstSegmentStart = $firstSegmentStart;
 
-        return $this->concatEncodedSegments($cameraKey, $encodedSegments, $tmpDir);
+        return $concatFile;
     }
 
     // =========================================================
@@ -160,7 +176,7 @@ class RecordedSearchService
     {
         if (!file_exists($inputFile) || filesize($inputFile) < 1024) return false;
 
-        $cmd = $this->buildTrimCommand($inputFile, $outputFile, $startSec, $duration, $forceEncode);
+        $cmd = $cmd = SupportUtilitiesService::buildTrimCommand($inputFile, $outputFile, $startSec, $duration, $forceEncode);
 
         Log::channel('camera-record')->info("[TRIM START]", [
             'input' => $inputFile,
@@ -271,19 +287,6 @@ XML;
     }
 
     // =========================================================
-    // EXTRACT TIME URI HELPERS
-    // =========================================================
-    public function extractStartTimeFromUri(string $uri): int
-    {
-        preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $matches);
-        if (isset($matches[1])) {
-            $dt = \DateTime::createFromFormat('Ymd\THis', $matches[1], new \DateTimeZone('UTC'));
-            return $dt ? $dt->getTimestamp() : 0;
-        }
-        return 0;
-    }
-
-    // =========================================================
     // DOWNLOAD SEGMENTS HELPERS
     // =========================================================
     private function downloadAndEncodeSegments(string $cameraKey, array $uris, string $tmpDir): array
@@ -299,7 +302,10 @@ XML;
         $maxParallel = 4;
         $seq = 1;
 
-        foreach ($uris as $uri) {
+        foreach ($uris as $u) {
+            $uri = $u['uri'];
+            $segStartTime = $u['start'] ?? null;
+
             $rawTs = "{$tmpDir}/seg_{$seq}.ts";
             $encodedMp4 = "{$tmpDir}/seg_{$seq}.mp4";
 
@@ -344,7 +350,8 @@ XML;
             ]))->mustRun()->getOutput());
 
             if ($videoCodec === 'h264' && $audioCodec === 'aac') {
-                $encodedFiles[] = $rawTs;
+                // $encodedFiles[] = $rawTs;
+                $encodedFiles[] = ['file' => $rawTs, 'startTime' => $segStartTime];
             } else {
                 $process = new Process([
                     'ffmpeg',
@@ -373,7 +380,8 @@ XML;
                 $processes[] = [
                     'process' => $process,
                     'raw' => $rawTs,
-                    'mp4' => $encodedMp4
+                    'mp4' => $encodedMp4,
+                    'startTime' => $segStartTime
                 ];
             }
 
@@ -381,7 +389,8 @@ XML;
                 foreach ($processes as $key => $p) {
                     if (!$p['process']->isRunning()) {
                         if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
-                            $encodedFiles[] = $p['mp4'];
+                            // $encodedFiles[] = $p['mp4'];
+                            $encodedFiles[] = ['file' => $p['mp4'], 'startTime' => $p['startTime']];
                         }
                         @unlink($p['raw']);
                         unset($processes[$key]);
@@ -396,7 +405,8 @@ XML;
         foreach ($processes as $p) {
             $p['process']->wait();
             if ($p['process']->isSuccessful() && file_exists($p['mp4'])) {
-                $encodedFiles[] = $p['mp4'];
+                // $encodedFiles[] = $p['mp4'];
+                $encodedFiles[] = ['file' => $p['mp4'], 'startTime' => $p['startTime']];
             }
             @unlink($p['raw']);
         }
@@ -412,7 +422,14 @@ XML;
         if (empty($encodedFiles)) return null;
 
         $listFile = "{$tmpDir}/list.txt";
-        file_put_contents($listFile, implode("\n", array_map(fn($f) => "file '{$f}'", $encodedFiles)));
+
+        $lines = array_map(
+            fn($f) => "file '{$f['file']}'",
+            $encodedFiles
+        );
+
+        file_put_contents($listFile, implode("\n", $lines));
+
         $finalFile = "{$tmpDir}/final_{$cameraKey}.mp4";
 
         $concat = new Process([
@@ -433,8 +450,12 @@ XML;
         $concat->setTimeout(0)->run();
 
         foreach ($encodedFiles as $f) {
-            if (is_file($f)) @unlink($f);
+            $filePath = $f['file'] ?? null;
+            if ($filePath && is_file($filePath)) {
+                @unlink($filePath);
+            }
         }
+
         @unlink($listFile);
 
         if (!$concat->isSuccessful() || !file_exists($finalFile) || filesize($finalFile) < 1024) {
@@ -444,173 +465,11 @@ XML;
             return null;
         }
 
-        Log::channel('camera-record')->info('[CONCAT OK]', ['file' => basename($finalFile), 'size' => filesize($finalFile)]);
-
-        return $finalFile;
-    }
-
-    // =========================================================
-    // TRIM COMMAND HELPERS
-    // =========================================================
-    private function buildTrimCommand(string $inputFile, string $outputFile, int $startSec, int $duration, bool $forceEncode): array
-    {
-        return $forceEncode
-            ? [
-                'ffmpeg',
-                '-y',
-                '-ss',
-                (string)$startSec,
-                '-i',
-                $inputFile,
-                '-t',
-                (string)$duration,
-                '-c:v',
-                'libx264',
-                '-preset',
-                'fast',
-                '-crf',
-                '23',
-                '-c:a',
-                'aac',
-                '-b:a',
-                '128k',
-                '-movflags',
-                '+faststart',
-                $outputFile
-            ]
-            : [
-                'ffmpeg',
-                '-y',
-                '-i',
-                $inputFile,
-                '-ss',
-                (string)$startSec,
-                '-t',
-                (string)$duration,
-                '-c',
-                'copy',
-                '-movflags',
-                '+faststart',
-                $outputFile
-            ];
-    }
-
-    // =========================================================
-    // EXTRACT URIS HELPERS
-    // =========================================================
-    private function extractUrisFromXml(\SimpleXMLElement $xml, int $startTs, int $endTs, int $tolerance = 60): array
-    {
-        $uris = [];
-        $coveredRanges = [];
-
-        foreach ($xml->matchList->searchMatchItem as $item) {
-            $segStart = strtotime((string)$item->timeSpan->startTime);
-            $segEnd = strtotime((string)$item->timeSpan->endTime);
-
-            $segStart -= $tolerance;
-            $segEnd += $tolerance;
-
-            $isOverlap = $segStart <= $endTs && $segEnd >= $startTs;
-            if (!$isOverlap) {
-                continue;
-            }
-
-            $uri = (string) $item->mediaSegmentDescriptor->playbackURI;
-
-            if (!$uri || $segEnd <= $startTs - $tolerance || $segStart >= $endTs + $tolerance) {
-                continue;
-            }
-
-            preg_match('/starttime=(\d{8}T\d{6})Z?/', $uri, $s);
-            preg_match('/endtime=(\d{8}T\d{6})Z?/', $uri, $e);
-
-            if (isset($s[1], $e[1])) {
-                $uriStart = max(\DateTime::createFromFormat('Ymd\THis', $s[1], new \DateTimeZone('UTC'))->getTimestamp(), $startTs);
-                $uriEnd = min(\DateTime::createFromFormat('Ymd\THis', $e[1], new \DateTimeZone('UTC'))->getTimestamp(), $endTs);
-
-                $uri = preg_replace('/starttime=\d{8}T\d{6}/', "starttime=" . gmdate('Ymd\THis', $uriStart), $uri);
-                $uri = preg_replace('/endtime=\d{8}T\d{6}/', "endtime=" . gmdate('Ymd\THis', $uriEnd), $uri);
-
-                $recordingDuration = $endTs - $startTs;
-                $uriCoverage = $uriEnd - $uriStart;
-                $coverageRatio = $uriCoverage / max($recordingDuration, 1);
-
-                $startDiff = abs($uriStart - $startTs);
-                $endDiff = abs($uriEnd - $endTs);
-                $totalDeviation = $startDiff + $endDiff;
-
-                $directUse = $coverageRatio >= 0.8;
-
-                $uris[] = [
-                    'uri' => $uri,
-                    'start' => $uriStart,
-                    'end' => $uriEnd,
-                    'coverageRatio' => $coverageRatio,
-                    'startDiff' => $startDiff,
-                    'endDiff' => $endDiff,
-                    'totalDeviation' => $totalDeviation,
-                    'directUse' => $directUse,
-                ];
-
-                $coveredRanges[] = [$uriStart, $uriEnd];
-
-                Log::channel('camera-record')->debug("[URI RANGE DEBUG]", [
-                    'start' => gmdate('Y-m-d H:i:s', $segStart),
-                    'end' => gmdate('Y-m-d H:i:s', $segEnd),
-                    'uriStart' => gmdate('Y-m-d H:i:s', $uriStart),
-                    'uriEnd' => gmdate('Y-m-d H:i:s', $uriEnd),
-                    'coverageRatio' => round($coverageRatio, 2),
-                    'totalDeviation' => $totalDeviation,
-                    'directUse' => $directUse
-                ]);
-            }
-        }
-
-        usort($uris, fn($a, $b) => $a['start'] <=> $b['start']);
-
-        $directCandidates = collect($uris)
-            ->filter(fn($u) => $u['coverageRatio'] >= 0.80)
-            ->sortBy([
-                ['totalDeviation', 'asc'],
-                ['coverageRatio', 'desc'],
-            ]);
-
-        if ($directCandidates->isNotEmpty()) {
-            $best = $directCandidates->first();
-
-            Log::channel('camera-record')->info("[URI SELECT] Best near-match URI chosen", [
-                'uri' => $best['uri'],
-                'start' => gmdate('Y-m-d H:i:s', $best['start']),
-                'end' => gmdate('Y-m-d H:i:s', $best['end']),
-                'coverageRatio' => round($best['coverageRatio'], 2),
-                'totalDeviation' => $best['totalDeviation'],
-            ]);
-
-            return [$best];
-        }
-
-        if (!empty($uris)) {
-            $sorted = collect($uris)
-                ->sortBy([
-                    ['startDiff', 'asc'],
-                    ['endDiff', 'asc'],
-                ])
-                ->values();
-
-            Log::channel('camera-record')->info("[URI SELECT] Fallback: sorted by nearest start", [
-                'request_start' => gmdate('Y-m-d H:i:s', $startTs),
-                'request_end' => gmdate('Y-m-d H:i:s', $endTs),
-                'uri_count' => count($sorted),
-            ]);
-
-            return $sorted->toArray();
-        }
-
-        Log::channel('camera-record')->warning("[URI SELECT] No URI returned from NVR", [
-            'request_start' => gmdate('Y-m-d H:i:s', $startTs),
-            'request_end' => gmdate('Y-m-d H:i:s', $endTs),
+        Log::channel('camera-record')->info('[CONCAT OK]', [
+            'file' => basename($finalFile),
+            'size' => filesize($finalFile)
         ]);
 
-        return [];
+        return $finalFile;
     }
 }
