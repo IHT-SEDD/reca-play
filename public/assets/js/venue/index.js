@@ -39,7 +39,7 @@ populateData = (search = "", reset = true) => {
                             <div class="flex items-center justify-center rounded-xl w-full p-2">
                                 ${
                                     venue.logo_path
-                                        ? `<img src="${venue.logo_path}" alt="${venue.name}" class="w-24 h-auto object-cover">`
+                                        ? `<img src="${venue.logo_path}" alt="${venue.name}" class="w-32 h-auto object-cover">`
                                         : `<img src="/assets/img/logos/reca-black.png" alt="Default logo venue" class="w-24 h-auto object-cover">`
                                 }
                             </div>
