@@ -31,7 +31,9 @@ populateDataDetail = (res) => {
     const venue = res.detailVenue;
     $("#venue_logo").attr(
         "src",
-        venue.logo_path ?? "/assets/img/logos/reca-black.png"
+        venue.logo_path
+            ? `/${venue.logo_path}`
+            : "/assets/img/logos/reca-black.png"
     );
     $("#venue_name").text(venue.name ?? "Venue name not found!");
     $("#venue_address").text(venue.address ?? "Venue address not found!");
@@ -68,25 +70,23 @@ populateFieldList = (search = "", reset = true) => {
 
             fields.forEach((field) => {
                 let card = `
-                <a href="/field/detail/${
-                    field.hashed_id
-                }" target="_blank" rel="noopener noreferrer">
-                    <div class="bg-white dark:bg-christmas-silver dark:border-transparent border border-white-edgar shadow-sm rounded-xl p-4 h-fit w-full">
-                        <div class="flex flex-col justify-start items-center gap-3 w-full text-center">
+                <a href="#">
+                    <div class="bg-white dark:bg-christmas-silver dark:border-transparent border border-white-edgar hover:border-hot-shot/40 hover:border-2 shadow-sm hover:shadow-md rounded-2xl p-4 h-full w-full">
+                        <div class="flex flex-col justify-between items-stretch gap-3 w-full text-center h-full px-4 pt-4">
                             <!-- Venue Logo -->
-                            <div class="flex items-center justify-center rounded-xl w-full p-2">
+                            <div class="flex items-center justify-center rounded-xl w-full h-24 px-3 py-2 overflow-hidden">
                                 ${
                                     field.pict_filename
-                                        ? `<img src="${field.pict_filename}" alt="${field.name}" class="w-24 h-auto object-cover">`
-                                        : `<img src="/assets/img/logos/reca-black.png" alt="Default logo venue" class="w-24 h-auto object-cover">`
+                                        ? `<img src="${field.pict_filename}" alt="${field.name}" class="w-fit h-full object-cover">`
+                                        : `<img src="/assets/img/logos/reca-black.png" alt="Default logo venue" class="w-fit h-full object-cover">`
                                 }
                             </div>
                             <!-- Venue Desc -->
-                            <div class="flex flex-col justify-center items-center w-full">
-                                <p class="text-lg font-semibold text-after-midnight">${
+                            <div class="flex flex-col justify-between items-center w-full h-20">
+                                <p class="text-lg font-semibold text-after-midnight text-center mb-1">${
                                     field.name
                                 }</p>
-                                <p class="text-xs font-medium text-carbon">${
+                                <p class="text-xs font-medium text-carbon text-center w-full" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${
                                     field.category.name
                                 }</p>
                             </div>

@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Record\RecordedVideo;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -9,18 +10,18 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ResetPasswordMail extends Mailable
+class RecordedVideoReadyMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-     public $url;
+    public RecordedVideo $video;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($url)
+    public function __construct(RecordedVideo $video)
     {
-        $this->url = $url;
+        $this->video = $video;
     }
 
     /**
@@ -29,7 +30,7 @@ class ResetPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Reset your password on Reca Play',
+            subject: 'Your video is ready on Reca Play',
         );
     }
 
@@ -38,10 +39,11 @@ class ResetPasswordMail extends Mailable
      */
     public function content(): Content
     {
-       return new Content(
-            markdown: 'emails.reset-password',
+        return new Content(
+            markdown: 'emails.video-ready',
             with: [
-                'url' => $this->url
+                'recording' => $this->video->recording,
+                'video' => $this->video,
             ]
         );
     }
