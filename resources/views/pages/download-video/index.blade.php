@@ -1,10 +1,10 @@
 <x-app-layout :pageTitle="'Download Video'">
  <div class="w-full mx-auto">
   <!-- Text Header :begin -->
-  <h1 class=" md:text-4xl text-2xl font-bold text-hot-shot">Download Video</h1>
+  <h1 class=" md:text-4xl text-2xl font-bold text-hot-shot pt-4 pb-6">Download Video</h1>
   <!-- Text Header :end -->
 
-  <div class="w-full flex justify-center items-center gap-4 pt-12">
+  <div class="w-full flex justify-center items-center gap-4">
    @include('pages.download-video.partial.add-form')
   </div>
  </div>
