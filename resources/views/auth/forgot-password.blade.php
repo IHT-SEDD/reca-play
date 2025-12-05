@@ -15,7 +15,7 @@
             <x-input-label for="email" :value="__('Email')" />
             <x-inputs.text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')"
                 required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+          <x-input-error-email :messages="$errors->first('email')" />
         </div>
 
         <div class="flex items-center justify-end mt-4">
