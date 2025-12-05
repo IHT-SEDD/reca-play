@@ -10,7 +10,7 @@
             <x-input-label for="email" :value="__('Email')" />
             <x-inputs.text-input id="email" class="block mt-1 w-full" type="email" name="email"
                 :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-error-email :messages="$errors->first('email')" class="mt-2" />
         </div>
 
         <!-- Password -->
@@ -18,7 +18,7 @@
             <x-input-label for="password" :value="__('Password')" />
             <x-inputs.text-input id="password" class="block mt-1 w-full" type="password" name="password" required
                 autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-input-error-email :messages="$errors->first('password')" class="mt-2" />
         </div>
 
         <!-- Confirm Password -->
@@ -28,7 +28,7 @@
             <x-inputs.text-input id="password_confirmation" class="block mt-1 w-full" type="password"
                 name="password_confirmation" required autocomplete="new-password" />
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <x-input-error-email :messages="$errors->first('password_confirmation')" class="mt-2" />
         </div>
 
         <div class="flex items-center justify-end mt-4">

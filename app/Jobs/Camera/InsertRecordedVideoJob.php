@@ -13,6 +13,7 @@ use App\Models\Record\RecordedVideo;
 use App\Models\Record\Recording;
 
 use App\Enums\RecordingStatus;
+use App\Jobs\SendRecordedVideoEmailJob;
 use Symfony\Component\Process\Process;
 
 class InsertRecordedVideoJob implements ShouldQueue
@@ -92,7 +93,7 @@ class InsertRecordedVideoJob implements ShouldQueue
             ]);
         }
 
-        RecordedVideo::create([
+        $recordedVideo = RecordedVideo::create([
             'recording_id' => $this->recordingId,
             'video_path' => str_replace(storage_path('app/public/'), '', $this->videoPath),
             'video_filename' => $this->videoFilename,
@@ -103,6 +104,27 @@ class InsertRecordedVideoJob implements ShouldQueue
         ]);
 
         $recording = Recording::find($this->recordingId);
+
+        if ($recording && $recording->user_id !== null && $recording->user_id !== 0) {
+            $videosCount = RecordedVideo::where('recording_id', $this->recordingId)->lockForUpdate()->count();
+
+            if ($videosCount === 1) {
+                SendRecordedVideoEmailJob::dispatch($recordedVideo->id)
+                    ->onQueue('camera-record-video-send-email');
+
+                Log::channel('camera-job')->info("[EMAIL] Sending email to user...", [
+                    'recording_id' => $this->recordingId,
+                    'user_id' => $recording->user_id
+                ]);
+            } else {
+                Log::channel('camera-job')->info("[EMAIL SKIPPED] Email has been sent to user", [
+                    'recording_id' => $this->recordingId,
+                    'videos_total' => $videosCount,
+                    'user_id' => $recording->user_id
+                ]);
+            }
+        }
+
         if ($recording && $recording->status !== RecordingStatus::Done) {
             $recording->update(['status' => RecordingStatus::Done]);
 

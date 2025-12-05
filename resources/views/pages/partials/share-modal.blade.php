@@ -1,17 +1,6 @@
 <dialog id="shareModal" class="modal modal-bottom sm:modal-middle">
  <div class="modal-box">
   <h3 class="text-lg font-bold mb-2">Share Video</h3>
-
-  {{--
-  <!-- Share to social media -->
-  <div class="flex items-start justify-start gap-2 w-full py-4">
-   <!-- Instagram -->
-   <a href="https://instagram.com/username" target="_blank" rel="noopener noreferrer" class="tooltip tooltip-right"
-    data-tip="Share to instagram">
-    <img src="{{ asset('assets/icons/instagram-colored.svg') }}" alt="Instagram Logo" class="w-12 h-12 cursor-pointer">
-   </a>
-  </div> --}}
-
   <!-- Share URL -->
   <input type="text" id="shareLinkInput" readonly class="w-full border rounded p-2 text-sm mb-3" />
 

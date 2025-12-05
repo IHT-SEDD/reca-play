@@ -54,10 +54,10 @@
                 <x-dropdown.dropdown-flowbite :trigger="Auth::user()->name ?? 'Welcome, Guest'" iconTrigger="user">
                     <li class="w-full">
                         @auth
-                        {{-- <a href="{{ url('/profile/edit') }}"
+                        {{-- <a href="{{ url('/my-profile') }}"
                             class="rounded-lg px-4 py-2 hover:bg-white-owl dark:hover:bg-orochimaru hover:text-hot-shot dark:hover:text-eerie-black inline-flex justify-start items-center w-full">
-                            <i data-lucide="user-round-pen" class="w-4 h-auto me-2"></i>
-                            Profile
+                            <i data-lucide="user-cog" class="w-4 h-auto me-2"></i>
+                            My Profile
                         </a> --}}
                         <form method="POST" action="{{ url('/logout') }}" class="w-full">
                             @csrf
@@ -161,8 +161,8 @@
             <div class="mt-3 space-y-1">
                 <!-- Options in auth mode only :begin -->
                 @auth
-                {{-- <x-responsive-nav-link :href="url('/profile/edit')" :active="request()->routeIs('profile.*')">
-                    {{ __('Profile') }}
+                {{-- <x-responsive-nav-link :href="url('/profile')">
+                    {{ __('My Profile') }}
                 </x-responsive-nav-link> --}}
 
                 <!-- Authentication -->
