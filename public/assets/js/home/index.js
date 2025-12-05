@@ -37,21 +37,36 @@ fetchVideo = () => {
 renderList = (videos) => {
     listContainer.innerHTML = "";
 
-    if (!videos || videos.length === 0) {
+    let maxVideos = 5;
+
+    if (window.innerWidth >= 1024) maxVideos = 10;
+    else if (window.innerWidth >= 768) maxVideos = 8;
+
+    const totalVideos = videos.reduce(
+        (acc, v) => acc + v.recorded_video.length,
+        0
+    );
+
+    const flatList = videos.flatMap((v) =>
+        v.recorded_video.map((video) => ({ videoItem: v, video }))
+    );
+
+    const limitedList = flatList.slice(0, maxVideos);
+
+    if (flatList.length === 0) {
         listContainer.innerHTML = `
             <div class="col-span-5 flex items-center justify-center h-64">
-                <p class="text-center text-sm text-carbon font-medium dark:text-white">
+                <p class="text-center text-lg text-carbon font-semibold font-mono dark:text-white">
                     No videos found.
                 </p>
             </div>`;
         return;
     }
 
-    videos.forEach((videoItem) => {
-        videoItem.recorded_video.forEach((video) => {
-            listContainer.insertAdjacentHTML(
-                "beforeend",
-                `
+    limitedList.forEach(({ videoItem, video }) => {
+        listContainer.insertAdjacentHTML(
+            "beforeend",
+            `
                 <div class="w-full">
                     <!-- Thumbnail -->
                     <a href="/video/watch/${
@@ -80,8 +95,8 @@ renderList = (videos) => {
                         </p>
                         <p class="text-xs font-medium tracking-wide text-color-default">
                             ${videoItem.field?.name ?? "-"} at ${
-                    videoItem.field?.venue?.name ?? "-"
-                }
+                videoItem.field?.venue?.name ?? "-"
+            }
                         </p>
                     </div>
 
@@ -95,12 +110,23 @@ renderList = (videos) => {
                     </div>
                 </div>
                 `
-            );
-        });
+        );
     });
 
     // Render lucide icons
     window.lucide.createIcons({ icons: window.lucide.icons });
+
+    const seeMoreBtn = document.getElementById("seeMoreBtn");
+    if (flatList.length > maxVideos) {
+        seeMoreBtn.classList.remove("hidden");
+
+        seeMoreBtn.onclick = () => {
+            renderFullVideoList(flatList);
+            seeMoreBtn.classList.add("hidden");
+        };
+    } else {
+        seeMoreBtn.classList.add("hidden");
+    }
 };
 
 // ==== Format Date ==== //

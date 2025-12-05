@@ -148,7 +148,6 @@ class ProcessDownloadVideo implements ShouldQueue
         cache()->put("download_status_{$this->jobId}", [
             'status' => 'success',
             'file_name' => $fileName,
-            'download_url' => route('download-video.file', $fileName)
         ], 3600);
     }
 }

@@ -24,19 +24,45 @@ function videoPlayer() {
     const ownerEl = $("#owner_video");
     const dateEl = $("#date_created");
 
-    console.log("Memuat data video...");
+    const placeholders = [
+        "#video_player_placeholder",
+        "#video_name_placeholder",
+        "#share_btn_placeholder",
+        "#like_btn_placeholder",
+        "#dislike_btn_placeholder",
+        "#owner_video_placeholder",
+        "#owner_follower_placeholder",
+        "#follow_button_placeholder",
+        "#date_created_placeholder",
+    ];
+
+    const realElements = [
+        "#video_player",
+        "#video_name",
+        ".share-btn",
+        ".like-btn",
+        ".dislike-btn",
+        "#owner_video",
+        "#owner_follower",
+        ".follow-btn",
+        "#date_created",
+    ];
+
+    placeholders.forEach((sel) => $(sel).removeClass("hidden"));
+    realElements.forEach((sel) => $(sel).addClass("hidden"));
 
     $.ajax({
         url: `/video/watch/data/${videoEncrypt}`,
         method: "GET",
         dataType: "json",
         success: function (data) {
-            console.log("Data video diterima:", data);
-
             if (!data.video_path) {
                 console.error("video_path kosong atau tidak ditemukan.");
                 return;
             }
+
+            placeholders.forEach((sel) => $(sel).addClass("hidden"));
+            realElements.forEach((sel) => $(sel).removeClass("hidden"));
 
             const videoSrc = `/storage/${data.video_path}`;
             sourceEl.attr("src", videoSrc);
@@ -44,21 +70,52 @@ function videoPlayer() {
 
             videoNameEl.text(data.recording?.video_name ?? "Unknown Title");
             ownerEl.text(data.recording?.user?.name ?? "Unknown Owner");
-            dateEl.text(
-                `${
-                    data.recording?.start_time
-                        ? dayjs(data.recording.start_time).format(
-                              "YYYY-MM-DD HH:mm:ss"
-                          )
-                        : "Unknown Date"
-                } - ${
-                    data.recording?.end_time
-                        ? dayjs(data.recording.end_time).format(
-                              "YYYY-MM-DD HH:mm:ss"
-                          )
-                        : "Unknown Date"
-                }`
-            );
+            ownerEl.attr("data-id", data.recording?.user?.id);
+
+            const viewerId = window.authUserId;
+            const ownerId = data.recording?.user?.id;
+
+            if (viewerId && ownerId && viewerId === ownerId) {
+                $(".follow-btn")
+                    .addClass("opacity-50 cursor-not-allowed")
+                    .prop("disabled", true)
+                    .attr("data-tip", "You cannot follow yourself");
+                $(".like-btn")
+                    .addClass("opacity-50 cursor-not-allowed")
+                    .prop("disabled", true)
+                    .attr("data-tip", "Cannot like your own video");
+                $(".dislike-btn")
+                    .addClass("opacity-50 cursor-not-allowed")
+                    .prop("disabled", true)
+                    .attr("data-tip", "Cannot dislike your own video");
+            }
+
+            const start = dayjs(data.recording?.start_time);
+            const end = dayjs(data.recording?.end_time);
+
+            if (!start.isValid() || !end.isValid()) {
+                dateEl.text("Recorded at Unknown Date");
+                return;
+            }
+
+            let output = "";
+
+            if (start.isSame(end, "day")) {
+                output = `Recorded at ${start.format(
+                    "DD MMM YYYY"
+                )}, at ${start.format("HH:mm")} to ${end.format("HH:mm")}`;
+            } else if (
+                start.month() === end.month() &&
+                start.year() === end.year()
+            ) {
+                output = `Recorded at ${start.format("DD")}-${end.format(
+                    "DD"
+                )} ${start.format("MMM YYYY")}, ${start.format(
+                    "HH:mm"
+                )} to ${end.format("HH:mm")}`;
+            }
+
+            dateEl.text(output);
 
             $(".share-btn").attr("data-id", data.id);
 
@@ -147,6 +204,52 @@ document.addEventListener("click", (e) => {
     if (e.target.closest(".share-btn")) {
         const videoId = e.target.closest(".share-btn").dataset.id;
         shareVideo(videoId);
+    }
+    if (e.target.closest(".like-btn")) {
+        const videoId = e.target.closest(".like-btn").dataset.id;
+        $.ajax({
+            url: "/video/watch/like",
+            method: "POST",
+            data: { id: videoId },
+            success: function (res) {
+                console.log(res);
+                notyf.success("You liked this video!");
+            },
+            error: function () {
+                notyf.error("Failed to like the video");
+            },
+        });
+    }
+    if (e.target.closest(".dislike-btn")) {
+        const videoId = e.target.closest(".dislike-btn").dataset.id;
+        $.ajax({
+            url: "/video/watch/dislike",
+            method: "POST",
+            data: { id: videoId },
+            success: function (res) {
+                console.log(res);
+                notyf.success("You disliked this video!");
+            },
+            error: function () {
+                notyf.error("Failed to dislike the video");
+            },
+        });
+    }
+    if (e.target.closest(".follow-btn")) {
+        const ownerId = $("#owner_video").data("id");
+        $.ajax({
+            url: "/video/watch/follow",
+            method: "POST",
+            data: { id: ownerId },
+            success: function (res) {
+                console.log(res);
+                $("#owner_follower").text(`${res.followers} Followers`);
+                notyf.success("You followed this user!");
+            },
+            error: function () {
+                notyf.error("Failed to follow the user");
+            },
+        });
     }
 });
 

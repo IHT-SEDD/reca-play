@@ -261,10 +261,10 @@
                     {{ __('User Management') }}
                 </x-nav-link>
 
-                <!-- Download Video -->
-                <x-nav-link class="text-sm" :href="url('/download-video')"
-                    :active="request()->routeIs('download-video.*')">
-                    {{ __('Download Video') }}
+                <!-- Get Video -->
+                <x-nav-link class="text-sm" :href="url('/get-video')"
+                    :active="request()->routeIs('get-video.*')">
+                    {{ __('Get Video') }}
                 </x-nav-link>
             </div>
 

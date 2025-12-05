@@ -5,7 +5,10 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessDownloadVideo;
 use App\Services\Camera\DownloadVideoService;
+use App\Services\Camera\RecordedSearchService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
@@ -14,7 +17,7 @@ class DownloadVideoController extends Controller
 {
     public function index()
     {
-        return view('pages.download-video.index');
+        return view('pages.get-video.index');
     }
 
     public function addData(Request $request)
@@ -73,6 +76,75 @@ class DownloadVideoController extends Controller
             'Content-Type' => 'video/mp4',
             'Content-Length' => filesize($filePath),
         ]);
+    }
+
+    public function searchVideo(Request $request)
+    {
+        $validated = $request->validate([
+            'host' => 'required|string',
+            'username' => 'required|string',
+            'password' => 'required|string',
+            'channel' => 'required|integer',
+            'start_time' => 'required|string',
+            'end_time' => 'required|string',
+        ]);
+
+        $user = $validated['username'];
+        $pass = $validated['password'];
+
+        $startUtc = Carbon::parse($validated['start_time'])->format('Y-m-d\TH:i:s\Z');
+        $endUtc = Carbon::parse($validated['end_time'])->format('Y-m-d\TH:i:s\Z');
+
+        $xmlPayload = $this->buildSearchXmlPayload(
+            $validated['channel'],
+            $startUtc,
+            $endUtc
+        );
+
+        try {
+            $response = Http::withOptions([
+                'verify'  => false,
+                'timeout' => 30,
+                'auth' => [$user, $pass, 'digest'],
+            ])->withHeaders([
+                'Content-Type' => 'application/xml',
+            ])->withBody($xmlPayload, 'application/xml')
+                ->post("https://{$validated['host']}/ISAPI/ContentMgmt/search");
+        } catch (\Exception $e) {
+            return response("Connection failed: " . $e->getMessage(), 500)
+                ->header('Content-Type', 'text/plain');
+        }
+
+        if (!$response->ok()) {
+            return response($response->body(), $response->status())
+                ->header('Content-Type', 'application/xml');
+        }
+
+        return response($response->body(), 200)
+            ->header('Content-Type', 'application/xml');
+    }
+
+    private function buildSearchXmlPayload(string $channel, string $start_time, string $end_time): string
+    {
+        $searchId = strtoupper(Str::uuid()->toString());
+
+        return <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<CMSearchDescription version="1.0" xmlns="http://www.hikvision.com/ver20/XMLSchema">
+    <searchID>{$searchId}</searchID>
+    <trackIDList>
+        <trackID>{$channel}</trackID>
+    </trackIDList>
+    <timeSpanList>
+        <timeSpan>
+            <startTime>{$start_time}</startTime>
+            <endTime>{$end_time}</endTime>
+        </timeSpan>
+    </timeSpanList>
+    <maxResults>40</maxResults>
+    <searchResultPosition>0</searchResultPosition>
+</CMSearchDescription>
+XML;
     }
 
     public function status($jobId)
