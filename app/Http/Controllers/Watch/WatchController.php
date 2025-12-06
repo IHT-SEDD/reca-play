@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Watch;
 
 use App\Http\Controllers\Controller;
 use App\Models\Record\RecordedVideo;
+use App\Models\User\UserFollow;
+use App\Models\Video\VideoUserLike;
 use App\Services\Support\ResponseHelperService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,14 +86,46 @@ class WatchController extends Controller
 
         DB::beginTransaction();
         try {
-            $video->likes = ($video->likes ?? 0) + 1;
-            $video->save();
+            $existing = VideoUserLike::where('user_id', $authUser->id)
+                ->where('recorded_video_id', $video->id)
+                ->first();
+
+            if ($existing && $existing->type === 'like') {
+                $existing->delete();
+                $video->decrement('likes');
+
+                DB::commit();
+                return $this->responseHelperService->successResponse(
+                    'Like removed!',
+                    ['likes' => $video->likes, 'status_like_dislike' => 'none']
+                );
+            }
+
+            if ($existing && $existing->type === 'dislike') {
+                $existing->update(['type' => 'like']);
+                $video->increment('likes');
+                $video->decrement('dislikes');
+
+                DB::commit();
+                return $this->responseHelperService->successResponse(
+                    'Switched to like!',
+                    ['likes' => $video->likes, 'dislikes' => $video->dislikes, 'status_like_dislike' => 'like']
+                );
+            }
+
+            VideoUserLike::create([
+                'user_id' => $authUser->id,
+                'recorded_video_id' => $video->id,
+                'type' => 'like'
+            ]);
+
+            $video->increment('likes');
 
             DB::commit();
 
             return $this->responseHelperService->successResponse(
-                message: 'Video liked successfully!',
-                data: ['likes' => $video->likes]
+                'Video liked!',
+                ['likes' => $video->likes, 'status_like_dislike' => 'like']
             );
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -135,14 +169,46 @@ class WatchController extends Controller
 
         DB::beginTransaction();
         try {
-            $video->dislikes = ($video->dislikes ?? 0) + 1;
-            $video->save();
+            $existing = VideoUserLike::where('user_id', $authUser->id)
+                ->where('recorded_video_id', $video->id)
+                ->first();
+
+            if ($existing && $existing->type === 'dislike') {
+                $existing->delete();
+                $video->decrement('dislikes');
+
+                DB::commit();
+                return $this->responseHelperService->successResponse(
+                    'Dislike removed!',
+                    ['dislikes' => $video->dislikes, 'status_like_dislike' => 'none']
+                );
+            }
+
+            if ($existing && $existing->type === 'like') {
+                $existing->update(['type' => 'dislike']);
+                $video->increment('dislikes');
+                $video->decrement('likes');
+
+                DB::commit();
+                return $this->responseHelperService->successResponse(
+                    'Switched to dislike!',
+                    ['likes' => $video->likes, 'dislikes' => $video->dislikes, 'status_like_dislike' => 'dislike']
+                );
+            }
+
+            VideoUserLike::create([
+                'user_id' => $authUser->id,
+                'recorded_video_id' => $video->id,
+                'type' => 'dislike'
+            ]);
+
+            $video->increment('dislikes');
 
             DB::commit();
 
             return $this->responseHelperService->successResponse(
-                message: 'Video disliked successfully!',
-                data: ['dislikes' => $video->dislikes]
+                'Video disliked!',
+                ['dislikes' => $video->dislikes, 'status_like_dislike' => 'dislike']
             );
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -176,13 +242,6 @@ class WatchController extends Controller
             );
         }
 
-        if (!$userToFollow) {
-            return $this->responseHelperService->errorResponse(
-                'User not found!',
-                404
-            );
-        }
-
         if ($userToFollow->id === $authUser->id) {
             return $this->responseHelperService->errorResponse(
                 'You cannot follow yourself!',
@@ -192,14 +251,33 @@ class WatchController extends Controller
 
         DB::beginTransaction();
         try {
-            $userToFollow->followers = ($userToFollow->followers ?? 0) + 1;
-            $userToFollow->save();
+            $existing = UserFollow::where('follower_id', $authUser->id)
+                ->where('following_id', $userToFollow->id)
+                ->first();
+
+            if ($existing) {
+                $existing->delete();
+                $userToFollow->decrement('followers');
+
+                DB::commit();
+                return $this->responseHelperService->successResponse(
+                    'Unfollowed!',
+                    ['followers' => $userToFollow->followers, 'status_follow' => 'unfollow']
+                );
+            }
+
+            UserFollow::create([
+                'follower_id' => $authUser->id,
+                'following_id' => $userToFollow->id
+            ]);
+
+            $userToFollow->increment('followers');
 
             DB::commit();
 
             return $this->responseHelperService->successResponse(
-                message: 'You followed this user!',
-                data: ['followers' => $userToFollow->followers]
+                'Followed!',
+                ['followers' => $userToFollow->followers, 'status_follow' => 'follow']
             );
         } catch (\Throwable $e) {
             DB::rollBack();

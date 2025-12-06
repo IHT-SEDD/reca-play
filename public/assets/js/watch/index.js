@@ -80,15 +80,15 @@ function videoPlayer() {
                     .addClass("opacity-50 cursor-not-allowed")
                     .prop("disabled", true)
                     .attr("data-tip", "You cannot follow yourself");
-                $(".like-btn")
+                $(".like-btn, .dislike-btn")
                     .addClass("opacity-50 cursor-not-allowed")
-                    .prop("disabled", true)
-                    .attr("data-tip", "Cannot like your own video");
-                $(".dislike-btn")
-                    .addClass("opacity-50 cursor-not-allowed")
-                    .prop("disabled", true)
-                    .attr("data-tip", "Cannot dislike your own video");
+                    .prop("disabled", true);
             }
+
+            $("#owner_follower").text(`${data.follower_total} Followers`);
+
+            $(".like-btn").attr("data-id", data.id);
+            $(".dislike-btn").attr("data-id", data.id);
 
             const start = dayjs(data.recording?.start_time);
             const end = dayjs(data.recording?.end_time);
