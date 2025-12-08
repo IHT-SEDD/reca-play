@@ -3,6 +3,7 @@
 namespace App\Models\Record;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Vinkla\Hashids\Facades\Hashids;
 
 class RecordedVideo extends Model
@@ -13,6 +14,11 @@ class RecordedVideo extends Model
     public function recording()
     {
         return $this->belongsTo(Recording::class);
+    }
+
+    public function videoUserLike(): HasMany
+    {
+        return $this->hasMany(\App\Models\Video\VideoUserLike::class, 'recorded_video_id');
     }
 
     public function getHashedIdAttribute()

@@ -40,6 +40,16 @@
    id="latestVideoList">
   </div>
   <!-- Latest Videos :end -->
+
+  <!-- See more video btn :begin -->
+  <div class="w-full flex justify-center mt-6">
+   <button id="seeMoreBtn" class="hidden inline-flex items-center justify-center px-4 py-3
+    bg-hot-shot/85 border border-transparent rounded-xl text-button-default hover:bg-hot-shot
+    focus:outline-none transition ease-in-out duration-150">
+    See More
+   </button>
+  </div>
+  <!-- See more video btn :end -->
  </div>
 
  @include('pages.partials.share-modal')

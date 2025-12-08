@@ -102,6 +102,7 @@ formRequestInit = () => {
                 let actionUrl = $form.attr("action");
                 let formData = new FormData(this);
                 let targetTable = $form.data("datatable");
+                let resultWrapper = $form.data("result-wrapper");
 
                 showLoading();
 
@@ -116,12 +117,34 @@ formRequestInit = () => {
                             "X-CSRF-TOKEN": $form
                                 .find('input[name="_token"]')
                                 .val(),
-                            Accept: "application/json",
+                            Accept: "*/*",
                         },
                         success: function (result) {
                             hideLoading();
 
                             setTimeout(() => {
+                                const contentType =
+                                    xhr.getResponseHeader("Content-Type");
+
+                                if (
+                                    contentType &&
+                                    contentType.includes("application/xml")
+                                ) {
+                                    notyf.success("Success");
+                                    if (resultWrapper) {
+                                        $(resultWrapper).text(result);
+                                    }
+                                    resetForm($form);
+                                }
+
+                                if (typeof result === "string") {
+                                    notyf.success("Success");
+                                    if (resultWrapper) {
+                                        $(resultWrapper).text(result);
+                                    }
+                                    resetForm($form);
+                                }
+
                                 if (result.status === "success") {
                                     notyf.success(result.message);
                                     resetForm($form);
@@ -158,6 +181,26 @@ formRequestInit = () => {
                             hideLoading();
 
                             setTimeout(() => {
+                                const contentType =
+                                    xhr.getResponseHeader("Content-Type");
+
+                                if (
+                                    contentType &&
+                                    contentType.includes("application/xml")
+                                ) {
+                                    if (resultWrapper) {
+                                        $(resultWrapper).text(xhr.responseText);
+                                    }
+                                    resetForm($form);
+                                }
+
+                                if (typeof xhr.responseText === "string") {
+                                    if (resultWrapper) {
+                                        $(resultWrapper).text(xhr.responseText);
+                                    }
+                                    resetForm($form);
+                                }
+
                                 if (xhr.status === 422) {
                                     showValidationErrors(
                                         $form,
@@ -198,22 +241,24 @@ formRequestInit = () => {
                 let formData = new FormData(this);
                 let targetTable = $form.data("datatable");
 
-            $.ajax({
-                url: actionUrl,
-                method: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    "X-CSRF-TOKEN": $form.find('input[name="_token"]').val(),
-                },
-                success: function (result) {
-                    if (result.status === "success") {
-                        notyf.success(result.message);
+                $.ajax({
+                    url: actionUrl,
+                    method: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        "X-CSRF-TOKEN": $form
+                            .find('input[name="_token"]')
+                            .val(),
+                    },
+                    success: function (result) {
+                        if (result.status === "success") {
+                            notyf.success(result.message);
 
-                          resetForm($form);
+                            resetForm($form);
 
-                          $('#modal_master').get(0).close();
+                            $("#modal_master").get(0).close();
 
                             // Refresh DataTable
                             if (

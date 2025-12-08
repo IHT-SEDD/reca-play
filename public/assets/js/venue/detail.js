@@ -76,8 +76,8 @@ populateFieldList = (search = "", reset = true) => {
                             <!-- Venue Logo -->
                             <div class="flex items-center justify-center rounded-xl w-full h-24 px-3 py-2 overflow-hidden">
                                 ${
-                                    field.pict_filename
-                                        ? `<img src="${field.pict_filename}" alt="${field.name}" class="w-fit h-full object-cover">`
+                                    field.pict_path
+                                        ? `<img src="${field.pict_path}" alt="${field.name}" class="w-fit h-full object-cover">`
                                         : `<img src="/assets/img/logos/reca-black.png" alt="Default logo venue" class="w-fit h-full object-cover">`
                                 }
                             </div>
