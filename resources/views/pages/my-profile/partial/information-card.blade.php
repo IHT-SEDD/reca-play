@@ -11,7 +11,7 @@
    <i data-lucide="mail" class="w-4 h-auto me-2 text-adhesion"></i>
    <span class="text-adhesion text-sm font-medium">Email</span>
   </div>
-  <span class="text-adhesion text-sm font-medium">youremail@mail.com</span>
+  <span class="text-adhesion text-sm font-medium account-email"></span>
  </div>
 
  <div class="w-full flex items-center justify-between">
@@ -19,7 +19,7 @@
    <i data-lucide="phone" class="w-4 h-auto me-2 text-adhesion"></i>
    <span class="text-adhesion text-sm font-medium">Phone Number</span>
   </div>
-  <span class="text-adhesion text-sm font-medium">+6283531***</span>
+  <span class="text-adhesion text-sm font-medium account-phone"></span>
  </div>
 
  <div class="w-full flex items-center justify-between">
