@@ -215,6 +215,7 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/user-data', 'userData')->name('user-data');
             Route::post('/{userId}/edit', 'editUser')->name('user-edit');
+            Route::post('/{userId}/upload-photo', 'uploadPhoto');
         });
 
         /*
