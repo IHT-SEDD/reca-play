@@ -44,14 +44,35 @@ class WatchController extends Controller
             return response()->json(['error' => 'Video not found'], 404);
         }
 
-        $video = RecordedVideo::with(['recording.user'])
+        $authUser = Auth::user();
+
+        $video = RecordedVideo::with(['recording.user', 'videoUserLike'])
             ->find($videoId);
 
         if (!$video) {
             return response()->json(['error' => 'Video not found'], 404);
         }
 
-        return response()->json($video);
+        $status = null;
+        if ($authUser) {
+            $likeData = VideoUserLike::where('user_id', $authUser->id)
+                ->where('recorded_video_id', $video->id)
+                ->first();
+
+            if ($likeData) {
+                $status = $likeData->type;
+            }
+        }
+
+        return $this->responseHelperService->successResponse(
+            'Video successfully retrieved!',
+            [
+                'video' => $video,
+                'status_like_dislike' => $status,
+                'likes' => $video->likes,
+                'dislikes' => $video->dislikes,
+            ]
+        );
     }
 
     // ============================================================

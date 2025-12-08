@@ -1,13 +1,16 @@
-let shareVideo, showShareModal;
+let shareVideo, showShareModal, populateDataVideo;
 
-const pathParts = window.location.pathname.split("/");
-const videoEncrypt = pathParts[pathParts.length - 1];
-
-console.log("Inisialisasi Watch Page:", videoEncrypt);
-
+const videoEncrypt = window.location.pathname.split("/").pop();
 const modal = document.getElementById("shareModal");
 const input = document.getElementById("shareLinkInput");
 const copyBtn = document.getElementById("copyShareLink");
+
+const videoEl = $("#video_player");
+const sourceEl = videoEl.find("source");
+
+const videoNameEl = $("#video_name");
+const ownerEl = $("#owner_video");
+const dateEl = $("#date_created");
 
 $.ajaxSetup({
     headers: {
@@ -17,13 +20,31 @@ $.ajaxSetup({
     },
 });
 
-function videoPlayer() {
-    const videoEl = $("#video_player");
-    const sourceEl = videoEl.find("source");
-    const videoNameEl = $("#video_name");
-    const ownerEl = $("#owner_video");
-    const dateEl = $("#date_created");
+/* ---------------------------------------------
+ * UTILITIES
+---------------------------------------------- */
+const toggleState = (btn, disable = false) => {
+    btn.prop("disabled", disable);
+    btn.toggleClass("opacity-50 cursor-not-allowed", disable);
+};
 
+const setFollowBtn = (status_follow) => {
+    const btn = $(".follow-btn");
+    const text = $("#follow_btn_text");
+
+    if (status_follow === "follow") {
+        text.text("Followed");
+        btn.attr("data-tip", "Unfollow this user");
+    } else {
+        text.text("Follow");
+        btn.attr("data-tip", "Follow this user");
+    }
+};
+
+/* ---------------------------------------------
+ * MAIN LOADER
+---------------------------------------------- */
+function videoPlayer() {
     const placeholders = [
         "#video_player_placeholder",
         "#video_name_placeholder",
@@ -34,9 +55,10 @@ function videoPlayer() {
         "#owner_follower_placeholder",
         "#follow_button_placeholder",
         "#date_created_placeholder",
+        "#download_btn_placeholder",
     ];
 
-    const realElements = [
+    const real = [
         "#video_player",
         "#video_name",
         ".share-btn",
@@ -45,214 +67,255 @@ function videoPlayer() {
         "#owner_video",
         "#owner_follower",
         ".follow-btn",
+        ".download-btn",
         "#date_created",
     ];
 
-    placeholders.forEach((sel) => $(sel).removeClass("hidden"));
-    realElements.forEach((sel) => $(sel).addClass("hidden"));
+    placeholders.forEach((e) => $(e).removeClass("hidden"));
+    real.forEach((e) => $(e).addClass("hidden"));
 
-    $.ajax({
-        url: `/video/watch/data/${videoEncrypt}`,
-        method: "GET",
-        dataType: "json",
-        success: function (data) {
-            if (!data.video_path) {
-                console.error("video_path kosong atau tidak ditemukan.");
-                return;
-            }
+    $.getJSON(`/video/watch/data/${videoEncrypt}`)
+        .done((res) => {
+            placeholders.forEach((e) => $(e).addClass("hidden"));
+            real.forEach((e) => $(e).removeClass("hidden"));
+            populateDataVideo(res.video);
+        })
+        .fail((xhr) => {
+            console.error("Gagal mengambil data video:", xhr.responseText);
+        });
 
-            placeholders.forEach((sel) => $(sel).addClass("hidden"));
-            realElements.forEach((sel) => $(sel).removeClass("hidden"));
-
-            const videoSrc = `/storage/${data.video_path}`;
-            sourceEl.attr("src", videoSrc);
-            videoEl[0].load();
-
-            videoNameEl.text(data.recording?.video_name ?? "Unknown Title");
-            ownerEl.text(data.recording?.user?.name ?? "Unknown Owner");
-            ownerEl.attr("data-id", data.recording?.user?.id);
-
-            const viewerId = window.authUserId;
-            const ownerId = data.recording?.user?.id;
-
-            if (viewerId && ownerId && viewerId === ownerId) {
-                $(".follow-btn")
-                    .addClass("opacity-50 cursor-not-allowed")
-                    .prop("disabled", true)
-                    .attr("data-tip", "You cannot follow yourself");
-                $(".like-btn, .dislike-btn")
-                    .addClass("opacity-50 cursor-not-allowed")
-                    .prop("disabled", true);
-            }
-
-            $("#owner_follower").text(`${data.follower_total} Followers`);
-
-            $(".like-btn").attr("data-id", data.id);
-            $(".dislike-btn").attr("data-id", data.id);
-
-            const start = dayjs(data.recording?.start_time);
-            const end = dayjs(data.recording?.end_time);
-
-            if (!start.isValid() || !end.isValid()) {
-                dateEl.text("Recorded at Unknown Date");
-                return;
-            }
-
-            let output = "";
-
-            if (start.isSame(end, "day")) {
-                output = `Recorded at ${start.format(
-                    "DD MMM YYYY"
-                )}, at ${start.format("HH:mm")} to ${end.format("HH:mm")}`;
-            } else if (
-                start.month() === end.month() &&
-                start.year() === end.year()
-            ) {
-                output = `Recorded at ${start.format("DD")}-${end.format(
-                    "DD"
-                )} ${start.format("MMM YYYY")}, ${start.format(
-                    "HH:mm"
-                )} to ${end.format("HH:mm")}`;
-            }
-
-            dateEl.text(output);
-
-            $(".share-btn").attr("data-id", data.id);
-
-            console.log("Video siap diputar:", videoSrc);
-        },
-        error: function (xhr, status, error) {
-            console.error("Gagal mengambil data video:", {
-                status: status,
-                error: error,
-                response: xhr.responseText,
-            });
-        },
-    });
-
-    videoEl.on("loadeddata", function () {
-        console.log("Video berhasil dimuat dan siap diputar.");
-    });
-
-    videoEl.on("error", function (e) {
-        const video = e.target;
+    videoEl.on("loadeddata", () => console.log("Video siap dimainkan"));
+    videoEl.on("error", (e) => {
+        const v = e.target;
         console.error("Video gagal dimuat:", {
-            src: video.currentSrc || video.src,
-            networkState: video.networkState,
-            error: video.error
-                ? {
-                      code: video.error.code,
-                      message: video.error.message || "Unknown media error",
-                  }
-                : "No media error info",
+            src: v.currentSrc,
+            networkState: v.networkState,
+            error: v.error,
         });
     });
 }
 
-// ==== Share Video ==== //
+/* ---------------------------------------------
+ * POPULATE DATA
+---------------------------------------------- */
+populateDataVideo = (data) => {
+    if (!data.video_path) return console.error("Video not found");
+
+    const start = dayjs(data.recording?.start_time);
+    const end = dayjs(data.recording?.end_time);
+    const userLikes = data.video_user_like;
+    const authId = Number(window.authUserId);
+    const userFollow = data.recording?.user?.user_followers;
+
+    // load video
+    sourceEl.attr("src", `/storage/${data.video_path}`);
+    videoEl[0].load();
+
+    // text info
+    videoNameEl.text(data.recording.video_name ?? "Unknown Title");
+    ownerEl.text(data.recording?.user?.name ?? "Unknown Owner");
+    ownerEl.attr("data-id", data.recording?.user?.id);
+
+    // follow count
+    $("#owner_follower").text(`${data.recording?.user?.followers} Followers`);
+
+    // date output
+    if (!start.isValid() || !end.isValid()) {
+        dateEl.text("Recorded at Unknown Date");
+    } else if (start.isSame(end, "day")) {
+        dateEl.text(
+            `Recorded at ${start.format("DD MMM YYYY")}, at ${start.format(
+                "HH:mm"
+            )} to ${end.format("HH:mm")}`
+        );
+    } else {
+        dateEl.text(
+            `Recorded at ${start.format("DD")}-${end.format(
+                "DD"
+            )} ${start.format("MMM YYYY")}, ${start.format(
+                "HH:mm"
+            )} to ${end.format("HH:mm")}`
+        );
+    }
+
+    // assign ID to action buttons
+    $(".share-btn, .like-btn, .dislike-btn, .download-btn").attr(
+        "data-id",
+        data.id
+    );
+
+    // disable if owner is the viewer
+    if (window.authUserId === data.recording?.user?.id) {
+        toggleState($(".follow-btn"), true);
+        $(".follow-btn").attr("data-tip", "You cannot follow yourself");
+        toggleState($(".like-btn"), true);
+        $(".like-btn").attr("data-tip", "You cannot like your own video");
+        toggleState($(".dislike-btn"), true);
+        $(".dislike-btn").attr("data-tip", "You cannot dislike your own video");
+        toggleState($(".download-btn"), false);
+        $(".download-btn").attr("data-tip", "Download this video");
+        return;
+    } else {
+        toggleState($(".download-btn"), true);
+        $(".download-btn").attr(
+            "data-tip",
+            "This video is not yours to download"
+        );
+    }
+
+    /** -----------------------------------------
+     * INITIAL STATE (LIKE / DISLIKE / FOLLOW)
+     ----------------------------------------- **/
+    if (Array.isArray(userLikes) && userLikes.length > 0) {
+        const userLike = userLikes.find(
+            (like) => Number(like.user_id) === authId
+        );
+
+        if (userLike) {
+            if (userLike.type === "like") {
+                toggleState($(".like-btn"), true);
+                toggleState($(".dislike-btn"), false);
+            }
+
+            if (userLike.type === "dislike") {
+                toggleState($(".dislike-btn"), true);
+                toggleState($(".like-btn"), false);
+            }
+        }
+    }
+
+    if (Array.isArray(userFollow) && userFollow.length > 0) {
+        const userFollower = userFollow.find(
+            (follow) => Number(follow.follower_id) === authId
+        );
+
+        if (userFollower) {
+            $("#follow_btn_text").text("Followed");
+            $(".follow-btn").attr("data-tip", "Unfollow this user");
+        } else {
+            $("#follow_btn_text").text("Follow");
+            $(".follow-btn").attr("data-tip", "Follow this user");
+        }
+    } else {
+        $("#follow_btn_text").text("Follow");
+        $(".follow-btn").attr("data-tip", "Follow this user");
+    }
+};
+
+/* ---------------------------------------------
+ * SHARE VIDEO
+---------------------------------------------- */
 shareVideo = (videoId) => {
-    $.ajax({
-        url: `/share/${videoId}`,
-        method: "POST",
-        success: (response) => {
-            console.log(response);
-            showShareModal(response.url);
-        },
-        error: (xhr) => {
+    $.post(`/share/${videoId}`)
+        .done((res) => showShareModal(res.url))
+        .fail((xhr) => {
             if (xhr.status === 401) {
-                notyf.error(
-                    "You are not logged in. Redirecting to the login page..."
-                );
-                setTimeout(() => {
-                    window.location.href = "/login";
-                }, 2000);
+                notyf.error("You must log in first...");
+                setTimeout(() => (window.location.href = "/login"), 1500);
             } else {
                 notyf.error("Failed to generate share link.");
             }
-        },
-    });
+        });
 };
 
-// ==== Show Share Modal ==== //
-showShareModal = (shareUrl) => {
-    if (!modal || !input) return;
-
-    input.value = shareUrl;
-
+/* ---------------------------------------------
+ * SHARE MODAL
+---------------------------------------------- */
+showShareModal = (url) => {
+    input.value = url;
     modal.showModal();
     requestAnimationFrame(() => modal.classList.add("show"));
 };
 
-// ==== Modal Events ==== //
-if (modal) {
-    modal.addEventListener("close", () => {
-        modal.classList.remove("show");
-    });
+modal?.addEventListener("close", () => modal.classList.remove("show"));
 
-    if (copyBtn) {
-        copyBtn.addEventListener("click", () => {
-            navigator.clipboard
-                .writeText(input.value)
-                .then(() => notyf.success("Link copied to clipboard!"))
-                .catch(() => notyf.error("Failed to copy link."));
-        });
-    }
-}
+copyBtn?.addEventListener("click", () => {
+    navigator.clipboard
+        .writeText(input.value)
+        .then(() => notyf.success("Copied!"))
+        .catch(() => notyf.error("Failed to copy"));
+});
 
-// ==== Event Delegation ==== //
+/* ---------------------------------------------
+ * EVENT DELEGATION
+---------------------------------------------- */
 document.addEventListener("click", (e) => {
-    if (e.target.closest(".share-btn")) {
-        const videoId = e.target.closest(".share-btn").dataset.id;
-        shareVideo(videoId);
+    const share = e.target.closest(".share-btn");
+    const like = e.target.closest(".like-btn");
+    const dislike = e.target.closest(".dislike-btn");
+    const follow = e.target.closest(".follow-btn");
+    const download = e.target.closest(".download-btn");
+
+    if (share) {
+        shareVideo(share.dataset.id);
     }
-    if (e.target.closest(".like-btn")) {
-        const videoId = e.target.closest(".like-btn").dataset.id;
-        $.ajax({
-            url: "/video/watch/like",
-            method: "POST",
-            data: { id: videoId },
-            success: function (res) {
-                console.log(res);
+
+    if (like) {
+        $.post("/video/watch/like", { id: like.dataset.id })
+            .done(() => {
+                toggleState($(".like-btn"), true);
+                toggleState($(".dislike-btn"), false);
                 notyf.success("You liked this video!");
-            },
-            error: function () {
-                notyf.error("Failed to like the video");
-            },
-        });
+            })
+            .fail(() => notyf.error("Failed to like video"));
     }
-    if (e.target.closest(".dislike-btn")) {
-        const videoId = e.target.closest(".dislike-btn").dataset.id;
-        $.ajax({
-            url: "/video/watch/dislike",
-            method: "POST",
-            data: { id: videoId },
-            success: function (res) {
-                console.log(res);
+
+    if (dislike) {
+        $.post("/video/watch/dislike", { id: dislike.dataset.id })
+            .done(() => {
+                toggleState($(".dislike-btn"), true);
+                toggleState($(".like-btn"), false);
                 notyf.success("You disliked this video!");
-            },
-            error: function () {
-                notyf.error("Failed to dislike the video");
-            },
-        });
+            })
+            .fail(() => notyf.error("Failed to dislike video"));
     }
-    if (e.target.closest(".follow-btn")) {
-        const ownerId = $("#owner_video").data("id");
-        $.ajax({
-            url: "/video/watch/follow",
-            method: "POST",
-            data: { id: ownerId },
-            success: function (res) {
-                console.log(res);
+
+    if (follow) {
+        const owner = $("#owner_video").data("id");
+
+        $.post("/video/watch/follow", { id: owner })
+            .done((res) => {
                 $("#owner_follower").text(`${res.followers} Followers`);
-                notyf.success("You followed this user!");
-            },
-            error: function () {
-                notyf.error("Failed to follow the user");
-            },
-        });
+                setFollowBtn(res.status_follow);
+                notyf.success(
+                    res.status_follow === "follow"
+                        ? "You followed this user!"
+                        : "You unfollowed this user!"
+                );
+            })
+            .fail(() => notyf.error("Failed to follow/unfollow"));
+    }
+
+    if (download) {
+        notyf.success("Preparing video download...");
+
+        $.post(`/download/${download.dataset.id}`)
+            .done(() => {
+                if (response.success && response.url) {
+                    const a = document.createElement("a");
+                    a.href = response.url;
+                    a.download = "";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    notyf.error("Failed to generate download link.");
+                }
+            })
+            .fail(() => {
+                if (xhr.status === 401) {
+                    notyf.error(
+                        "You are not logged in. Redirecting to login..."
+                    );
+                    setTimeout(() => (window.location.href = "/login"), 2000);
+                } else {
+                    notyf.error("Failed to download video.");
+                }
+            });
     }
 });
 
-$(window).on("load", function () {
-    videoPlayer();
-});
+/* ---------------------------------------------
+ * INIT
+---------------------------------------------- */
+$(window).on("load", videoPlayer);
