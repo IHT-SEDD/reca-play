@@ -70,6 +70,12 @@ fetchRecordings = () => {
                 0
             );
 
+            if (total > 0) {
+                $("#download_video_alert").removeClass("hidden");
+            } else {
+                $("#download_video_alert").addClass("hidden");
+            }
+
             lastPage = Math.ceil(total / perPage);
 
             renderList();
@@ -341,6 +347,9 @@ document.addEventListener("click", (e) => {
     }
     if (e.target.closest(".get-videos")) {
         showGetVideosModal();
+    }
+    if (e.target.closest("#close_download_video_alert")) {
+        $("#download_video_alert").addClass("hidden");
     }
 });
 
