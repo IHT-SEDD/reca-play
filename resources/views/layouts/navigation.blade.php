@@ -262,7 +262,8 @@
                 </x-nav-link>
 
                 <!-- Get Video -->
-                <x-nav-link class="text-sm" :href="url('/get-video')" :active="request()->routeIs('get-video.*')">
+                <x-nav-link class="text-sm" :href="url('/get-video')"
+                    :active="request()->routeIs('get-video.*')">
                     {{ __('Get Video') }}
                 </x-nav-link>
             </div>
