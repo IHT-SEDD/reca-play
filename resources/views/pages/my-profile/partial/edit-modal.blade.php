@@ -2,7 +2,7 @@
  <div class="modal-box">
   <h3 class="text-lg font-bold mb-2">Edit detail account</h3>
 
-  <form method="POST" action="{{ url('/download-video/add-data') }}" class="ajax-form" novalidate>
+  <form method="PUT" action="{{ url('/my-profile/update') }}" class="ajax-form" novalidate>
    @csrf
    <!-- Name -->
    <div>
@@ -36,22 +36,20 @@
     <x-input-error id="input-instagram-error"></x-input-error>
    </div>
 
-   <!-- Submit btn -->
+   <div class="grid grid-cols-2 gap-4">
+       <!-- Submit btn -->
    <x-primary-button class="w-full mt-6">
     {{ __('Submit') }}
    </x-primary-button>
   </form>
 
-  <!-- Actions -->
-  <div class="modal-action flex justify-between w-full">
-   <!-- Close Button -->
+     <!-- Close Button -->
    <form method="dialog">
     <button type="submit"
-     class="rounded-xl bg-vivaldi-red/20 text-vivaldi-red hover:bg-vivaldi-red hover:text-white text-sm p-3 font-medium inline-flex items-center justify-center gap-2">
-     <i data-lucide="x" class="w-4 h-auto "></i>
+     class="rounded-xl bg-vivaldi-red/20 text-vivaldi-red hover:bg-vivaldi-red hover:text-white text-sm p-3 font-medium inline-flex items-center justify-center gap-2 w-full mt-6">
      Close
     </button>
    </form>
-  </div>
+   </div>
  </div>
 </dialog>

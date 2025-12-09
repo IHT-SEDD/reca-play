@@ -22,7 +22,11 @@ populateData = (search = "", reset = true) => {
 
             if (venues.length === 0 && page === 1) {
                 container.html(
-                    `<p class="text-adhesion dark:text-white-owl w-full md:col-span-6 col-span-1 text-center text-lg font-semibold">No venues found.</p>`
+                    `<div class="md:col-span-6 col-span-1 flex items-center justify-center h-64">
+                        <p class="text-center text-lg text-carbon font-semibold font-mono dark:text-white">
+                            No venues found.
+                        </p>
+                    </div>`
                 );
                 $("#seemore_btn").addClass("hidden");
                 return;

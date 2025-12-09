@@ -42,6 +42,9 @@ Route::middleware(['check.maintenance'])->group(function () {
     Route::prefix('video/watch')->name('watch.')->controller(WatchController::class)->group(function () {
         Route::get('/{videoEncrypt}', 'index')->name('index');
         Route::get('/data/{videoEncrypt}', 'watchData')->name('data');
+        Route::post('/like', 'likeVideo')->name('like-video');
+        Route::post('/dislike', 'dislikeVideo')->name('dislike-video');
+        Route::post('/follow', 'followOwnerVideo')->name('follow-owner');
     });
 
     /*
@@ -212,6 +215,7 @@ Route::middleware(['check.maintenance'])->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/user-data', 'userData')->name('user-data');
             Route::post('/{userId}/edit', 'editUser')->name('user-edit');
+            Route::post('/{userId}/upload-photo', 'uploadPhoto');
         });
 
         /*
@@ -245,11 +249,12 @@ Route::middleware(['check.maintenance'])->group(function () {
             });
 
             // Download Video
-            Route::prefix('download-video')->name('download-video.')->controller(DownloadVideoController::class)->group(function () {
+            Route::prefix('get-video')->name('get-video.')->controller(DownloadVideoController::class)->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/add-data', 'addData')->name('add-data');
                 Route::get('/file/{filename}', 'downloadFile')->name('file');
                 Route::get('/status/{jobId}', 'status')->name('status');
+                Route::post('/search', 'searchVideo')->name('search');
             });
         });
 

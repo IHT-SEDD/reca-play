@@ -199,6 +199,12 @@ return [
             'level' => 'info',
         ],
 
+        'orphan-session' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/session/orphan-session.log'),
+            'level' => 'info',
+        ],
+
         'utility-service' => [
             'driver' => 'single',
             'path' => storage_path('logs/utility-service.log'),

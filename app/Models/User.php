@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Models\Master\Venue;
+use App\Models\User\UserFollow;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Traits\HasRoles;
@@ -13,6 +14,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -23,7 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public const Searchable = ['name', 'username', 'email', 'role_id', 'venue_id'];
     public const Unsearchable = ['id', 'email_verified_at', 'password', 'remember_token', 'google_id', 'created_at', 'updated_at'];
 
-    protected $with = ['role', 'venue'];
+    protected $with = ['role', 'venue', 'userFollowings', 'userFollowers'];
     /**
      * The attributes that are mass assignable.
      *
@@ -70,12 +72,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function sendPasswordResetNotification($token)
     {
-            $url = url(route('password.reset', [
-                'token' => $token,
-                'email' => $this->email,
-            ], false));
+        $url = url(route('password.reset', [
+            'token' => $token,
+            'email' => $this->email,
+        ], false));
 
-            Mail::to($this->email)->send(new \App\Mail\ResetPasswordMail($url));
+        Mail::to($this->email)->send(new \App\Mail\ResetPasswordMail($url));
     }
 
     /**
@@ -91,6 +93,15 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Venue::class);
     }
 
+    public function userFollowers(): HasMany
+    {
+        return $this->hasMany(UserFollow::class, 'following_id', 'id');
+    }
+
+    public function userFollowings(): HasMany
+    {
+        return $this->hasMany(UserFollow::class, 'follower_id', 'id');
+    }
     /**
      * Check if the user has a specific role.
      *

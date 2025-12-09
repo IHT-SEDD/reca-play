@@ -161,7 +161,7 @@
             <div class="mt-3 space-y-1">
                 <!-- Options in auth mode only :begin -->
                 @auth
-                {{-- <x-responsive-nav-link :href="url('/profile')">
+                {{-- <x-responsive-nav-link :href="url('/my-profile')">
                     {{ __('My Profile') }}
                 </x-responsive-nav-link> --}}
 
@@ -261,10 +261,10 @@
                     {{ __('User Management') }}
                 </x-nav-link>
 
-                <!-- Download Video -->
-                <x-nav-link class="text-sm" :href="url('/download-video')"
-                    :active="request()->routeIs('download-video.*')">
-                    {{ __('Download Video') }}
+                <!-- Get Video -->
+                <x-nav-link class="text-sm" :href="url('/get-video')"
+                    :active="request()->routeIs('get-video.*')">
+                    {{ __('Get Video') }}
                 </x-nav-link>
             </div>
 

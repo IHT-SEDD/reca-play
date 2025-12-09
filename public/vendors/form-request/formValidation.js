@@ -1,7 +1,8 @@
 const FormValidation = (() => {
+    let form = null;
     let _rules = {};
     let _messages = {};
-    let _formSelector = ".ajax-form";
+    let _formSelector = form ?? ".ajax-form";
 
     // ========== Helper: show error for a field ==========
     function _showError($field) {
