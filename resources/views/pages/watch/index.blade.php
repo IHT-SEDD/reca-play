@@ -66,7 +66,7 @@
               class="follow-btn hidden flex items-center justify-center rounded-lg h-full w-fit p-2 bg-hot-shot/30 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
               data-tip="Follow this user">
               <i data-lucide="user-plus" class="w-4 h-auto"></i>
-              <span class="ml-2 text-sm font-semibold" id="follow_btn_text"></span>
+              <span class="ml-2 text-sm font-semibold" id="follow_btn_text">Follow</span>
             </button>
             <div class="w-40 h-12 bg-magnesium rounded-lg animate-pulse" id="follow_button_placeholder"></div>
           </div>
