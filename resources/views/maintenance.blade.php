@@ -23,7 +23,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1">
  <meta name="csrf-token" content="{{ csrf_token() }}">
 
- <title>{{ config('app.name', 'RECA') }} - 504 Gateway Timeout</title>
+ <title>{{ config('app.name', 'RECA') }} - 503 Gateway Timeout</title>
  <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/logos/reca-black.png') }}">
 
  <!-- Meta SEO -->
