@@ -214,7 +214,7 @@ Route::middleware(['check.maintenance'])->group(function () {
         Route::prefix('my-profile')->name('my-profile.')->controller(MyProfileController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/user-data', 'userData')->name('user-data');
-            Route::post('/{userId}/edit', 'editUser')->name('user-edit');
+            Route::put('/update', 'update')->name('user-update');
             Route::post('/{userId}/upload-photo', 'uploadPhoto');
         });
 
