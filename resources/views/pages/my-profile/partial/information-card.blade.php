@@ -22,11 +22,11 @@
   <span class="text-adhesion text-sm font-medium account-phone"></span>
  </div>
 
- <div class="w-full flex items-center justify-between">
+ {{-- <div class="w-full flex items-center justify-between">
   <div class="flex items-center">
    <i data-lucide="instagram" class="w-4 h-auto me-2 text-adhesion"></i>
    <span class="text-adhesion text-sm font-medium">Instagram</span>
   </div>
   <span class="text-adhesion text-sm font-medium">@usernameig</span>
- </div>
+ </div> --}}
 </div>

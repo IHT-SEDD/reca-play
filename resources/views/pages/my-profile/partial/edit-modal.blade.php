@@ -2,8 +2,12 @@
  <div class="modal-box">
   <h3 class="text-lg font-bold mb-2">Edit detail account</h3>
 
-  <form method="PUT" action="{{ url('/my-profile/update') }}" class="ajax-form" novalidate>
+  <form method="PUT" action="{{ url('/my-profile/update') }}" class="ajax-edit-form" id="edit-form" novalidate>
    @csrf
+  @method('PUT')
+
+    <x-inputs.text-input  type="hidden" name="id" />
+
    <!-- Name -->
    <div>
     <x-input-label for="name" :value="__('Name')" />
@@ -25,16 +29,16 @@
     <x-input-label for="phone_number" :value="__('Phone Number')" />
     <x-inputs.text-input id="phone_number" class="block mt-2 w-full" type="text" name="phone_number"
      :value="old('phone_number')" autocomplete="off" />
-    <x-input-error id="input-phone_number-error"></x-input-error>
+      <x-input-error id="input-phone_number-error"></x-input-error>
    </div>
 
-   <!-- Phone number -->
-   <div class="mt-2">
+   <!-- Instagram -->
+   {{-- <div class="mt-2">
     <x-input-label for="instagram" :value="__('Instagram')" />
     <x-inputs.text-input id="instagram" class="block mt-2 w-full" type="text" name="instagram" :value="old('instagram')"
      autocomplete="off" />
     <x-input-error id="input-instagram-error"></x-input-error>
-   </div>
+   </div> --}}
 
    <div class="grid grid-cols-2 gap-4">
        <!-- Submit btn -->

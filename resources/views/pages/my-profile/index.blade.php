@@ -26,6 +26,8 @@
  @endpush
 
  @push('scripts')
+  <script src="{{ asset('vendors/form-request/form.js') }}"></script>
+ <script src="{{ asset('vendors/form-request/formValidation.js') }}"></script>
  <script src="{{ asset('assets/js/my-profile/index.js') }}"></script>
  @endpush
 </x-app-layout>
