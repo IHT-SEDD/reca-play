@@ -1,13 +1,17 @@
 <x-app-layout :pageTitle="'Recording'">
  <div class="w-full mx-auto">
-  <div role="alert" class="my-4 alert alert-info shadow-sm" id="download_video_alert">
-   <i data-lucide="circle-alert" class="w-6 h-6"></i>
-   <span class="font-medium">Please immediately download your video, as it will be permanently
+  <div class="mb-4 flex items-center gap-3 bg-hot-shot/20 rounded-lg p-2 w-fit hidden" id="download_video_alert">
+   <i data-lucide="lightbulb" class="w-5 h-5 text-hot-shot"></i>
+   <h1 class="lg:text-base text-sm font-bold text-after-midnight dark:text-white-chalk">
+    Please immediately download your video, as it will be permanently
     deleted after 5
-    days.</span>
-   <div>
-    <button class="btn btn-sm" id="close_download_video_alert">Close</button>
-   </div>
+    days.
+   </h1>
+   <button id="close_download_video_alert"
+    class="p-2 rounded-full bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white transition flex justify-center items-center gap-1">
+    <i data-lucide="x" class="w-3 h-3"></i>
+    <p class="text-xs font-semibold md:block hidden">Close</p>
+   </button>
   </div>
 
   <!-- Header -->

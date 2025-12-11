@@ -4,6 +4,15 @@ const modal = document.querySelector("#editUserModal");
 const editBtn = document.querySelector("#edit_btn");
 const formEdit = document.querySelector("#edit-form");
 
+function formatJoined(dateString) {
+    const date = new Date(dateString);
+
+    const month = date.toLocaleString("en-US", { month: "short" });
+    const year = date.getFullYear();
+
+    return `Joined ${month} ${year}`;
+}
+
 // ==== Retrieve user data ==== //
 getUserData = () => {
     showLoading();
@@ -14,13 +23,16 @@ getUserData = () => {
             method: "GET",
             dataType: "json",
             success: function (res) {
-                $('.account-email').text(res.data.email);
-                $('#name').text(res.data.name);
-                $('#username').text(res.data.username);
+                $(".account-email").text(res.data.email);
+                $("#name").text(res.data.name);
+                $("#username").text(res.data.username);
+                $("#join_time").text(formatJoined(res.data.created_at));
                 $('#edit-form input[name="id"]').val(res.data.id);
                 $('#edit-form input[name="name"]').val(res.data.name);
                 $('#edit-form input[name="username"]').val(res.data.username);
-                $('#edit-form input[name="phone_number"]').val(res.data.phone_number);
+                $('#edit-form input[name="phone_number"]').val(
+                    res.data.phone_number
+                );
                 console.log("Success retrieve user data:", res);
             },
             error: function (xhr, status, error) {
@@ -72,16 +84,9 @@ if (editBtn) {
     });
 }
 
-// if(formEdit){
-//     formEdit.addEventListener("submit", (e) => {
-//         e.preventDefault();
-//         editUser();
-//     });
-// }
-
 // ==== Upload pProfile Picture === //
 profileUploader = (userId, initial, savedPhoto) => {
- return {
+    return {
         userId,
         initial,
         savedPhoto,
@@ -106,16 +111,21 @@ profileUploader = (userId, initial, savedPhoto) => {
 
             let form = new FormData();
             form.append("photo", file);
-             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const token = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
 
-            const response = await fetch(`/my-profile/${this.userId}/upload-photo`, {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "X-CSRF-TOKEN": token
-                },
-                body: form
-            });
+            const response = await fetch(
+                `/my-profile/${this.userId}/upload-photo`,
+                {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRF-TOKEN": token,
+                    },
+                    body: form,
+                }
+            );
 
             let result = await response.json();
             console.log(result);
@@ -123,8 +133,8 @@ profileUploader = (userId, initial, savedPhoto) => {
             if (result.success) {
                 this.savedPhoto = result.url;
                 notyf.success(result.message);
-            }else{
-                 notyf.error(result.message)
+            } else {
+                notyf.error(result.message);
             }
         },
 
@@ -132,30 +142,29 @@ profileUploader = (userId, initial, savedPhoto) => {
             this.preview = null;
             this.savedPhoto = null;
             this.$refs.fileInput.value = null;
-        }
-    }
-}
+        },
+    };
+};
 
 document.addEventListener("DOMContentLoaded", function () {
     getUserData();
-        FormValidation.init({
-            rules: {
-                name: { required: true,
-                    min: 3
-                    },
-                username: {
-                    required: true ,
-                    min: 3
-                    }
+    FormValidation.init({
+        rules: {
+            name: { required: true, min: 3 },
+            username: {
+                required: true,
+                min: 3,
             },
-            messages: {
-                name: {
-                    required: "Name cannot be empty.",
-                    min: "Name minimum is a 3 characters",
-                },
-                username: { required: "username cannot be empty.",
-                        min: "username minimum is a 3 characters",
-                },
+        },
+        messages: {
+            name: {
+                required: "Name cannot be empty.",
+                min: "Name minimum is a 3 characters",
             },
-        });
+            username: {
+                required: "username cannot be empty.",
+                min: "username minimum is a 3 characters",
+            },
+        },
+    });
 });

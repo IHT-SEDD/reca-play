@@ -213,16 +213,16 @@ formRequestInit = () => {
                                         "Please check the form for errors."
                                     );
                                 } else {
-                                    const response = xhr.responseJSON;
-                                    if (
-                                        !handleSessionCodeError(
-                                            response?.message
-                                        )
-                                    ) {
-                                        notyf.error(
-                                            response?.message ||
-                                                "An error occurred. Please try again."
-                                        );
+                                    let responseJson = xhr.responseJSON;
+                                    let responseText = xhr.responseText;
+
+                                    let message =
+                                        responseJson?.message ||
+                                        responseText ||
+                                        "An error occurred. Please try again.";
+
+                                    if (!handleSessionCodeError(message)) {
+                                        notyf.error(message);
                                     }
                                     console.error(xhr);
                                 }
@@ -315,7 +315,7 @@ formRequestInit = () => {
     return { formAdd, formEdit };
 };
 
- closeAnyModal = (...ids) => {
+closeAnyModal = (...ids) => {
     for (const id of ids) {
         const modal = document.querySelector(id);
         if (modal) {
@@ -323,7 +323,7 @@ formRequestInit = () => {
             break;
         }
     }
-}
+};
 
 document.addEventListener("DOMContentLoaded", () => {
     formRequestInit().formAdd();
