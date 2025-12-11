@@ -26,8 +26,14 @@ class HomeController extends Controller
         $fromDate = Carbon::now($userTimezone)->subDays(2)->startOfDay();
         $toDate = Carbon::now($userTimezone)->endOfDay();
 
-        $videos = Recording::with(['field.venue', 'recordedVideo', 'user'])
-            // ->whereBetween('created_at', [$fromDate, $toDate])
+        $query = Recording::with(['field.venue', 'recordedVideo', 'user'])
+            ->whereNotNull('user_id');
+
+        if (config('app.env') === 'production') {
+            $query->whereBetween('created_at', [$fromDate, $toDate]);
+        }
+
+        $videos = $query
             ->latest('created_at')
             ->limit(10)
             ->get();

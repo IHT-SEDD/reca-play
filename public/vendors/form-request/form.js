@@ -1,6 +1,12 @@
 let formRequestInit;
 
 formRequestInit = () => {
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+    });
+
     // ============================
     // Reset helpers
     // ============================
@@ -113,13 +119,8 @@ formRequestInit = () => {
                         data: formData,
                         processData: false,
                         contentType: false,
-                        headers: {
-                            "X-CSRF-TOKEN": $form
-                                .find('input[name="_token"]')
-                                .val(),
-                            Accept: "*/*",
-                        },
-                        success: function (result) {
+                        headers: { Accept: "*/*" },
+                        success: function (result, textStatus, xhr) {
                             hideLoading();
 
                             setTimeout(() => {
