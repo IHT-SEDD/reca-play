@@ -71,7 +71,7 @@ renderList = (videos) => {
                     <!-- Thumbnail -->
                     <a href="/video/watch/${
                         video.hashed_id
-                    }" target="_blank" rel="noopener noreferrer" class="block">
+                    }" class="block hover:bg-hot-shot/20 hover:p-2 rounded-xl transition-all duration-200 ease-in-out">
                         <div class="bg-base-200 dark:bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative" style="background-image: url('/storage/${
                             video.thumbnail_path
                         }'); background-size: cover; background-position: center;">
@@ -79,35 +79,36 @@ renderList = (videos) => {
                                 ${video.duration ?? "-"}
                             </div>
                         </div>
-                     </a>
+                     
 
-                    <!-- Description -->
-                    <div class="text-sm space-y-1">
-                        <p class="font-medium text-hot-shot">${
-                            videoItem.video_name ?? "-"
-                        }</p>
-                        <p class="text-after-midnight/50 dark:text-white-owl text-xs">
-                            ${formatDateTime(videoItem.created_at)}
-                        </p>
-                        <p class="flex items-center text-xs text-color-default">
-                            <i data-lucide="user" class="w-4 h-4 md:me-2"></i>
-                            ${videoItem.user?.name ?? "Unknown"}
-                        </p>
-                        <p class="text-xs font-medium tracking-wide text-color-default">
-                            ${videoItem.field?.name ?? "-"} at ${
+                        <!-- Description -->
+                        <div class="text-sm space-y-1">
+                            <p class="font-medium text-hot-shot">${
+                                videoItem.video_name ?? "-"
+                            }</p>
+                            <p class="text-after-midnight/50 dark:text-white-owl text-xs">
+                                ${formatDateTime(videoItem.created_at)}
+                            </p>
+                            <p class="flex items-center text-xs text-color-default">
+                                <i data-lucide="user" class="w-4 h-4 md:me-2"></i>
+                                ${videoItem.user?.name ?? "Unknown"}
+                            </p>
+                            <p class="text-xs font-medium tracking-wide text-color-default">
+                                ${videoItem.field?.name ?? "-"} at ${
                 videoItem.field?.venue?.name ?? "-"
             }
-                        </p>
-                    </div>
+                            </p>
+                        </div>
 
-                    <!-- Share Button -->
-                    <div class="mt-2">
-                        <button class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
-                                data-id="${video.id}"
-                                data-tip="share">
-                            <i data-lucide="forward" class="w-4 h-4"></i>
-                        </button>
-                    </div>
+                        <!-- Share Button -->
+                        <div class="mt-2">
+                            <button class="share-btn flex items-center justify-center rounded-full h-8 w-8 bg-hot-shot/20 text-hot-shot hover:bg-hot-shot hover:text-white dark:hover:bg-white-owl transition tooltip tooltip-bottom"
+                                    data-id="${video.id}"
+                                    data-tip="share">
+                                <i data-lucide="forward" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </a>
                 </div>
                 `
         );

@@ -1,6 +1,12 @@
-let formRequestInit;
+let formRequestInit, closeAnyModal;
 
 formRequestInit = () => {
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+    });
+
     // ============================
     // Reset helpers
     // ============================
@@ -16,6 +22,8 @@ formRequestInit = () => {
     }
 
     function showValidationErrors($form, errors) {
+        console.log(errors);
+
         clearFormValidation($form);
         for (let field in errors) {
             let $errorContainer = $form.find(`#input-${field}-error`);
@@ -113,13 +121,8 @@ formRequestInit = () => {
                         data: formData,
                         processData: false,
                         contentType: false,
-                        headers: {
-                            "X-CSRF-TOKEN": $form
-                                .find('input[name="_token"]')
-                                .val(),
-                            Accept: "*/*",
-                        },
-                        success: function (result) {
+                        headers: { Accept: "*/*" },
+                        success: function (result, textStatus, xhr) {
                             hideLoading();
 
                             setTimeout(() => {
@@ -258,7 +261,8 @@ formRequestInit = () => {
 
                             resetForm($form);
 
-                            $("#modal_master").get(0).close();
+                            // $("#modal_master").get(0).close();
+                            closeAnyModal("#modal_master", "#editUserModal");
 
                             // Refresh DataTable
                             if (
@@ -268,6 +272,10 @@ formRequestInit = () => {
                                 $(targetTable)
                                     .DataTable()
                                     .ajax.reload(null, false);
+                            }
+
+                            if (typeof getUserData === "function") {
+                                getUserData();
                             }
                         } else if (result.status === "error") {
                             if (!handleSessionCodeError(result.message)) {
@@ -306,6 +314,16 @@ formRequestInit = () => {
 
     return { formAdd, formEdit };
 };
+
+ closeAnyModal = (...ids) => {
+    for (const id of ids) {
+        const modal = document.querySelector(id);
+        if (modal) {
+            modal.close();
+            break;
+        }
+    }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     formRequestInit().formAdd();

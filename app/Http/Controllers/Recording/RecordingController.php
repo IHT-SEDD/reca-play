@@ -38,10 +38,15 @@ class RecordingController extends Controller
         $startOfDay = Carbon::now($userTimezone)->subDays(5)->startOfDay();
         $endOfDay = Carbon::now($userTimezone)->endOfDay();
 
-        $recordings = Recording::with(['field.venue', 'recordedVideo', 'user'])
-            ->where('user_id', Auth::id())
-            ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->orderBy('created_at', 'desc')
+        $query = Recording::with(['field.venue', 'recordedVideo', 'user'])
+            ->where('user_id', Auth::id());
+
+        if (config('app.env') === 'production') {
+            $query->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        }
+
+        $recordings = $query
+            ->latest('created_at')
             ->get();
 
         return response()->json($recordings);
