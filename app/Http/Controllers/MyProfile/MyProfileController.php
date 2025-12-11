@@ -97,4 +97,59 @@ class MyProfileController extends Controller
                 ], 500);
             }
     }
+
+    public function update(Request $request)
+    {
+            try{
+
+                  $request->validate(
+                        [
+                            'name' => 'required|min:3',
+                            'username' => 'required|min:3',
+                             'phone_number' => 'nullable|digits_between:10,15',
+                        ],
+                        [
+                            'name.required' => 'name cannot be empty.',
+                            'name.min' => 'name minimum is 3 characters.',
+                            'username.required' => 'username cannot be empty.',
+                            'username.min' => 'username minimum is 3 characters.',
+                            'phone_number.integer' => 'phone number must be a number.',
+                            'phone_number.digits_between' => 'phone number must be between 10 adn 15 .',
+                        ]
+                    );
+
+
+                $data = $request->except(['id', '_token']);
+                $user = User::find($request->id);
+
+                if(is_null($user)){
+                        return response()->json([
+                        'status' => 'error',
+                        'message' => 'User not found.'
+                    ]);
+                }
+
+                $user->update($data);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User updated successfully.'
+            ]);
+
+           } catch (\Illuminate\Validation\ValidationException $e) {
+                // Jika validasi gagal
+                return response()->json([
+                    'success' => false,
+                    'errors' => $e->validator->errors(),
+                    'status' => 422
+                ], 422);
+
+            } catch (\Exception $e) {
+                // Error general lainnya
+                return response()->json([
+                    'success' => false,
+                    'errors' => $e->getMessage()
+                ], 500);
+            }
+    }
 }

@@ -2,6 +2,7 @@ let getUserData, showEditModal, profileUploader;
 
 const modal = document.querySelector("#editUserModal");
 const editBtn = document.querySelector("#edit_btn");
+const formEdit = document.querySelector("#edit-form");
 
 // ==== Retrieve user data ==== //
 getUserData = () => {
@@ -16,6 +17,10 @@ getUserData = () => {
                 $('.account-email').text(res.data.email);
                 $('#name').text(res.data.name);
                 $('#username').text(res.data.username);
+                $('#edit-form input[name="id"]').val(res.data.id);
+                $('#edit-form input[name="name"]').val(res.data.name);
+                $('#edit-form input[name="username"]').val(res.data.username);
+                $('#edit-form input[name="phone_number"]').val(res.data.phone_number);
                 console.log("Success retrieve user data:", res);
             },
             error: function (xhr, status, error) {
@@ -30,9 +35,10 @@ getUserData = () => {
 
 // ==== Edit user ==== //
 editUser = () => {
+    let formData = new FormData(formEdit);
     $.ajax({
-        url: `/my-profile/${userId}/edit`,
-        method: "POST",
+        url: `/my-profile/edit`,
+        method: "PATCH",
         success: (response) => {
             console.log(response);
             showShareModal(response.url);
@@ -65,6 +71,13 @@ if (editBtn) {
         showEditModal();
     });
 }
+
+// if(formEdit){
+//     formEdit.addEventListener("submit", (e) => {
+//         e.preventDefault();
+//         editUser();
+//     });
+// }
 
 // ==== Upload pProfile Picture === //
 profileUploader = (userId, initial, savedPhoto) => {
@@ -125,4 +138,24 @@ profileUploader = (userId, initial, savedPhoto) => {
 
 document.addEventListener("DOMContentLoaded", function () {
     getUserData();
+        FormValidation.init({
+            rules: {
+                name: { required: true,
+                    min: 3
+                    },
+                username: {
+                    required: true ,
+                    min: 3
+                    }
+            },
+            messages: {
+                name: {
+                    required: "Name cannot be empty.",
+                    min: "Name minimum is a 3 characters",
+                },
+                username: { required: "username cannot be empty.",
+                        min: "username minimum is a 3 characters",
+                },
+            },
+        });
 });
