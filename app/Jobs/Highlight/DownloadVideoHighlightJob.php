@@ -100,21 +100,21 @@ class DownloadVideoHighlightJob implements ShouldQueue
 
                 if (!file_exists($flagPath)) {
                     file_put_contents($flagPath, now()->toDateTimeString());
-                    TrimVideoJob::dispatch(
-                        $file,
-                        $this->startTime,
-                        $this->endTime,
-                        $this->cameraKey,
+                    TrimHighlightVideoJob::dispatch(
+                        $this->recordingId,
                         $this->videoName,
-                        $this->recordingId
-                    )->onQueue('camera-record-video-trim');
+                        $file,
+                        $this->highlightStart,
+                        $this->highlightEnd,
+                        $this->cameraKey,
+                    )->onQueue('camera-highlight-video-trim');
 
-                    Log::channel('camera-job')->info('[JOB] TrimVideoJob dispatched (first time)', [
+                    Log::channel('highlight-job')->info('[HIGHLIGHT JOB] TrimHighlightVideoJob dispatched (first time)', [
                         'camera_key' => $this->cameraKey,
                         'flag' => basename($flagPath)
                     ]);
                 } else {
-                    Log::channel('camera-job')->warning('[JOB] TrimVideoJob skipped (already dispatched)', [
+                    Log::channel('highlight-job')->warning('[HIGHLIGHT JOB] TrimHighlightVideoJob skipped (already dispatched)', [
                         'camera_key' => $this->cameraKey,
                         'flag' => basename($flagPath)
                     ]);

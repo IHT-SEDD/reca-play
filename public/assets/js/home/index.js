@@ -71,12 +71,20 @@ renderList = (videos) => {
                     <!-- Thumbnail -->
                     <a href="/video/watch/${
                         video.hashed_id
-                    }" class="block hover:bg-hot-shot/20 hover:p-2 rounded-xl transition-all duration-200 ease-in-out">
+                    }" class="block hover:bg-hot-shot/30 hover:p-2 rounded-xl transition-all duration-200 ease-in-out">
                         <div class="bg-base-200 dark:bg-base-300 rounded-xl p-3 min-h-44 mb-2 relative" style="background-image: url('/storage/${
                             video.thumbnail_path
                         }'); background-size: cover; background-position: center;">
-                            <div class="absolute bottom-2 right-2 text-xs font-mono bg-eerie-black text-white p-2 rounded-xl">
-                                ${video.duration ?? "-"}
+                            <div class="absolute bottom-2 right-2 text-xs font-medium tracking-wide bg-eerie-black/90 text-white p-2 rounded-lg">
+                                ${video.duration ?? "Invalid Duration"}
+                            </div>
+                            <div class="absolute bottom-2 left-2 flex items-center text-xs font-medium tracking-wide bg-hot-shot text-white p-2 rounded-lg uppercase">
+                                <i data-lucide="${
+                                    video.type === "record"
+                                        ? "video"
+                                        : "spotlight"
+                                }"class="w-4 h-4 md:me-2"></i>
+                                ${video.type ?? "-"}
                             </div>
                         </div>
                      
