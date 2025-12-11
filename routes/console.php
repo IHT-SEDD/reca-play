@@ -61,13 +61,17 @@ Schedule::command('temp-recordings:clean')->days(2)->at('01:00');
 // Clear specific camera log files
 Artisan::command('logs:clear-camera', function () {
     $logFiles = [
-        'storage/logs/camera/control.log',
         'storage/logs/camera/record.log',
-        'storage/logs/camera/stream.log',
-        'storage/logs/camera/job.log',
         'storage/logs/camera/auto-stop-cron.log',
+        'storage/logs/camera/stream.log',
+        'storage/logs/camera/selfie.log',
+        'storage/logs/camera/control.log',
+        'storage/logs/camera/job.log',
+        'storage/logs/camera/highlight-job.log',
         'storage/logs/worker/camera_download.log',
+        'storage/logs/worker/camera_highlight_download.log',
         'storage/logs/worker/camera_record_process.log',
+        'storage/logs/worker/camera_highlight_process.log',
     ];
 
     foreach ($logFiles as $file) {
