@@ -2,6 +2,7 @@
 
 namespace App\Models\Record;
 
+use App\Enums\RecordedVideoType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Vinkla\Hashids\Facades\Hashids;
@@ -10,6 +11,10 @@ class RecordedVideo extends Model
 {
     protected $guarded = ['id'];
     protected $appends = ['hashed_id'];
+
+    protected $casts = [
+        'type' => RecordedVideoType::class,
+    ];
 
     public function recording()
     {

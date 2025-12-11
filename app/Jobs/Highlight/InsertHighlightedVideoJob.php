@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\Camera;
+namespace App\Jobs\Highlight;
 
 use App\Enums\RecordedVideoType;
 use Illuminate\Bus\Queueable;
@@ -17,11 +17,11 @@ use App\Enums\RecordingStatus;
 use App\Jobs\SendRecordedVideoEmailJob;
 use Symfony\Component\Process\Process;
 
-class InsertRecordedVideoJob implements ShouldQueue
+class InsertHighlightedVideoJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected int $recordingId;
+    protected ?int $recordingId;
     protected string $videoPath;
     protected string $videoFilename;
     protected string $thumbnailPath;
@@ -34,7 +34,7 @@ class InsertRecordedVideoJob implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        int $recordingId,
+        ?int $recordingId,
         string $videoPath,
         string $videoFilename,
         string $thumbnailPath,
@@ -52,14 +52,14 @@ class InsertRecordedVideoJob implements ShouldQueue
      */
     public function handle()
     {
-        Log::channel('camera-job')->info("[JOB] InsertRecordedVideoJob started", [
+        Log::channel('highlight-job')->info("[HIGHLIGHT JOB] InsertRecordedVideoJob started", [
             'recording_id' => $this->recordingId,
             'videoPath' => $this->videoPath,
             'thumbnailPath' => $this->thumbnailPath
         ]);
 
         if (!file_exists($this->videoPath)) {
-            Log::channel('camera-job')->warning("[INSERT FAIL] Video tidak ditemukan", [
+            Log::channel('highlight-job')->warning("[HIGHLIGHT INSERT FAIL] Video tidak ditemukan", [
                 'videoPath' => $this->videoPath
             ]);
             return;
@@ -88,56 +88,26 @@ class InsertRecordedVideoJob implements ShouldQueue
                 $durationStr = sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
             }
         } catch (\Throwable $e) {
-            Log::channel('camera-job')->error("[FFPROBE ERROR]", [
+            Log::channel('highlight-job')->error("[HIGHLIGHT FFPROBE ERROR]", [
                 'videoPath' => $this->videoPath,
                 'error' => $e->getMessage()
             ]);
         }
 
         $recordedVideo = RecordedVideo::create([
-            'recording_id' => $this->recordingId,
+            'recording_id' => $this->recordingId ? $this->recordingId : null,
             'video_path' => str_replace(storage_path('app/public/'), '', $this->videoPath),
             'video_filename' => $this->videoFilename,
             'thumbnail_path' => str_replace(storage_path('app/public/'), '', $this->thumbnailPath),
             'thumbnail_filename' => $this->thumbnailFilename,
             'video_size' => filesize($this->videoPath),
             'duration' => $durationStr,
-            'type' => RecordedVideoType::Record,
+            'type' => RecordedVideoType::Highlight,
         ]);
 
-        $recording = Recording::find($this->recordingId);
-
-        if ($recording && $recording->user_id !== null && $recording->user_id !== 0) {
-            $videosCount = RecordedVideo::where('recording_id', $this->recordingId)->lockForUpdate()->count();
-
-            if ($videosCount === 1) {
-                SendRecordedVideoEmailJob::dispatch($recordedVideo->id)
-                    ->onQueue('camera-record-video-send-email');
-
-                Log::channel('camera-job')->info("[EMAIL] Sending email to user...", [
-                    'recording_id' => $this->recordingId,
-                    'user_id' => $recording->user_id
-                ]);
-            } else {
-                Log::channel('camera-job')->info("[EMAIL SKIPPED] Email has been sent to user", [
-                    'recording_id' => $this->recordingId,
-                    'videos_total' => $videosCount,
-                    'user_id' => $recording->user_id
-                ]);
-            }
-        }
-
-        if ($recording && $recording->status !== RecordingStatus::Done) {
-            $recording->update(['status' => RecordingStatus::Done]);
-
-            Log::channel('camera-job')->info("[JOB] Recording marked as done", [
-                'recording_id' => $this->recordingId,
-                'status' => 'done'
-            ]);
-        }
-
-        Log::channel('camera-job')->info("[JOB] InsertRecordedVideoJob finished", [
-            'recording_id' => $this->recordingId,
+        Log::channel('highlight-job')->info("[HIGHLIGHT JOB] InsertHighlightedVideoJob finished", [
+            'recording_id' => $this->recordingId ? $this->recordingId : null,
+            'recorded_id' => $recordedVideo->id,
             'video_filename' => $this->videoFilename
         ]);
     }
