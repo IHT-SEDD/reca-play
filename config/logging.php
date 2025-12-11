@@ -127,6 +127,12 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'master_add_data' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/add-data.log'),
+            'level' => 'debug',
+        ],
+        
         'qr_code_generator' => [
             'driver' => 'single',
             'path' => storage_path('logs/master/qr_code/qr_code_generator.log'),
@@ -139,11 +145,6 @@ return [
             'level' => 'debug',
         ],
 
-        'master_add_data' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/master/add-data.log'),
-            'level' => 'debug',
-        ],
 
         'user_add_data' => [
             'driver' => 'single',
@@ -208,6 +209,12 @@ return [
         'utility-service' => [
             'driver' => 'single',
             'path' => storage_path('logs/utility-service.log'),
+            'level' => 'info',
+        ],
+
+        'highlight-job' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/camera/highlight-job.log'),
             'level' => 'info',
         ],
     ],
