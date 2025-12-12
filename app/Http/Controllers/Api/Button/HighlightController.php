@@ -37,6 +37,17 @@ class HighlightController extends Controller
             'payload' => $request->all()
         ]);
 
+        // Uncomment for debugging pressed_at data from button
+        // return response()->json([
+        //     'raw_input' => $request->pressed_at,
+        //     'raw' => strtotime($request->pressed_at) - time() -1,
+        //     'pressed_at' => strtotime($request->pressed_at),
+        //     'server_ts' => time(),
+        //     'parsed' => date('Y-m-d H:i:s', strtotime($request->pressed_at)),
+        //     'server_now' => date('Y-m-d H:i:s'),
+        // ]);
+
+
         $validatedData = $this->validateSendData($request);
 
         DB::beginTransaction();
@@ -247,7 +258,7 @@ class HighlightController extends Controller
         }
 
         // ===== Validate pressed_at timestamp =====
-        $pressedAt = strtotime($data['pressed_at']);
+        $pressedAt = strtotime($data['pressed_at']) - 1;
 
         if ($pressedAt === false) {
             return $this->responseHelperService->errorResponse(
@@ -281,8 +292,8 @@ class HighlightController extends Controller
         }
 
         // ===== Compute highlight timestamps =====
-        $highlight_start = date('Y-m-d H:i:s', $pressedAt - 30);
-        $highlight_end = date('Y-m-d H:i:s', $pressedAt);
+        $highlight_start = date('Y-m-d H:i:s', strtotime($data['pressed_at']) - 30);
+        $highlight_end = date('Y-m-d H:i:s', strtotime($data['pressed_at']));
 
         return [
             'api' => $apiData,
