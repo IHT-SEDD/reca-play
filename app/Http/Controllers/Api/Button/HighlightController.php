@@ -38,15 +38,14 @@ class HighlightController extends Controller
         ]);
 
         // Uncomment for debugging pressed_at data from button
-        // return response()->json([
-        //     'raw_input' => $request->pressed_at,
-        //     'raw' => strtotime($request->pressed_at) - time() -1,
-        //     'pressed_at' => strtotime($request->pressed_at),
-        //     'server_ts' => time(),
-        //     'parsed' => date('Y-m-d H:i:s', strtotime($request->pressed_at)),
-        //     'server_now' => date('Y-m-d H:i:s'),
-        // ]);
-
+        return response()->json([
+            'raw_input' => $request->pressed_at,
+            'raw' => strtotime($request->pressed_at) - time() - 1,
+            'pressed_at' => strtotime($request->pressed_at),
+            'server_ts' => time(),
+            'parsed' => date('Y-m-d H:i:s', strtotime($request->pressed_at)),
+            'server_now' => date('Y-m-d H:i:s'),
+        ]);
 
         $validatedData = $this->validateSendData($request);
 
@@ -206,7 +205,7 @@ class HighlightController extends Controller
             'field' => 'required|string|min:5',
             'button_status' => 'required|string|in:pressed,unpressed',
             'pressed_at' => [
-                'required',
+                'nullable',
                 'regex:/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/'
             ]
         ], [
@@ -258,7 +257,7 @@ class HighlightController extends Controller
         }
 
         // ===== Validate pressed_at timestamp =====
-        $pressedAt = strtotime($data['pressed_at']) - 1;
+        $pressedAt = now();
 
         if ($pressedAt === false) {
             return $this->responseHelperService->errorResponse(
