@@ -4,17 +4,19 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Mail\VerifyEmail;
 use App\Models\Master\Venue;
 use App\Models\User\UserFollow;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\ResetPasswordNotification;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -78,6 +80,21 @@ class User extends Authenticatable implements MustVerifyEmail
         ], false));
 
         Mail::to($this->email)->send(new \App\Mail\ResetPasswordMail($url));
+    }
+
+    /**
+     * Send verification email
+     * */
+
+    public function sendEmailVerificationNotification()
+    {
+        $url = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $this->id, 'hash' => sha1($this->email)]
+        );
+
+        Mail::to($this->email)->send(new VerifyEmail($url));
     }
 
     /**

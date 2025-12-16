@@ -92,7 +92,7 @@ Route::middleware(['check.maintenance'])->group(function () {
     | Authenticated Routes
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth', 'check.creator.session'])->group(function () {
+    Route::middleware(['auth', 'check.creator.session', 'verified'])->group(function () {
         // Share video (with rate limit)
         Route::middleware('throttle:share-video')->group(function () {
             Route::post('/share/{videoId}', [SupportingController::class, 'shareVideo'])->name('support.share');
