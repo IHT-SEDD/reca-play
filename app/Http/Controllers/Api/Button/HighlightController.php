@@ -268,12 +268,12 @@ class HighlightController extends Controller
             );
         }
 
-        if ($pressedAt > time()) {
-            return $this->responseHelperService->errorResponse(
-                message: 'pressed_at cannot be greater than current timestamp.',
-                code: 400
-            );
-        }
+        // if ($pressedAt > time()) {
+        //     return $this->responseHelperService->errorResponse(
+        //         message: 'pressed_at cannot be greater than current timestamp.',
+        //         code: 400
+        //     );
+        // }
 
         // ===== Check existing highlight conflict =====
         $lastLog = ButtonLog::where('field_id', $fieldData->id)
@@ -281,10 +281,10 @@ class HighlightController extends Controller
             ->first();
 
         if ($lastLog) {
-            $lastHighlightEnd = strtotime($lastLog->highlight_end);
-            $minAllowedPressedAt = $lastHighlightEnd + 30;
+            $minAllowedPressedAt = \Carbon\Carbon::parse($lastLog->highlight_end)
+                ->addSeconds(30);
 
-            if ($pressedAt <= $minAllowedPressedAt) {
+            if ($pressedAt->lessThanOrEqualTo($minAllowedPressedAt)) {
                 return $this->responseHelperService->errorResponse(
                     message: 'Current highlight is in process.',
                     code: 400
@@ -293,8 +293,8 @@ class HighlightController extends Controller
         }
 
         // ===== Compute highlight timestamps =====
-        $highlight_start = date('Y-m-d H:i:s', strtotime($data['pressed_at']) - 30);
-        $highlight_end = date('Y-m-d H:i:s', strtotime($data['pressed_at']));
+        $highlight_start = $pressedAt->copy()->subSeconds(30)->format('Y-m-d H:i:s');
+        $highlight_end   = $pressedAt->format('Y-m-d H:i:s');
 
         return [
             'api' => $apiData,
