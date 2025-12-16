@@ -299,7 +299,7 @@ class HighlightController extends Controller
         return [
             'api' => $apiData,
             'field' => $fieldData,
-            'pressed_at' => $data['pressed_at'],
+            'pressed_at' => $pressedAt,
             'highlight_start' => $highlight_start,
             'highlight_end' => $highlight_end,
         ];
