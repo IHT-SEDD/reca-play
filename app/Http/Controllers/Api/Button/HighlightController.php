@@ -38,14 +38,16 @@ class HighlightController extends Controller
         ]);
 
         // Uncomment for debugging pressed_at data from button
-        return response()->json([
-            'raw_input' => $request->pressed_at,
-            'raw' => strtotime($request->pressed_at) - time() - 1,
-            'pressed_at' => strtotime($request->pressed_at),
-            'server_ts' => time(),
-            'parsed' => date('Y-m-d H:i:s', strtotime($request->pressed_at)),
-            'server_now' => date('Y-m-d H:i:s'),
-        ]);
+        if (!app()->environment('production')) {
+            return response()->json([
+                'raw_input' => $request->pressed_at,
+                'raw' => strtotime($request->pressed_at) - time() - 1,
+                'pressed_at' => strtotime($request->pressed_at),
+                'server_ts' => time(),
+                'parsed' => date('Y-m-d H:i:s', strtotime($request->pressed_at)),
+                'server_now' => date('Y-m-d H:i:s'),
+            ]);
+        }
 
         $validatedData = $this->validateSendData($request);
 
