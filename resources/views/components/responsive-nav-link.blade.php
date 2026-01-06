@@ -2,11 +2,10 @@
 
 @php
 $classes = ($active ?? false)
-? 'block w-full ps-3 pe-4 py-2 border-l-4 border-hot-shot text-start tracking-wide capitalize text-hot-shot font-medium
-transition
-duration-150 ease-in-out'
-: 'block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start tracking-wide capitalize text-after-midnight dark:text-white
-font-medium
+? 'block w-full ps-3 pe-4 py-3 border-l-4 border-hot-shot text-start text-sm tracking-wide capitalize text-hot-shot
+font-medium transition duration-150 ease-in-out'
+: 'block w-full ps-3 pe-4 py-3 border-l-4 border-transparent text-start text-sm tracking-wide capitalize
+text-after-midnight dark:text-white font-medium
 hover:text-hot-shot hover:border-hot-shot transition duration-150 ease-in-out';
 @endphp
 
